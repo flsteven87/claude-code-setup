@@ -1,0 +1,49 @@
+# Credentials & secrets
+.credentials.json
+mcp-needs-auth-cache.json
+
+# Session & runtime state
+projects/
+debug/
+logs/
+transcripts/
+sessions/
+shell-snapshots/
+tasks/
+todos/
+plans/
+telemetry/
+statsig/
+usage-data/
+file-history/
+history.jsonl
+paste-cache/
+
+# Cache
+stats-cache.json
+*-cache.json
+cache/
+
+# Backups & snapshots
+backups/
+*.backup-*
+*.backup
+
+# Plugin binaries & cache
+plugins/
+
+# Chrome extension binary
+chrome/
+
+# Agents (managed by plugins)
+agents/
+
+# Hooks (scripts, managed separately)
+hooks/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
