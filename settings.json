@@ -10,8 +10,7 @@
       "WebFetch",
       "Task",
       "NotebookEdit",
-      "MCP(*)",
-      "Bash(/Users/po-chi/.claude/plugins/cache/claude-plugins-official/ralph-wiggum/*/scripts/*.sh:*)"
+      "MCP(*)"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -91,12 +90,8 @@
     ]
   },
   "enabledPlugins": {
-    "document-skills@anthropic-agent-skills": false,
     "superpowers@superpowers-marketplace": true,
-    "ralph-wiggum@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "everything-claude-code@everything-claude-code": false,
-    "hookify@claude-plugins-official": false
+    "typescript-lsp@claude-plugins-official": true
   }
 }

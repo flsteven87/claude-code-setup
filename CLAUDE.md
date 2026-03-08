@@ -88,6 +88,18 @@ Every file, function, and variable represents the single, latest, elegant soluti
 - **AUTOMATICALLY fix high-priority errors** (F821, E722, F841, B904) before proceeding
 - **NEVER create documentation files unless explicitly requested**
 
+### Context Loading Protocol 🟡
+
+任務開始前，依任務類型主動讀取對應規則檔。不要依賴記憶——每次遇到對應領域都要讀檔：
+
+| 任務類型 | 主動讀取 |
+|---|---|
+| Python / FastAPI / Supabase / Repository / Service | `~/.claude/rules/backend.md` |
+| React / TypeScript / TanStack Query / Components | `~/.claude/rules/frontend.md` |
+| 命名疑問（檔案、class、variable、event 命名） | `~/.claude/rules/naming-conventions.md` |
+| Prompt engineering / LLM instruction 設計 | `~/.claude/references/prompt-engineering.md` |
+| UI 設計哲學 / 前端 design decision | `~/.claude/references/frontend-principles.md` |
+
 ### Communication Preferences
 
 - **Talk to user in zh-tw** but write code and comments in professional English
