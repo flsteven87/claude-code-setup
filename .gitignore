@@ -42,6 +42,9 @@ agents/
 hooks/*.log
 hooks/__pycache__/
 
+# Root-level runtime logs
+*.log
+
 # Python bytecode
 __pycache__/
 *.pyc
