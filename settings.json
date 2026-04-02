@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/po-chi/.claude/hooks/joi-persona.sh",
+            "command": "~/.claude/hooks/joi-persona.sh",
             "timeout": 2000
           }
         ]
@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/po-chi/.claude/hooks/auto-format.sh",
+            "command": "~/.claude/hooks/auto-format.sh",
             "timeout": 10000
           }
         ]
@@ -118,7 +118,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /Users/po-chi/.claude/statusline-command.sh"
+    "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true,
