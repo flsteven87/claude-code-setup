@@ -30,9 +30,8 @@ INTERACTIVE_TOOLS = [
 ]
 
 # Commands that REQUIRE manual confirmation (deny pattern = show prompt)
+# NOTE: git add/commit/push removed to enable /autopilot auto-commit
 DANGEROUS_BASH_PATTERNS = [
-    "git commit",
-    "git push",
     "git rebase",
     "git reset --hard",
     "git push --force",

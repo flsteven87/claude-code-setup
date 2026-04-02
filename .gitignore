@@ -1,6 +1,8 @@
 # Credentials & secrets
 .credentials.json
 mcp-needs-auth-cache.json
+channels/discord/.env
+secrets/
 
 # Session & runtime state
 projects/
@@ -18,6 +20,7 @@ usage-data/
 file-history/
 history.jsonl
 paste-cache/
+session-env/
 
 # Cache
 stats-cache.json
@@ -29,16 +32,18 @@ backups/
 *.backup-*
 *.backup
 
-# Plugin binaries & cache
-plugins/
+# Plugin runtime (keep metadata, ignore binaries & cloned repos)
+plugins/cache/
+plugins/marketplaces/
+plugins/data/
 
 # Chrome extension binary
 chrome/
 
-# Agents (managed by plugins)
+# Agents (managed by plugins, reinstalled automatically)
 agents/
 
-# Hooks (track scripts, ignore runtime artifacts)
+# Hooks runtime artifacts
 hooks/*.log
 hooks/__pycache__/
 

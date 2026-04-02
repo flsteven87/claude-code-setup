@@ -37,6 +37,11 @@ git commit -m "<conventional commit message>"
 - 用簡潔英文撰寫 commit message，遵循 conventional commits
 - 不要提到 AI 或 Claude Code
 
+## 推送規則
+
+- **如果在 `main` branch → 自動 `git push origin main`**
+- 如果在 feature branch → 只 commit，不推送（除非用戶要求）
+
 ## Memory 更新
 
 Commit 後，檢查本次工作是否產生了對未來 session 有價值的資訊，更新 project memory：

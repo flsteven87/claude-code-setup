@@ -81,24 +81,9 @@ Every file, function, and variable represents the single, latest, elegant soluti
 
 ### AI Behavior Rules 🟡
 
-- **Never assume missing context** - ask questions if uncertain
-- **Never hallucinate libraries or functions** - only use verified packages
-- **Always confirm file paths and module names** exist before referencing
 - **PROACTIVELY run `uv run ruff check .`** after writing/modifying Python code
 - **AUTOMATICALLY fix high-priority errors** (F821, E722, F841, B904) before proceeding
 - **NEVER create documentation files unless explicitly requested**
-
-### Context Loading Protocol 🟡
-
-任務開始前，依任務類型主動讀取對應規則檔。不要依賴記憶——每次遇到對應領域都要讀檔：
-
-| 任務類型 | 主動讀取 |
-|---|---|
-| Python / FastAPI / Supabase / Repository / Service | `~/.claude/rules/backend.md` |
-| React / TypeScript / TanStack Query / Components | `~/.claude/rules/frontend.md` |
-| 命名疑問（檔案、class、variable、event 命名） | `~/.claude/rules/naming-conventions.md` |
-| Prompt engineering / LLM instruction 設計 | `~/.claude/references/prompt-engineering.md` |
-| UI 設計哲學 / 前端 design decision | `~/.claude/references/frontend-principles.md` |
 
 ### Communication Preferences
 
@@ -176,12 +161,6 @@ API Layer (FastAPI) → Service Layer (Business Logic) → Repository Layer (Dat
 - **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first.
 - **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
 
-### TypeScript Standards 🔴
-
-- Zero tolerance for `any` in query hooks, error handling, API responses
-- Always explicit `interface Props` with `readonly` for immutable props
-- ES modules only — never `require()`
-
 ---
 
 ## Part 6: Quality & Operations
@@ -195,13 +174,6 @@ API Layer (FastAPI) → Service Layer (Business Logic) → Repository Layer (Dat
 ### Linting 🔴
 
 **Zero tolerance errors:** F821 (undefined name), F841 (unused variable), E722 (bare except), B904 (missing exception chaining)
-
-### Deployment 🔴
-
-- **ALWAYS:** `redirect_slashes=False` in FastAPI
-- **ALWAYS:** Define root routes as `@router.get("")`
-- **NEVER:** `FORWARDED_ALLOW_IPS=*`
-- **ENSURE:** CORS origins include exact frontend domains
 
 ### Server Management 🟡
 

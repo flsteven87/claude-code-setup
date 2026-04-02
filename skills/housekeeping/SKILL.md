@@ -30,6 +30,8 @@ After presenting scan results, organize findings into action categories and pres
 - Auto memory files older than 60 days with no recent references
 - Duplicate or superseded memory files within the same project
 - Empty or near-empty files (<5 lines with no meaningful content)
+- Memory entries for completed features or obsolete decisions (derivable from code/git)
+- File location pointers that are obvious from project structure
 
 ### Category B: Consolidate (medium risk)
 - Multiple memory files in one project that overlap in topic → merge into one
@@ -53,6 +55,8 @@ For each approved action:
 ### 3b. Tidy auto memory
 Memory files live in `~/.claude/projects/<project-encoded>/memory/`.
 
+**Core principle: only keep what helps future conversations.** If information can be derived from code, git history, or existing docs, it does not belong in memory. Aggressively trim — lean memory is better than comprehensive memory.
+
 1. **Remove stale files**: Delete memory files approved for removal
 2. **Consolidate overlapping files**: When multiple files cover the same topic:
    - Read all files
@@ -63,6 +67,7 @@ Memory files live in `~/.claude/projects/<project-encoded>/memory/`.
    - Extract key decisions, patterns, and constraints
    - Remove verbose history, step-by-step logs, and redundant explanations
    - Target <80 lines per file, <200 lines total per project
+4. **Prune completed/obsolete entries**: Remove backlog items that are done, architecture notes for completed features, and file location pointers that are obvious from project structure
 
 ### 3c. Update CLAUDE.md
 Check if global `~/.claude/CLAUDE.md` needs updates:

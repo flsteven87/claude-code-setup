@@ -10,7 +10,22 @@
       "WebFetch",
       "Task",
       "NotebookEdit",
-      "MCP(*)"
+      "MCP(*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(git tag *)",
+      "Bash(git show *)",
+      "Bash(git remote *)"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -24,11 +39,23 @@
       "Bash(git push --force origin master)",
       "Bash(git push -f origin main)",
       "Bash(git push -f origin master)",
-      "Bash(git reset --hard origin/*)"
+      "Bash(git reset --hard *)"
     ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/po-chi/.claude/hooks/joi-persona.sh",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -89,9 +116,15 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/po-chi/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true,
     "frontend-design@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  }
+    "typescript-lsp@claude-plugins-official": true,
+    "discord@claude-plugins-official": true
+  },
+  "autoDreamEnabled": true
 }
