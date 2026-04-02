@@ -1,0 +1,66 @@
+# Dippy global config — enforce uv and block dangerous operations
+# Docs: https://github.com/ldayton/Dippy
+# Rule order: last match wins
+
+# === Enforce uv for Python tooling ===
+# pip/pip3 denied — always use uv add
+deny pip "Use uv add instead of pip install"
+deny pip3 "Use uv add instead of pip3 install"
+
+# Python tools allowed — dippy's uv run handler delegates to inner command,
+# so these must be allowed for uv run <tool> to work
+allow python
+allow python3
+allow pytest
+allow ruff
+allow mypy
+allow black
+allow isort
+allow uv
+
+# === Git operations (allow for autopilot) ===
+allow git add
+allow git commit
+allow git push
+allow git stash
+allow git checkout
+allow git switch
+allow git branch
+
+# === Dev tooling (allow for autopilot verify/build) ===
+allow pnpm
+allow npm run
+allow npm test
+allow npm install
+allow npx
+allow node
+allow cargo
+allow go
+allow make
+allow tree
+allow wc
+allow du
+allow grep
+allow find
+allow cat
+allow ls
+allow file
+allow head
+allow tail
+allow sort
+allow uniq
+allow diff
+allow mkdir
+allow cp
+allow mv
+allow touch
+allow bash -c
+allow source
+allow gh
+allow curl
+
+# === Dangerous operations ===
+deny rm -rf "Be more specific about what to remove, or use trash"
+
+# === Secrets protection ===
+deny-redirect **/.env* "Never write secrets directly, ask the user to do it"
