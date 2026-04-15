@@ -1,7 +1,6 @@
 ---
-description: 全自動 QA 測試 — 每次聚焦 1 個 flow 深度測試，與 /autopilot 形成閉環
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(git branch:*), Bash(uv run:*), Bash(pnpm:*), Bash(npm run:*), Bash(npx:*), Bash(cargo:*), Bash(go :*), Bash(make:*)
-argument-hint: "[flow-name]"
+name: agent-test
+description: Focused automated QA — deep-test ONE flow per run, complementing /autopilot fix loop. Reads MEMORY.md pending-verify issues, picks a flow (VERIFY/EXPLORE/DEEPEN/BASELINE mode), executes multi-layer tests, reports to AGENT_TEST.md and syncs findings to MEMORY.md. Triggers on '/agent-test', 'QA test this flow', 'test the X flow', 'deep QA'.
 ---
 
 # Agent UI Test — Focused QA
@@ -25,7 +24,7 @@ argument-hint: "[flow-name]"
 
 ### Step 3: 選擇 flow
 
-**有 $ARGUMENTS →** 直接測試指定 flow。
+**有 flow argument →** 直接測試指定 flow。
 
 **無指定，按優先序：**
 
@@ -113,6 +112,6 @@ argument-hint: "[flow-name]"
 ## Rules
 
 - **每次只測 1 個 flow**
-- 與 `/autopilot` 閉環：你發現 → 它修 → 你驗證
+- 與 `autopilot` skill 閉環：你發現 → 它修 → 你驗證
 - 測試資料用合理中英文，不要 "test123"
 - Context 壓力大 → 停止，寫報告

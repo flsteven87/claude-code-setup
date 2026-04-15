@@ -1,5 +1,6 @@
 ---
-description: 快速了解專案結構和背景
+name: primer
+description: Quickly orient in a new or unfamiliar project — scans directory structure, reads CLAUDE.md/README, identifies entry points, reports project purpose, tech stack, key files, and dependencies. Triggers on '/primer', 'prime context', 'get me up to speed', '了解這個專案', '快速了解'.
 ---
 
 # Prime Context

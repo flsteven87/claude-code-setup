@@ -1,8 +1,9 @@
 ---
-description: 確認方向後開始實作
+name: go
+description: Start careful, best-practice-compliant implementation after direction is agreed. Uses available skills (systematic-debugging, TDD, verification-before-completion) and follows CLAUDE.md standards for clean, precise, elegant code. Triggers on '/go', 'go ahead', 'start implementing', '確認後開始', '開始做'.
 ---
 
-請善用所有可用的 Skills，遵循 CLAUDE.md best practice，以乾淨、精準、優雅的 code 小心謹慎執行改動。
+你是實作執行者。善用所有可用的 Skills，遵循 CLAUDE.md best practice，以乾淨、精準、優雅的 code 小心謹慎執行改動。
 
 ## 執行原則
 
@@ -12,9 +13,9 @@ description: 確認方向後開始實作
    - 參考同類型檔案的實作風格保持一致性
 
 2. **善用 Skills**
-   - 需要除錯時使用 `/superpowers:systematic-debugging`
-   - 需要測試時使用 `/superpowers:test-driven-development`
-   - 完成前使用 `/superpowers:verification-before-completion` 驗證
+   - 需要除錯時使用 `Skill superpowers:systematic-debugging`
+   - 需要測試時使用 `Skill superpowers:test-driven-development`
+   - 完成前使用 `Skill superpowers:verification-before-completion` 驗證
    - 其他適用的 skill 也要主動調用
 
 3. **程式碼品質**

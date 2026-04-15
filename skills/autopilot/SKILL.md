@@ -1,7 +1,6 @@
 ---
-description: Fully autonomous E2E workflow — auto-detects work or executes given task
-allowed-tools: Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git status:*), Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git checkout:*), Bash(git stash:*), Bash(pnpm:*), Bash(npm run:*), Bash(npx:*), Bash(uv run:*), Bash(node:*), Bash(cargo:*), Bash(go :*), Bash(gh:*), Bash(curl:*), Bash(make:*)
-argument-hint: "[task description]"
+name: autopilot
+description: Fully autonomous E2E workflow — auto-detects work from MEMORY.md or executes a given task, runs plan → implement → verify → review → commit → push. Triggers on '/autopilot', 'autopilot this', 'run autopilot', '自動跑一輪'.
 ---
 
 # Autopilot Mode
@@ -24,7 +23,7 @@ git log --oneline -1            # 最近 commit
 
 **讀取 MEMORY.md** — 這是唯一的工作來源。
 
-### If task is provided ($ARGUMENTS):
+### If task argument provided:
 → 評估 scope。太大（>10 files）→ 主動拆小，只做最核心部分。
 
 ### If no task — discover work from MEMORY.md:
@@ -38,8 +37,8 @@ git log --oneline -1            # 最近 commit
 5. `docs/plans/` — 有未完成的 plan？
 
 → 選 **1 個** deliverable。
-→ 全部為空 → `strategic-next` skill 分析下一步。
-→ 連 strategic-next 也無建議 → 執行 `/roadmap`。
+→ 全部為空 → invoke `Skill strategic-next`。
+→ 連 strategic-next 也無建議 → invoke `Skill roadmap`。
 
 宣告選擇和原因（1-2 句），立即開始。
 
@@ -47,7 +46,7 @@ git log --oneline -1            # 最近 commit
 
 **Skip** if < 3 files and no architectural decisions.
 
-Otherwise, create a structured plan (use `create_plan` tool).
+Otherwise invoke `Skill writing-plans`.
 
 ## Phase 3: IMPLEMENT
 
@@ -57,11 +56,11 @@ Otherwise, create a structured plan (use `create_plan` tool).
 
 ### Skill Toolbox — 依情境主動使用：
 
-- **UI/UX 設計** → `ui-ux-pro-max` skill
-- **除錯卡關** → `superpowers:systematic-debugging`
-- **寫測試** → `superpowers:test-driven-development`
-- **AI agent 開發** → `ai-agents` skill
-- **Subagent context** → `iterative-retrieval` skill
+- **UI/UX 設計** → `Skill ui-ux-pro-max`
+- **除錯卡關** → `Skill superpowers:systematic-debugging`
+- **寫測試** → `Skill superpowers:test-driven-development`
+- **AI agent 開發** → `Skill ai-agents`
+- **Subagent context** → `Skill iterative-retrieval`
 
 **Chrome MCP 限制：只允許 `read_console_messages` 讀 log。** 不操作 UI。
 
@@ -112,9 +111,7 @@ Subagent 直接修復能修的，回報需討論的。修復後重跑 Phase 4。
 ### Commit & Push:
 ```bash
 git add <related files>
-git commit -m "<conventional commit message>
-
-Co-Authored-By: Oz <oz-agent@warp.dev>"
+git commit -m "<conventional commit message>"
 git push origin HEAD
 ```
 

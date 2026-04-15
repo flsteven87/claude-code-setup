@@ -1,7 +1,6 @@
 ---
-description: 戰略層指揮中心 — 更新 MEMORY.md 的 Current Phase，為 autopilot 提供方向性
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(git branch:*), Bash(uv run:*), Bash(pnpm:*), Bash(npm run:*), Bash(npx:*)
-argument-hint: "[focus-area or 'review']"
+name: roadmap
+description: Strategic command center — updates MEMORY.md `## Current Phase` to set direction for autopilot. Modes GENESIS (first-time phase setup), ITERATE (update based on progress), REVIEW (progress check only). Uses extended thinking with parallel subagents for strategic/execution/product scans. Triggers on '/roadmap', 'update roadmap', 'plan next phase', 'review phase progress', '重新規劃方向'.
 ---
 
 # Roadmap — 戰略層指揮中心
@@ -21,7 +20,7 @@ argument-hint: "[focus-area or 'review']"
 
 - **MEMORY.md 無 `## Current Phase`** → GENESIS（首次建立）
 - **有 `## Current Phase`** → ITERATE（迭代更新）
-- **$ARGUMENTS = "review"** → REVIEW（只評估，不改方向）
+- **argument = "review"** → REVIEW（只評估，不改方向）
 
 ## Phase 1: DEEP CONTEXT INGESTION
 

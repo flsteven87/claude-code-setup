@@ -1,14 +1,13 @@
 ---
-description: 自動執行 autopilot → agent-test → designer-test 閉環循環 N 輪
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(git branch:*), Bash(git stash:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(pnpm:*), Bash(npm run:*), Bash(npx:*), Bash(uv run:*), Bash(node:*), Bash(cargo:*), Bash(go :*), Bash(make:*), Bash(gh:*), Bash(curl:*)
-argument-hint: "[N=3] number of cycles"
+name: cycle
+description: Run N automated rounds of autopilot → agent-test → designer-test closed loop. Each round fixes 1 issue, verifies, then design-audits impacted pages. Triggers on '/cycle', 'run cycle', 'cycle N times', '跑 N 輪閉環'.
 ---
 
 # Cycle Mode — 自動閉環循環
 
 執行 N 輪閉環。每輪：autopilot 修 1 個問題 → agent-test 驗證 → designer-test 審查。
 
-**預設 N = 3。**
+**預設 N = 3**（parse 首個 argument as integer）。
 
 ## 執行流程
 
@@ -21,13 +20,13 @@ for each round (1..N):
 ```
 
 ### Step 1: Autopilot Phase
-按 `/autopilot` 完整流程執行（Phase 0-6），但**不更新 MEMORY.md Active Work**（最後統一更新）。
+Invoke `Skill autopilot` — 完整 Phase 0-6，但**不更新 MEMORY.md Active Work**（最後統一更新）。
 
 ### Step 2: Agent-Test Phase
-按 `/agent-test` 完整流程執行。自動選 flow（通常是 VERIFY mode）。
+Invoke `Skill agent-test`. 自動選 flow（通常是 VERIFY mode）。
 
 ### Step 3: Designer-Test Phase
-按 `/designer-test` 完整流程執行。**本輪改動不涉及 UI → 跳過。**
+Invoke `Skill designer-test`. **本輪改動不涉及 UI → 跳過。**
 
 ### Step 4: Checkpoint
 
@@ -57,8 +56,8 @@ for each round (1..N):
 ### 剩餘工作（top 3）
 
 ### 建議
-- MEMORY.md > 100 行 → `/housekeep memory`
-- Phase tasks 全完成 → `/roadmap`
+- MEMORY.md > 100 行 → `Skill housekeeping`
+- Phase tasks 全完成 → `Skill roadmap`
 ```
 
 然後**更新 MEMORY.md**：

@@ -1,12 +1,11 @@
 ---
-description: 全自動 UI Design 審查 — 每次聚焦 1 個頁面/元件的視覺設計品質
-allowed-tools: Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(git branch:*), Bash(python3:*), Bash(grep:*), Bash(find:*)
-argument-hint: "[page-or-component-name]"
+name: designer-test
+description: Focused automated UI design review — audit ONE page/component per run across 8 visual dimensions (Layout, Spacing, Typography, Color, Components, Hierarchy, Interactions, Responsive). Complementary to /agent-test (functional) — this handles visual quality only. Triggers on '/designer-test', 'design review', 'visual audit', 'review UI design of X'.
 ---
 
 # Designer Test — UI Design Quality Review
 
-你是 UI Design Specialist。你不測功能 — 那是 `/agent-test` 的工作。你只看「畫面長得對不對」。
+你是 UI Design Specialist。你不測功能 — 那是 `agent-test` 的工作。你只看「畫面長得對不對」。
 
 **核心原則：像素級的偏執。**
 
@@ -30,7 +29,7 @@ argument-hint: "[page-or-component-name]"
 
 ### Step 2: 選擇審查目標
 
-**有 $ARGUMENTS →** 直接審查。
+**有 target argument →** 直接審查。
 
 **無指定，按優先序：**
 
@@ -41,7 +40,7 @@ argument-hint: "[page-or-component-name]"
 
 ### Step 3: 載入設計上下文
 
-1. 使用 `ui-ux-pro-max` skill 搜尋設計指引
+1. 使用 `Skill ui-ux-pro-max` 搜尋設計指引
 2. 讀取 `tailwind.config.*` / `theme.ts` / design tokens
 
 ## Phase 2: Connect — 截圖當前狀態
