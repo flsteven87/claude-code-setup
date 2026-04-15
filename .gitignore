@@ -58,7 +58,29 @@ __pycache__/
 skills/gws-*
 skills/persona-*
 skills/recipe-*
+skills/brainstorming
+skills/catchup
+skills/chat-agent-best-practices
+skills/code-review
+skills/debugging
+skills/documentation
+skills/finishing-a-development-branch
+skills/graphify
+skills/handoff
+skills/humanizer
+skills/receiving-code-review
+skills/requesting-code-review
+skills/reverse-thinking
+skills/review-change
+skills/simplify
+skills/stop-slop
+skills/systematic-debugging
+skills/test-driven-development
+skills/test-writing
+skills/using-git-worktrees
 skills/vercel-react-best-practices
+skills/verification-before-completion
+skills/writing-plans
 
 # OS files
 .DS_Store

@@ -41,12 +41,14 @@ My personal [Claude Code](https://claude.ai/code) configuration — a battle-tes
 ├── hooks/
 │   ├── auto-format.sh         # PostToolUse: ruff (Python) + prettier (JS/TS) after every edit
 │   ├── auto_approve_safe.py   # PermissionRequest: auto-approve safe ops, prompt for dangerous
+│   ├── graphify-refresh.sh    # Optional PostToolUse wrapper: refresh graphify graph when installed
+│   ├── graphify-remind.sh     # Optional PreToolUse wrapper: remind Claude to use graph context
 │   ├── pre_compact.py         # PreCompact: backup transcripts before context compaction
 │   └── joi-persona.sh         # SessionStart: inject Joi persona for Discord sessions
 │
 ├── commands/                  # 15 custom slash commands (/autopilot, /cycle, /review-change, etc.)
-├── skills/                    # Reusable skill definitions (double-check, ai-agents, prompt-engineering, etc.)
-├── rules/                     # Modular coding rules (backend.md, frontend.md, naming-conventions.md)
+├── skills/                    # Portable core skills tracked by this repo
+├── rules/                     # Modular coding rules (frontend.md)
 ├── references/                # Reference docs (frontend-principles.md, prompt-engineering.md)
 │
 ├── dippy/
@@ -89,6 +91,7 @@ claude plugin install superpowers@superpowers-marketplace
 claude plugin install frontend-design@claude-plugins-official
 claude plugin install typescript-lsp@claude-plugins-official
 claude plugin install discord@claude-plugins-official    # optional
+claude plugin install llm-wiki-skills@llm-wiki-mcp       # optional
 ```
 
 ### 4. Verify
@@ -97,7 +100,7 @@ claude plugin install discord@claude-plugins-official    # optional
 claude
 # Inside Claude Code:
 /permissions    # Check permission rules are loaded
-/hooks          # Verify all 6 hooks are registered
+/hooks          # Verify the configured hooks are registered
 ```
 
 ## How It Works
@@ -120,7 +123,9 @@ The `settings.json` uses `acceptEdits` mode — file reads and edits are auto-ap
 | Hook | Event | What It Does |
 |------|-------|-------------|
 | `dippy` | PreToolUse (Bash) | Validates every Bash command against allowlist. Enforces `uv` over `pip`, blocks `rm -rf`, protects `.env` files |
+| `graphify-remind.sh` | PreToolUse (Glob/Grep) | Optional wrapper that reminds Claude to prefer graph context when `~/.codex/bin/graphify-user.py` is installed |
 | `auto-format.sh` | PostToolUse (Edit/Write) | Runs `ruff format` + `ruff check --fix` on Python, `prettier --write` on JS/TS/CSS |
+| `graphify-refresh.sh` | PostToolUse (Edit/Write) | Optional wrapper that refreshes graphify output after edits when graphify is installed |
 | `auto_approve_safe.py` | PermissionRequest | Auto-approves safe operations. Prompts for: `git rebase`, `sudo`, `rm`, `kill`, `shutdown`, etc. Logs all decisions to `~/.claude/logs/auto_approve.log` |
 | `pre_compact.py` | PreCompact | Saves transcript backup before context compaction. Keeps latest 20 backups |
 | `joi-persona.sh` | SessionStart | Injects Joi persona context when `JOI_MODE=true` (for Discord sessions) |
@@ -209,7 +214,7 @@ Skills included in this repo (invoked automatically by relevant tasks):
 | `iterative-retrieval` | Codebase context retrieval for subagents |
 | `learned` | Project-specific micro-skills and learnings |
 
-> **Additional skills available separately:** Google Workspace skills (`gws-*`), persona templates (`persona-*`), and workflow recipes (`recipe-*`) are provided by the [GWS agent system](https://github.com/anthropics/skills) and installed as symlinks. They are not included in this repo.
+> **Additional skills available separately:** Google Workspace skills (`gws-*`), persona templates (`persona-*`), workflow recipes (`recipe-*`), and other machine-local skills can be installed as symlinks under `skills/`. Keep those gitignored so the repo only tracks portable core skills.
 
 ### CLAUDE.md Standards
 
@@ -244,7 +249,7 @@ This repo is designed to contain **zero credentials**. Sensitive data lives else
 
 ### Path portability
 
-All hook commands use `~` for home directory expansion (e.g., `~/.claude/hooks/auto-format.sh`). This works because hook commands are executed by a shell. No `sed` path patching or setup scripts needed for portability.
+All hook commands use `~` for home directory expansion (e.g., `~/.claude/hooks/auto-format.sh`). Optional integrations that need machine-local binaries should go through wrapper scripts in `hooks/` so the tracked `settings.json` stays portable.
 
 ## License
 

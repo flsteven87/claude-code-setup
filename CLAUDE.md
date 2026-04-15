@@ -2,20 +2,11 @@
 
 ## Part 1: Critical Rules
 
-> **Read this section first.** These rules have zero tolerance for violations.
-
-### Priority System
-
-- 🔴 **CRITICAL**: Security issues, data corruption, architectural violations - ZERO TOLERANCE
-- 🟡 **IMPORTANT**: Code quality, maintainability - MUST FIX
-- 🟢 **RECOMMENDED**: Developer experience - SHOULD FOLLOW
-
 ### 🔴 Absolute Prohibitions
 
 **Architecture Violations:**
 
-- ❌ API layer calling database directly (must go through Service → Repository)
-- ❌ Business logic in Repository layer (belongs in Service layer)
+- ❌ Bypassing 4-Layer Architecture (see Part 3) — API must go through Service → Repository
 - ❌ Direct `result.data` access in repositories (use `_handle_supabase_result()`)
 
 **Code Quality:**
@@ -55,9 +46,7 @@
 ### 🔴 Mandatory Practices
 
 - ✅ Run `uv run ruff check .` before any commit
-- ✅ Use `raise HTTPException(...) from e` for exception chaining
-- ✅ Inherit from `SupabaseRepository` base class for all repositories
-- ✅ Use Query Key Factories for TanStack Query
+- ✅ Use Query Key Factories for TanStack Query (see `hooks/factories/`)
 - ✅ Enable React Compiler + `eslint-plugin-react-compiler` in all frontend projects
 - ✅ Define explicit TypeScript interfaces for component props
 - ✅ Use `redirect_slashes=False` in FastAPI app configuration
@@ -97,40 +86,30 @@ Every file, function, and variable represents the single, latest, elegant soluti
 ### 4-Layer Architecture 🔴
 
 ```
-API Layer (FastAPI) → Service Layer (Business Logic) → Repository Layer (Data Access) → Database
+API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repositories/) → Supabase
 ```
 
-- **API** (`src/api/v1/endpoints/`): HTTP handling, validation, auth, uses `Depends(get_service)`
-- **Service** (`src/services/`): Business logic, orchestration, NO direct DB calls
-- **Repository** (`src/repositories/`): Database queries, inherits `SupabaseRepository`
-- **Database**: Supabase/PostgreSQL
-
-### Design Patterns 🟡
-
-- **Strategy Pattern** — Runtime-selectable algorithms via ABC. Use when multiple implementations needed.
-- **Aggregate Root** — Manage dependent entities through parent repository (e.g., `OrderRepository` manages orders AND items)
+- **API**: HTTP handling, validation, auth. Uses `Depends(get_service)`.
+- **Service**: Business logic. NO direct DB calls. Raise domain exceptions (no HTTP knowledge).
+- **Repository**: Inherits `SupabaseRepository`. NO business logic.
 
 ### Naming Rules 🟡
 
-> Detailed tables: `~/.claude/rules/naming-conventions.md`
-
 - **File name = Primary export name** — no mismatches
 - **Class naming:** Handler (stateful workflow), Processor (stateless transform), Service (business logic)
-- **Frontend events:** Props `onSubmit`/`onClick`, Handlers `handleSubmit`/`handleClick`
 
 ---
 
 ## Part 4: Backend Development
-
-> **Detailed backend patterns:** `~/.claude/rules/backend.md`
 
 ### Key Backend Rules 🔴
 
 - **Async discipline:** `async def` must await ALL I/O. Blocking calls freeze the event loop.
 - **Pydantic V2 only:** `@field_validator`, `model_config = ConfigDict(...)`, `.model_dump()` — never V1 syntax
 - **DI:** Use `Annotated` type aliases for `Depends()`. Use `pydantic-settings` + `@lru_cache` — never `os.getenv()`
-- **Repository:** Inherit `SupabaseRepository`, use `_handle_supabase_result()` — never `result.data[0]`
+- **Repository:** Inherit `SupabaseRepository`, call `super().__init__(table_name=..., model_class=...)`. Use `_handle_supabase_result()` for queries, `_build_model()` for single results — never `result.data[0]`
 - **Supabase RLS:** Use `(select auth.uid())` subquery (cached, 30-70% faster). Functions: `SECURITY DEFINER` + `SET search_path = 'public'`
+- **Supabase RPC:** Scalar returns (`RETURNS UUID`): `result.data` is direct value, NOT a list. Table returns (`RETURNS SETOF`): use `_handle_supabase_result()`
 - **Error handling:** Domain exceptions in service layer → global handler converts to HTTP responses
 
 ### API Conventions 🟡
@@ -148,12 +127,20 @@ API Layer (FastAPI) → Service Layer (Business Logic) → Repository Layer (Dat
 - **One prompt, one cognitive task** — decompose complex reasoning into focused stages
 - **Constraints over exhaustive rules** — define boundaries, don't enumerate every case
 
+### Agent Pipeline Design 🔴
+
+> **Backend supplies facts. Context supplies structure. LLM supplies judgment.** Don't let code do the LLM's job (ranking, intent matching, fact-checking); don't let the LLM do code's job (data integrity, deterministic computation).
+
+- **LLM misbehaving → fix context architecture, not add runtime guards** — validators, router state machines, post-gen checks are training wheels
+- **Positive framing beats negative** — "fallback to X" outperforms "never do Y"; negative rules backfire under output-shape pressure
+- **No ranking or priority signals in LLM-facing payloads** — the LLM will use them as silent default-pickers
+- **Eval is the gate; observability is for seeing, not intercepting**
+
 ---
 
 ## Part 5: Frontend Development
 
-> **Detailed frontend patterns:** `~/.claude/rules/frontend.md`
-> **Frontend philosophy tables:** `~/.claude/references/frontend-principles.md`
+> **Project-specific patterns:** `~/.claude/rules/frontend.md`
 
 ### Core Principles 🔴
 
@@ -162,19 +149,10 @@ API Layer (FastAPI) → Service Layer (Business Logic) → Repository Layer (Dat
 - **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
 
 ---
+## Optional Graphify
 
-## Part 6: Quality & Operations
-
-### Testing 🟡
-
-- **Create unit tests** in `/tests` mirroring app structure
-- **Include for each feature:** 1 expected case, 1 edge case, 1 failure case
-- **Update tests when logic changes**
-
-### Linting 🔴
-
-**Zero tolerance errors:** F821 (undefined name), F841 (unused variable), E722 (bare except), B904 (missing exception chaining)
-
-### Server Management 🟡
-
-- **NEVER start dev servers without explicit user request** (port conflicts, user manages lifecycle)
+- If `~/.claude/skills/graphify/SKILL.md` exists, treat `/graphify` as a first-class workflow for graph-backed repo exploration.
+- When a repository already has a graphify graph, prefer the nearest active surface graph over the repo-root graph.
+- Start with `graphify-out/GRAPH_REPORT.md`. If `graphify-out/wiki/index.md` exists, navigate the wiki before reading raw files.
+- Use graph queries or explanations for relationship questions. Do not paste the full `graph.json` into context.
+- Optional user-level hooks may refresh graphs after `Write|Edit|MultiEdit`. If hooks are unavailable, run `/graphify <path> --update` manually when freshness matters.

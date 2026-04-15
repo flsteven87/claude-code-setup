@@ -25,9 +25,9 @@ description: 輕量收尾審查並提交 commit
 ## 驗證 & Commit
 
 ```bash
-# 確保 lint 通過
+# 確保 type check + lint 通過
 cd backend && uv run ruff check .
-cd frontend && npm run lint
+cd frontend && npx tsc -b && pnpm lint
 
 # Commit
 git add <相關檔案>
