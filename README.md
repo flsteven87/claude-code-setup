@@ -214,7 +214,17 @@ Skills included in this repo (invoked automatically by relevant tasks):
 | `iterative-retrieval` | Codebase context retrieval for subagents |
 | `learned` | Project-specific micro-skills and learnings |
 
-> **Additional skills available separately:** Google Workspace skills (`gws-*`), persona templates (`persona-*`), workflow recipes (`recipe-*`), and other machine-local skills can be installed as symlinks under `skills/`. Keep those gitignored so the repo only tracks portable core skills.
+All 40 skills under `skills/` are tracked as real files — clone the repo and they work immediately, no plugin or marketplace setup required. Plugin-delivered skills (e.g. `superpowers:*`, `frontend-design:*`) remain accessible via their own prefixed names and coexist peacefully.
+
+### Sharing skills with Codex (optional)
+
+If you also use Codex and want it to share this skill catalog:
+
+```bash
+~/.claude/bin/sync-skills.sh
+```
+
+Creates one-way symlinks in `~/.codex/skills/` pointing to each skill under `~/.claude/skills/`. Codex-only skills under `~/.codex/skills/.system/` are preserved untouched. Idempotent — rerun after adding, renaming, or removing skills.
 
 ### CLAUDE.md Standards
 
