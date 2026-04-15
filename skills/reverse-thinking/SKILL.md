@@ -1,11 +1,25 @@
 ---
 name: reverse-thinking
-description: "Use when reviewing an implementation plan, architecture spec, multi-milestone roadmap, or design doc before committing to build. Triggers on 'is this plan best practice?', 'should we do it this way?', 'review my plan', 'ultrathink the plan', '逆向思考', '戰略檢視', or before starting any non-trivial pre-planned feature work."
+description: "Use when reviewing an implementation plan, architecture spec, multi-milestone roadmap, or design doc before committing to build. Also usable in `distill` mode to set end-state north star before brainstorming. Triggers on 'is this plan best practice?', 'should we do it this way?', 'review my plan', 'ultrathink the plan', '逆向思考', '戰略檢視', or before starting any non-trivial pre-planned feature work."
 ---
 
 # Reverse Thinking — 從終局倒推檢視計畫
 
 **Don't evaluate a plan by its own framing. Evaluate it by what the end-state actually requires.**
+
+---
+
+## Mode（呼叫方必須指定）
+
+| Mode | 用途 | 輸入 | 輸出範圍 | Token 量級 |
+|---|---|---|---|---|
+| `distill` | Pre-brainstorm 設 north star | 用戶的 topic / 對話 | 只跑 **Part A**（1 句 vision + 架構圖 + invariants） | 輕量 |
+| `audit`（預設） | Plan / spec 寫完後的戰略審計 | spec.md + plan.md + codebase | **Part A–F 全跑**（F = RISK verdict，必備） | 重量 |
+
+**關鍵原則：**
+- `distill` 模式**不碰 codebase**（沒東西可對照），跳過 Phase 3–5
+- `audit` 模式**必須輸出 Part F RISK verdict**，呼叫方（例如 `/building`）會讀
+- 呼叫方沒指定 mode → 預設 `audit`。Topic 只是一句話而沒有 plan 時 → 應該用 `distill`
 
 計畫是以「任務、milestone、增量」為錨。這讓你很容易執行一份乾淨俐落、但方向偏離終局的計畫 — 因為計畫的敘事本身會遮蔽「終局真正需要但沒寫進來」的東西。
 
@@ -122,13 +136,28 @@ Gap 是本次檢視最有價值的輸出。
 
 ## 輸出格式
 
-產出必須有 5 個 Part：
+### `distill` 模式 — 只產 Part A
+
+**Part A — End-state Ultrathink**：1 句 vision + 架構圖 + 3–5 invariants。
+
+結尾給 brainstorming 一個 handoff：「north star 已設定，可以進 clarify 階段」。**不碰 Part B–F。**
+
+### `audit` 模式 — Part A–F 全跑
 
 1. **Part A — End-state Ultrathink**：蒸餾願景 + 架構圖 + invariants
 2. **Part B — Reverse Thinking**：倒推 preconditions 表格
 3. **Part C — Codebase Reality Check**：矛盾清單，全 cite file:line
 4. **Part D — Best-Practice Critique**：維度評分 + gaps
 5. **Part E — Restructuring Recommendation**：Keep / Reorder / Insert / Reduce / Delete
+6. **Part F — RISK Verdict**（必備，供上游 pipeline 消費）：
+   - `RISK: LOW` / `RISK: MEDIUM` / `RISK: HIGH`
+   - 一行 rationale
+   - 觸發升級的最關鍵 gap（最多 1 個）
+
+**RISK 判定準則：**
+- `LOW`：Part C 無 🔴 矛盾 + Part D 無缺席維度 + scope ≤ 5 files + 不動 schema/auth/dep/public API
+- `MEDIUM`：有 🟡 scope-shifting 矛盾，或有 1 個維度缺席但可補
+- `HIGH`：有 🔴 load-bearing 矛盾，或架構假設與 codebase 相悖，或缺多個維度
 
 **永遠以 2-3 個具體「下一步選項」結尾，讓用戶選**，不要給單一處方。
 

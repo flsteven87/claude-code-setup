@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Full end-to-end pipeline for a topic/issue/feature — composes /building (reverse-thinking → brainstorming → writing-plans → executing-plans) then /ending (review-change → simplify → review-and-commit → handoff). Triggers on '/ship', 'ship this', 'take it from idea to commit', '從頭到尾做完'.
+description: Full end-to-end pipeline for a topic/issue/feature — composes /building (distill → brainstorm → plan → audit → constitution gate → subagent-driven implement) then /ending (review-change → simplify → review-and-commit → handoff). Triggers on '/ship', 'ship this', 'take it from idea to commit', '從頭到尾做完'.
 ---
 
 # Ship — End-to-End Pipeline
