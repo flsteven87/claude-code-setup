@@ -63,18 +63,6 @@
     "defaultMode": "acceptEdits"
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/joi-persona.sh",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
