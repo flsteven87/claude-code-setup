@@ -85,16 +85,6 @@
             "timeout": 5000
           }
         ]
-      },
-      {
-        "matcher": "Glob|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/graphify-remind.sh",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "PostToolUse": [
