@@ -33,6 +33,23 @@ cd backend && uv run ruff check .
 cd frontend && npx tsc -b && pnpm lint
 ```
 
+## Graphify Update
+
+Before staging and committing, refresh Graphify outputs when the repository has a Graphify workflow.
+
+1. Check whether the repo defines Graphify commands:
+   - Prefer `npm run graph:status` or `./scripts/graphify.sh status` when available.
+   - If no Graphify workflow exists, skip this section and say it was not applicable.
+2. Use `git diff --name-only` and `git diff --cached --name-only` to identify touched files.
+3. Rebuild only affected surfaces when the repo uses surface graphs:
+   - `backend/src/**` -> `./scripts/graphify.sh build backend/src`
+   - `backend/tests/**` -> `./scripts/graphify.sh build backend/tests`
+   - `frontend/**` -> `./scripts/graphify.sh build frontend`
+   - `blog/**` -> `./scripts/graphify.sh build blog`
+4. If changes span many surfaces or the repo does not have surface-specific commands, run the repo's documented all-graph command, such as `npm run graph:build:all`.
+5. Run the graph status command after rebuilding.
+6. Include updated tracked graph outputs, such as `graphify-out/GRAPH_REPORT.md` and `graphify-out/graph.json`, in the commit. Do not stage Graphify cache, manifest, cost, transcript, or other ignored local internals.
+
 Then:
 
 ```bash

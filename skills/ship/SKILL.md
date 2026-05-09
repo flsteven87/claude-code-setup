@@ -1,61 +1,52 @@
 ---
 name: ship
-description: Full end-to-end pipeline for a topic/issue/feature — composes /building (distill → brainstorm → plan → audit → constitution gate → subagent-driven implement) then /ending (review-change → simplify → review-and-commit → handoff). Triggers on '/ship', 'ship this', 'take it from idea to commit', '從頭到尾做完'.
+description: Use when you want to take an idea or issue all the way to a shipped, documented commit in one autonomous run. Triggers on '/ship', 'ship this', 'take it from idea to commit', '從頭到尾做完'.
 ---
 
 # Ship — End-to-End Pipeline
 
-Two-stage composition:
-
 ```
-/ship = /building → /ending
-
-/building → reverse-thinking → brainstorming → writing-plans → executing-plans
-/ending   → review-change → simplify → review-and-commit → handoff
+/ship = /build → /ending
 ```
 
-## Usage
+`/build` (distill → plan → implement) then `/ending` (review → simplify → commit → handoff).
 
-```
-/ship <topic or issue>
-/ship <topic> --auto
-```
+**User-facing output: zh-tw** (per CLAUDE.md). SKILL structure stays English.
 
-- `$ARGUMENTS` first token is the topic; `--auto` flag flows through to both sub-skills
-- No topic → read MEMORY.md `## Active Work` for the top 🔴 item; confirm with user before starting
+## Topic resolution
+
+- `/ship <topic>` — use the topic verbatim
+- `/ship` (no arg) — read MEMORY.md `## Active Work` and auto-pick the top 🔴 item. No confirmation prompt — invoking `/ship` IS the consent.
+- `/ship` (no arg) but MEMORY.md missing, or `## Active Work` absent, or no 🔴 item listed → stop and ask user for the topic (objective trigger, see Stop section).
 
 ## Execution
 
-1. Invoke `Skill building` with the topic + flags
-2. On `building complete` → invoke `Skill ending` with the same flags
-3. On `ending complete` → print final summary:
-   ```
-   ship complete
-   topic: <topic>
-   commits: <sha1>..<shaN>
-   MEMORY.md updated: yes
-   ```
+1. Invoke `Skill build` with the topic.
+2. On `build complete` → invoke `Skill ending` immediately.
+3. On `ending complete` → print:
 
-## Mode Flag Propagation
+```
+ship complete
+topic:   <topic>
+commits: <sha1>..<shaN>
+memory:  updated
+```
 
-- `/ship --auto` → both `/building --auto` and `/ending --auto`
-- Each sub-skill independently decides when to degrade to careful mode per its own rules
-- `reverse-thinking` (inside /building) is the **master gate**: if it flags HIGH risk, `--auto` is disabled for the rest of the pipeline
+## Default behavior
 
-## Bailout Rules
+Run build → ending end-to-end. No mid-flow user prompts beyond what the sub-skills' own stop conditions impose.
 
-- `/building` fails → stop, do NOT auto-start `/ending`. Report which phase broke
-- `/ending` finds 🔴 blocker → loop back into `Skill superpowers:executing-plans` for fix, then restart `/ending` from Phase 1 (not the whole `/ship`)
-- User interrupts mid-flow → save current phase state in your reply so resume is trivial
+**Output discipline:**
+- *Phase-level progress* from sub-skills (north star, plan path, per-phase 1-liners) flows through — that is useful visibility.
+- *Final completion reports* from sub-skills (`build complete — ...`, `ending complete — ...`) are internal sequencing signals. Absorb them; do NOT emit them to the user. The user sees only `/ship`'s own final summary below.
 
-## Why Two Sub-Skills
+## Stop only when (objective triggers, inherited from sub-skills)
 
-- Composability: run only `/building` when handing off code to someone else to finish; run only `/ending` when picking up finished code
-- Checkpointing: a clear "building complete" signal lets you stash, review, or branch-switch before committing
-- Scope control: each sub-skill has tight, testable behavior instead of one 8-phase monolith
+- A sub-skill blocks, errors, or explicitly requests user input
+- `/build` halts at any phase → do NOT auto-start `/ending`. Report which phase broke.
+- `/ending` halts at any phase → report which phase broke. Do not auto-rerun `/build`.
+- `/ship` with no arg AND MEMORY.md `## Active Work` is missing or empty → stop and ask for the topic.
 
-## Do NOT
+## Failure
 
-- Skip `/building` Phase 1 (reverse-thinking) — that's where the "agent judges best practice for me" value lives
-- Merge into one mega-skill — the gate between `/building` and `/ending` is intentional
-- Push past a `/ending` Phase 1 🔴 finding because "it was already tested" — regression review exists for the "I missed it" case
+Print which sub-skill and which phase failed, plus artifacts produced so far (plan path, commit hashes, etc.). Do not auto-retry. Do not skip the failed sub-skill.

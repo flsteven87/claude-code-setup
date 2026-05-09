@@ -141,8 +141,9 @@
     "superpowers@superpowers-marketplace": true,
     "frontend-design@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "discord@claude-plugins-official": true,
-    "llm-wiki-skills@llm-wiki-mcp": true
+    "llm-wiki-skills@llm-wiki-mcp": false,
+    "codex@openai-codex": true,
+    "andrej-karpathy-skills@karpathy-skills": true
   },
   "extraKnownMarketplaces": {
     "llm-wiki-mcp": {
@@ -151,7 +152,20 @@
         "repo": "flsteven87/llm-wiki-mcp",
         "path": ".claude-plugin"
       }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "karpathy-skills": {
+      "source": {
+        "source": "github",
+        "repo": "forrestchang/andrej-karpathy-skills"
+      }
     }
   },
-  "autoDreamEnabled": true
+  "autoDreamEnabled": true,
+  "theme": "dark-daltonized"
 }

@@ -34,14 +34,7 @@
 - ❌ Starting dev servers without explicit user request
 - ❌ PostgreSQL functions with `SET search_path = ''`
 
-**Scope Discipline (multi-agent safety):** 🔴
-
-- ❌ Reverting, modifying, or deleting code outside your current task scope
-- ❌ "Cleaning up" or "fixing" unrelated code you encounter
-- ❌ Undoing changes by other agents/sessions without explicit user request
-- ❌ Running `git checkout`/`git restore`/`git reset` on files you didn't modify
-- ✅ Only touch files and code directly required by your current task
-- ✅ If you notice issues in unrelated code, report them — do NOT fix silently
+**Scope Discipline:** see `karpathy-guidelines` skill (Surgical Changes). Project-specific addition: never run `git checkout`/`restore`/`reset` on files you didn't modify in this task.
 
 ### 🔴 Mandatory Practices
 
@@ -55,13 +48,11 @@
 
 > **One version. Always current. No legacy. No compromises.**
 
-Every file, function, and variable represents the single, latest, elegant solution. Never create "improved" versions alongside originals—replace them entirely.
+Every file, function, and variable represents the single, latest, elegant solution. Never create "improved" versions alongside originals—replace them entirely. (General "simplicity / no speculative code" guidance lives in the `karpathy-guidelines` skill; the rules below are project-specific.)
 
-- **One-Shot Excellence** — Write the elegant solution now, not "fix it later"
 - **No Development-Stage Adjectives** — ❌ `enhanced_parser.py`, `UserServiceV2` → ✅ `parser.py`, `UserService`
 - **Business Adjectives OK** — `PremiumPlan`, `AdvancedAnalytics` are fine
 - **No Backward Compatibility Hacks** — Delete completely, don't deprecate. No `_old_var`, no re-exports
-- **No Over-Defensive Coding** — Validate at boundaries, trust internal code
 - **Replace, Don't Accumulate** — One file evolves; never create parallel versions
 
 ---
