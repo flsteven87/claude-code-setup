@@ -1,6 +1,6 @@
 ---
 name: graphify
-description: any input (code, docs, papers, images) → knowledge graph → clustered communities → HTML + JSON + audit report
+description: "Build a persistent knowledge graph from a folder of files (code, docs, papers, notes, images) — community detection, EXTRACTED/INFERRED/AMBIGUOUS audit trail, cross-session query / path / explain commands. Use when the user runs '/graphify', wants to map an unfamiliar codebase before editing, build a research / reading corpus graph, query relationships that span files, or asks '建知識圖'、'產出 graph'、'graphify 這個資料夾'、'map this codebase'、'knowledge graph this folder'."
 trigger: /graphify
 ---
 

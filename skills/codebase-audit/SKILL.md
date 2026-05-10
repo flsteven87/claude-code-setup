@@ -1,9 +1,9 @@
 ---
 name: codebase-audit
-description: 全面審查專案 codebase 的技術與商業架構
+description: "Independent, deep technical + business audit of a codebase that has gone through many iterative sessions. Covers architecture design, code quality (DRY / cyclomatic complexity / error handling), naming consistency, and business-logic coherence across modules. Use when the user wants a full codebase health check, architecture review, technical debt assessment, or says '審查專案'、'codebase 健檢'、'整體架構檢視'、'audit codebase'、'architecture review'、'tech debt audit'."
 status: active
 tags: [core, audit]
-updated: 2026-02-07
+updated: 2026-05-10
 ---
 
 # 深度 Codebase 審查

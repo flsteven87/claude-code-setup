@@ -2,6 +2,10 @@
 
 > Extracted from CLAUDE.md. These conventions apply across all projects.
 
+## File ↔ Export Alignment 🟡
+
+- **File name = Primary export name** — no mismatches
+
 ## Class Naming 🟡
 
 | Pattern       | Use When                        | Example                           |

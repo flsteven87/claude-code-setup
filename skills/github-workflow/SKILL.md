@@ -1,9 +1,9 @@
 ---
 name: github-workflow
-description: GitHub repository 和 workflow 操作。當用戶需要：(1) 建立新 GitHub repository 並 clone 到本地 (2) 初始化新專案 (3) 建立 PR、issue、release (4) 管理 branch 和 merge (5) 查詢 repo 狀態、PR 列表、issue 時觸發此 skill。使用 GitHub CLI (gh) 執行所有操作。
+description: "GitHub repository 和 workflow 操作 (uses gh CLI). 當用戶需要 (1) 建立新 GitHub repo + clone (2) 初始化新專案 (Next.js / Python / 空專案) (3) 建立 PR / issue / release (4) 管理 branch + merge (5) 查詢 repo 狀態、PR 列表、issue 時觸發。Triggers on '建立 repo'、'新增 repository'、'初始化專案'、'create a new repo'、'gh repo create'、'open a PR'、'create issue'、'cut a release'、'manage branches'."
 status: active
 tags: [core, github, workflow]
-updated: 2026-02-07
+updated: 2026-05-10
 ---
 
 # GitHub Workflow

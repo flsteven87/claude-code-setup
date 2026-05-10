@@ -69,6 +69,30 @@ Every file, function, and variable represents the single, latest, elegant soluti
 
 - **Talk to user in zh-tw** but write code and comments in professional English
 - **Use UV for all Python operations**: `uv run python`, `uv add package`, `uv run pytest`
+- **Web freshness**: Verify fast-moving topics online before asserting them. Include exact dates when the user asks for "latest" or references relative dates.
+
+### Delegation to Codex 🔴
+
+The `codex@openai-codex` plugin is enabled. **Codex is the implementation / review specialist; Claude Code is the planning / synthesis lead.** Default to handing implementation-shaped subtasks to Codex unless the user says otherwise.
+
+**Hand off to Codex (preferred):**
+- Implementing a finalized plan (instead of `superpowers:executing-plans` running locally)
+- Mechanical refactors / migrations once the target shape is clear
+- `/simplify` passes on changed code (`simplify` skill)
+- Independent code-quality review / second-opinion implementation read
+- Root-cause investigation when Claude Code is stuck after one or two passes
+
+**Keep on Claude Code:**
+- Brainstorming, plan writing, architectural review, ADR drafting
+- Cross-file synthesis, multi-source research consolidation
+- Ticket structuring (`topic-to-tickets`), strategy decisions (`strategic-next`)
+- Conversation steering and direct discussion with the user
+
+**Mechanism:**
+- Spawn `codex:codex-rescue` subagent via the Agent tool, or invoke the `codex:rescue` skill
+- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold
+
+When in doubt: **plan here, ship there.**
 
 ---
 
@@ -84,30 +108,11 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 - **Service**: Business logic. NO direct DB calls. Raise domain exceptions (no HTTP knowledge).
 - **Repository**: Inherits `SupabaseRepository`. NO business logic.
 
-### Naming Rules 🟡
-
-- **File name = Primary export name** — no mismatches
-- **Class naming:** Handler (stateful workflow), Processor (stateless transform), Service (business logic)
-
 ---
 
 ## Part 4: Backend Development
 
-### Key Backend Rules 🔴
-
-- **Async discipline:** `async def` must await ALL I/O. Blocking calls freeze the event loop.
-- **Pydantic V2 only:** `@field_validator`, `model_config = ConfigDict(...)`, `.model_dump()` — never V1 syntax
-- **DI:** Use `Annotated` type aliases for `Depends()`. Use `pydantic-settings` + `@lru_cache` — never `os.getenv()`
-- **Repository:** Inherit `SupabaseRepository`, call `super().__init__(table_name=..., model_class=...)`. Use `_handle_supabase_result()` for queries, `_build_model()` for single results — never `result.data[0]`
-- **Supabase RLS:** Use `(select auth.uid())` subquery (cached, 30-70% faster). Functions: `SECURITY DEFINER` + `SET search_path = 'public'`
-- **Supabase RPC:** Scalar returns (`RETURNS UUID`): `result.data` is direct value, NOT a list. Table returns (`RETURNS SETOF`): use `_handle_supabase_result()`
-- **Error handling:** Domain exceptions in service layer → global handler converts to HTTP responses
-
-### API Conventions 🟡
-
-- **Use snake_case for all API fields** (backend Pydantic + frontend TypeScript)
-- **Define root routes as `@router.get("")`** not `@router.get("/")`
-- **Include CORS origins for exact frontend domains**
+> **Project-specific patterns:** `~/.claude/rules/backend.md` (auto-loaded — async, Pydantic V2, repository, Supabase, DI, API conventions all live there)
 
 ### Prompt Engineering 🔴
 
@@ -131,13 +136,7 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 
 ## Part 5: Frontend Development
 
-> **Project-specific patterns:** `~/.claude/rules/frontend.md`
-
-### Core Principles 🔴
-
-- **Hyper-Minimalist UI** — Less, but better. Every element must earn its place.
-- **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first.
-- **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
+> **Project-specific patterns:** `~/.claude/rules/frontend.md` (auto-loaded — core principles, TanStack Query, SSE, React Compiler all live there)
 
 ---
 ## Optional Graphify

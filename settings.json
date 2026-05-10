@@ -60,6 +60,10 @@
       "Bash(git push -f origin master)",
       "Bash(git reset --hard *)"
     ],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)"
+    ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
@@ -141,18 +145,14 @@
     "superpowers@superpowers-marketplace": true,
     "frontend-design@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "llm-wiki-skills@llm-wiki-mcp": false,
     "codex@openai-codex": true,
-    "andrej-karpathy-skills@karpathy-skills": true
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "session-report@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "llm-wiki-mcp": {
-      "source": {
-        "source": "github",
-        "repo": "flsteven87/llm-wiki-mcp",
-        "path": ".claude-plugin"
-      }
-    },
     "openai-codex": {
       "source": {
         "source": "github",

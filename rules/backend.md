@@ -49,3 +49,14 @@
 - ✅ RPC scalar returns (`RETURNS UUID`): `result.data` is direct value, NOT a list
 - ✅ RPC table returns (`RETURNS SETOF`): use `_handle_supabase_result()` → list of dicts
 - ✅ PostgreSQL functions: always `SECURITY DEFINER` + `SET search_path = 'public'`
+
+## Dependency Injection 🟡
+
+- Use `Annotated` type aliases for `Depends()`
+- Use `pydantic-settings` + `@lru_cache` for config — never `os.getenv()`
+
+## API Conventions 🟡
+
+- Use snake_case for all API fields (backend Pydantic + frontend TypeScript)
+- Define root routes as `@router.get("")` not `@router.get("/")`
+- Include CORS origins for exact frontend domains

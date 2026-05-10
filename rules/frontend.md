@@ -2,6 +2,12 @@
 
 > Project-specific patterns that differ from standard React conventions.
 
+## Core Principles 🔴
+
+- **Hyper-Minimalist UI** — Less, but better. Every element must earn its place.
+- **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first.
+- **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
+
 ## TanStack Query Patterns 🟡
 
 - **Invalidation**: granular (`userKeys.detail(id)`) over nuclear (`userKeys.all`)
