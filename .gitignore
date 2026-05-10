@@ -62,3 +62,6 @@ __pycache__/
 # OS files
 .DS_Store
 commands.bak-*/
+
+# Auto-generated update timestamp
+.last-cleanup
