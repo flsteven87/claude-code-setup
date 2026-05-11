@@ -64,6 +64,7 @@ Every file, function, and variable represents the single, latest, elegant soluti
 - **PROACTIVELY run `uv run ruff check .`** after writing/modifying Python code
 - **AUTOMATICALLY fix high-priority errors** (F821, E722, F841, B904) before proceeding
 - **NEVER create documentation files unless explicitly requested**
+- **Active worktrees break repo-walking CLIs** — tools that scan the tree (e.g. `shopify app dev`) abort on duplicate configs inside `.claude/worktrees/<active>/`. Run such CLIs outside the worktree session; `/ship` stage 7 sweeps merged ones
 
 ### Communication Preferences
 
@@ -91,6 +92,12 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 **Mechanism:**
 - Spawn `codex:codex-rescue` subagent via the Agent tool, or invoke the `codex:rescue` skill
 - Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold
+- `codex:codex-rescue` defaults to `--write` (write-capable). For review-only / diagnosis-only handoffs, frame the brief explicitly as "review only, do not edit" and the rescue agent will keep it read-only.
+
+**Adversarial Review (Codex as critic):**
+- After CC drafts a non-trivial plan or substantial implementation, run Codex in read-only review mode to attack the work *before* merge. Their findings have low overlap (~10–20%) with CC's, so this is high-ROI rather than redundant.
+- Especially valuable for: security-sensitive changes, architectural plans before execution, large refactors, anything touching auth / RLS / data integrity.
+- Brief Codex with the diff or plan + an angle. Don't ask for "general review" — pick from the seven attack surfaces: **auth bypass · data loss · rollback safety · race conditions · degraded dependencies · version skew · observability gaps**.
 
 When in doubt: **plan here, ship there.**
 
