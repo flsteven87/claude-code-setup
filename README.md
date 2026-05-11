@@ -43,8 +43,7 @@ My personal [Claude Code](https://claude.ai/code) configuration — a battle-tes
 │   ├── auto_approve_safe.py   # PermissionRequest: auto-approve safe ops, prompt for dangerous
 │   ├── graphify-refresh.sh    # Optional PostToolUse wrapper: refresh graphify graph when installed
 │   ├── graphify-remind.sh     # Optional PreToolUse wrapper: remind Claude to use graph context
-│   ├── pre_compact.py         # PreCompact: backup transcripts before context compaction
-│   └── joi-persona.sh         # SessionStart: inject Joi persona for Discord sessions
+│   └── pre_compact.py         # PreCompact: backup transcripts before context compaction
 │
 ├── commands/                  # 15 custom slash commands (/autopilot, /cycle, /review-change, etc.)
 ├── skills/                    # Portable core skills tracked by this repo
@@ -54,7 +53,6 @@ My personal [Claude Code](https://claude.ai/code) configuration — a battle-tes
 ├── dippy/
 │   └── config                 # Dippy config reference (copied to ~/.dippy/config by setup.sh)
 │
-├── joi/                       # Joi Discord persona (launch script + identity CLAUDE.md)
 └── statusline-command.sh      # Custom status bar (dir, model, context %, rate limits)
 ```
 
@@ -128,7 +126,6 @@ The `settings.json` uses `acceptEdits` mode — file reads and edits are auto-ap
 | `graphify-refresh.sh` | PostToolUse (Edit/Write) | Optional wrapper that refreshes graphify output after edits when graphify is installed |
 | `auto_approve_safe.py` | PermissionRequest | Auto-approves safe operations. Prompts for: `git rebase`, `sudo`, `rm`, `kill`, `shutdown`, etc. Logs all decisions to `~/.claude/logs/auto_approve.log` |
 | `pre_compact.py` | PreCompact | Saves transcript backup before context compaction. Keeps latest 20 backups |
-| `joi-persona.sh` | SessionStart | Injects Joi persona context when `JOI_MODE=true` (for Discord sessions) |
 | macOS notification | Stop | Sends a native notification when Claude finishes responding |
 
 ### Dippy Deep Dive
@@ -210,7 +207,6 @@ Skills included in this repo (invoked automatically by relevant tasks):
 | `codebase-audit` | Full technical architecture review |
 | `ui-ux-pro-max` | UI/UX design and implementation guidance |
 | `housekeeping` | Auto-memory and artifact cleanup |
-| `joi` | Discord persona for external messaging |
 | `iterative-retrieval` | Codebase context retrieval for subagents |
 | `learned` | Project-specific micro-skills and learnings |
 
