@@ -1,13 +1,22 @@
 ---
 name: narrate-topic
-description: "Translate a Linear ticket, topic, epic, or multi-ticket roadmap into a business-first narrative with calibrated technical depth — anchored to verified ground truth (Linear + git + codebase + memory), structured as business problem → technical map → strategic logic → per-item translation → status verification → decision framework. Communicates in zh-tw with English technical terms. Use whenever the user wants the big picture of an initiative they didn't author or has half-forgotten: '/narrate-topic', '解析這串 ticket', '這個 epic 在幹嘛', '幫我看懂這個 roadmap', '把這份分析解析給我聽', '我對這系列實在沒概念', '為什麼要這樣排', '解析這份建議', or when handing a fresh person (PM, co-founder, new engineer) into a workstream. Strongly trigger when the user pastes a multi-ticket analysis and says 解析/解釋/翻譯 — even without naming the skill. CRITICAL difference from adjacent skills: this is read-only legibility, not strategy (strategic-next), restructuring (topic-to-tickets), or critique (reverse-thinking). Always verify ticket states against current Linear + git before narrating — memory and quoted analyses lag merges."
+description: "Translate a Linear ticket, topic, epic, multi-ticket roadmap, OR a shipped pipeline / built system architecture into a business-first narrative with calibrated technical depth — anchored to verified ground truth (Linear + git + codebase + memory), structured as business problem → technical map → strategic logic → per-component translation → status verification → decision framework. Communicates in zh-tw with English technical terms. Two input shapes the skill handles: (A) ticket-cluster narration — multiple Linear tickets / a roadmap / an epic, items are tickets; (B) system narration — an already-shipped pipeline / engine / data-flow / built architecture, items are layers / engines / stages. Use whenever the user wants the big picture of work they didn't author or has half-forgotten: '/narrate-topic', '解析這串 ticket', '這個 epic 在幹嘛', '幫我看懂這個 roadmap', '把這份分析解析給我聽', '我對這系列實在沒概念', '為什麼要這樣排', '解析這份建議', '白話走一遍 [系統]', '搭配 pipeline 架構圖跟我分析', '把架構帶我走一次', '解釋這個 pipeline / engine / 系統', 'data flow 帶我走一遍', '每個環節都要 cover 到', or when handing a fresh person (PM, co-founder, new engineer) into a workstream. Strongly trigger when the user pastes a multi-ticket analysis OR asks for a built-system walkthrough and says 解析/解釋/翻譯/白話/帶我走 — even without naming the skill. CRITICAL difference from adjacent skills: this is read-only legibility, not strategy (strategic-next), restructuring (topic-to-tickets), or critique (reverse-thinking). Always verify cited state — ticket status OR cited file:line / function / invariant — against Linear + git + codebase before narrating; memory and quoted analyses lag merges."
 status: active
 tags: [core, communication, narrative, zh-tw]
 ---
 
 # narrate-topic — Ticket / topic / epic → business-first narrative
 
-You are translating a piece of work — one ticket, a cluster, an epic, or someone else's roadmap — into a story a busy human can read in 2 minutes and act on. The audience is usually the user themselves (revisiting work they delegated or saw cold), but it can also be a hand-off to a PM, co-founder, or a new engineer.
+You are translating a piece of work — one ticket, a cluster, an epic, someone else's roadmap, OR an already-shipped pipeline / built system architecture — into a story a busy human can read in 2 minutes and act on. The audience is usually the user themselves (revisiting work they delegated, saw cold, or shipped a few weeks ago and forgot the shape of), but it can also be a hand-off to a PM, co-founder, or a new engineer.
+
+Two input shapes show up most often. Recognize which you're in — the spine adapts:
+
+| Mode | Input looks like | "Item" in section 4 means | Sections 3 + 5 |
+|---|---|---|---|
+| **A. Ticket-cluster narration** | a roadmap, an epic, a list of Linear tickets, a multi-ticket analysis someone wrote | a ticket | full — strategic ordering matters, ticket states must be verified |
+| **B. System narration** | a shipped pipeline, an engine, a data-flow architecture; user wants the whole built system explained layer-by-layer | a layer / engine / stage / sub-system | compressed — the system is already built (no future ordering decisions); status verification becomes invariant + file-path verification |
+
+Recognize early which mode you're in. The verification you do, the diagram you draw, and the per-component shape all key off this.
 
 The output is a self-contained briefing in zh-tw, with English technical terms (function names, file paths, ticket IDs, `webhook`, `ingestion`, `OAuth1`, `idempotency`, etc.) left in English. This matches how bilingual dev work reads naturally.
 
@@ -17,7 +26,8 @@ The skill is **read-only legibility**. It does not propose what to do next, rest
 
 | If the user wants… | Use… |
 |---|---|
-| 看懂這個 initiative / epic / roadmap | **narrate-topic** (this) |
+| 看懂這個 initiative / epic / roadmap | **narrate-topic** (this, Mode A) |
+| 白話走一遍已 ship 的 pipeline / engine / 系統架構 | **narrate-topic** (this, Mode B) |
 | 想清楚下一步該做什麼 | `strategic-next` |
 | 把一個 topic 拆 / 重組成 PR-shaped tickets | `topic-to-tickets` |
 | Challenge / 逆向思考一個既定計畫 | `reverse-thinking` |
@@ -28,7 +38,7 @@ This skill *can* point out broken assumptions in the input (e.g. a ticket the in
 
 ## The narrative spine (always in this order)
 
-Every output follows these six sections. For a single small ticket, collapse to (1)(2)(4)(6). For a roadmap of 5+ items, use all six. Never reorder — the reader is being onboarded; structure does the work.
+Every output follows these six sections. For a single small ticket, collapse to (1)(2)(4)(6). For a roadmap of 5+ items, use all six. For a **system narration** (Mode B), keep sections (1)(2)(4)(6) full and compress (3)(5) — the system is already shipped so strategic ordering has no future decisions to make, and status verification becomes invariant + file-path verification rather than ticket-state verification. Never reorder — the reader is being onboarded; structure does the work.
 
 ### 1. One-sentence business problem
 Lead with what the **user or business is feeling**, not the technical scope. Open with the conclusion in one sentence; do not warm up.
@@ -80,18 +90,32 @@ A phase table works well here:
 | 1. 打通管線 | App 跟 backend 講同一種語言 | NEX-849 |
 | 2. 裝儀表板 | 每個用戶 Garmin 健康度可見 | NEX-792 |
 
-### 4. Per-item translation
-For each ticket, **3–5 lines** in this shape:
+### 4. Per-component translation
+
+For each component, **3–5 lines** (or one longer paragraph + a sub-system table when the component fans out into stages / analyzers / tiers). "Component" means:
+
+| Mode | Component = |
+|---|---|
+| A. Ticket cluster | one Linear ticket |
+| B. System narration | one layer / engine / stage in the data-flow diagram from section 2 |
+
+Shape (same for both modes):
 
 - **Business translation** — what does this mean for the user / ops / cost?
-- **Architectural surface touched** *(required)* — which contract / state field / queue / invariant from section 2 does this modify? Name the *leverage point*, not just the file. E.g. "adds `last_webhook_at` write to the credential health surface" beats "modifies `user_service.py`".
-- **Why this order** — what does it unlock, or what does it depend on (in terms of the surfaces in section 2)?
+- **Architectural surface touched** *(required)* — which contract / state field / queue / invariant from section 2 does this modify, own, or read from? Name the *leverage point*, not just the file. E.g. "adds `last_webhook_at` write to the credential health surface" beats "modifies `user_service.py`". For Mode B, this is the layer's role in the data flow — what data shape comes in, what comes out, what side-effects happen here.
+- **Why this order** — Mode A: what does the ticket unlock, what does it depend on (in terms of section 2 surfaces). Mode B: where does this layer sit in the data flow, what's upstream / downstream, what does it pass to the next layer.
 - **Concrete anchor** — file:line, function name, PR number, or numeric fact so the reader can navigate code afterward
+- **Sub-system decomposition** *(when applicable)* — if this component has internal taxonomy (3 stages, 6 analyzers, 4 tiers, N RPC kwargs, etc.), follow with a Pattern I table. Don't bury sub-systems as prose; the table IS the explanation.
 
-Never copy the ticket description verbatim. Synthesize. If the AC reads like an engineering checklist, your job is to surface the *architectural meaning* — what part of the system this touches and what invariant it preserves or restores.
+Never copy the ticket description (or the file's docstring) verbatim. Synthesize. If the AC / code reads like an engineering checklist, your job is to surface the *architectural meaning* — what part of the system this touches and what invariant it preserves or restores. For Mode B, lead each component with a one-line "**這層的任務是 X**" framing before the deeper unpack — the reader needs to feel the layer's purpose in one sentence before they can absorb the detail.
+
+**Mode B ordering**: follow the data flow (input → persistence → trigger → execution → read → frontend), not "biggest ticket first" or "highest confidence first". The reader is being walked through the system; data flow is the natural narrative arc.
 
 ### 5. Status verification table
-**Mandatory** whenever the input claims any state ("this is next", "this is done", "this depends on…"). Memory snapshots and quoted analyses lag merges; the cost of one extra `gh` / `git log` call is far less than the cost of acting on a closed ticket.
+**Mandatory** whenever the input claims any state ("this is next", "this is done", "this depends on…", "file X is at this path", "function Y does Z", "invariant W still holds"). Memory snapshots, quoted analyses, and architecture docs all lag merges; the cost of one extra `gh` / `git log` / `grep` call is far less than the cost of acting on a closed ticket or a renamed function.
+
+**Mode A** (ticket cluster): verify ticket states + dependency claims.
+**Mode B** (system narration): verify cited file:line, function names, layer names against current code — and verify the load-bearing invariants you plan to claim are still upheld by the current implementation (a doc-stated invariant doesn't automatically mean the code still enforces it).
 
 | Ticket | 輸入聲稱 | 實際狀態 | 行動 |
 |---|---|---|---|
@@ -160,11 +184,52 @@ When in doubt: **add the sentence that names a contract, invariant, or state mac
 ## Writing patterns
 
 ### Pattern A: Pipeline map (ASCII)
-Use when the work spans a multi-stage data or request flow.
+
+Two scales — pick the one that fits the input.
+
+**A.1 — Quick overview** (one line, 3–7 nodes). Mode A default. The architecture exists to *frame* where each ticket sits; you don't need to deeply explain every node.
 
 ```
-Garmin 雲端 → webhook 推給我們 → 我們 ingestion → app 顯示
+Garmin 雲端 → webhook (Cloud Run) → Pub/Sub → ingestion consumer → Firestore → API → app
 ```
+
+**A.2 — Numbered layered walkthrough** (5–8 numbered blocks with ASCII rules). Mode B default. Each numbered layer becomes one entry in section 4 — the diagram is the **table of contents** for the per-component walkthrough.
+
+```
+═══════════════════════════════════════════════════════════════════
+  ① 資料源（Input）
+═══════════════════════════════════════════════════════════════════
+   Source A (webhook push)   Source B (API call)   Source C (user UI)
+
+═══════════════════════════════════════════════════════════════════
+  ② Persistence layer
+═══════════════════════════════════════════════════════════════════
+   sync_atomic ──▶ products / variants  +  watermark bump
+
+═══════════════════════════════════════════════════════════════════
+  ③ Trigger / orchestration layer
+═══════════════════════════════════════════════════════════════════
+   on user open ──▶ stale check ──▶ enqueue job
+
+═══════════════════════════════════════════════════════════════════
+  ④ Execution layer (engines, runners, drain)
+═══════════════════════════════════════════════════════════════════
+   ┌──── Engine X ────┐   ┌──── Engine Y ────┐
+   │  L1 / L2 / L3    │   │  L1 / L2 / L3    │
+   └──────────────────┘   └──────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+  ⑤ Read / aggregator layer
+═══════════════════════════════════════════════════════════════════
+   ...
+
+═══════════════════════════════════════════════════════════════════
+  ⑥ Frontend
+═══════════════════════════════════════════════════════════════════
+   ...
+```
+
+Heavy `═══` rules separate top-level layers; light arrows / pipes inside a layer. Number every layer — section 4's per-component entries reference these numbers so the reader can flip between diagram and detail without losing place. When a layer has parallel sub-engines (PH vs SV), use ⑤-A / ⑤-B so the cross-engine relationship is visible at diagram level.
 
 ### Pattern B: Phase table
 Use when the work has a clear before/during/after rhythm.
@@ -215,6 +280,29 @@ Name 1–3 things that MUST hold. These often map 1:1 to the bug classes the wor
 - `HTTP 202` from upstream ≠ data delivered; only the follow-up webhook is ground truth
 - Idempotency key on consumer side, not producer side (producer retries are cheap; double-writes are not)
 
+**Where to place invariants — two options, pick by context:**
+
+- **Up-front list (section 2c)** — when the invariants are cross-cutting (e.g., "single writer per result table" spans both engines)
+- **Inline at the layer they govern** — when the invariant is layer-specific. Use a `❗ 關鍵設計決策:` (or `❗ Key design decision:`) prefix so the reader's eye catches it while their working memory contains the layer:
+
+  > L3 LLM **only references** L2's `field_suggestions[]` by index — never regenerates `suggested_value` / `acp_path`. Mismatch → L3 treated as fail → stub.
+  >
+  > ❗ 關鍵設計決策：信任邊界收斂。L3 做整體判斷（narrative + 排序），L2 已算完的具體欄位不該被 L3 蓋掉，否則會出現「L2 說改 GTIN 成 0123，L3 卻說改成 4567」的不一致。
+
+Inline placement is more sticky because the invariant arrives next to the code path it constrains. Don't double-list — if you call it out inline, drop it from section 2c.
+
+### Pattern G.1: Cross-cutting exception pointers
+
+When an architectural rule has the shape "**everything goes here EXCEPT X**", name the exception explicitly. The rule alone is half the picture; the exception is what makes the rule load-bearing — readers who only see the rule get confused when they encounter the exception in code and assume the rule is broken.
+
+Examples:
+
+- "Webhook never triggers LLM inference. **The exception**: the PH→SV promotion event inside `persist_product_health_run` — but by the time PH writes a fresh row, the PH run itself was user-triggered, so the SV cascade it fires is still downstream of a user action."
+- "Engines never `import` each other. **The exception**: the outbox event written through `analysis_jobs` — read-only path, no synchronous calls."
+- "Repository methods never contain business logic. **The exception**: `_handle_supabase_result()` does data-shape unwrapping that's arguably 'business' — kept here because the alternative is leaking error-shape handling into every service caller."
+
+Pattern: name the rule → say "**The exception**:" → name what + why the exception is admissible despite seeming to violate the rule.
+
 ### Pattern H: Failure-mode mapping
 Use when multiple tickets address **different failure classes of the same system**. This is the highest-density pattern for engineering audiences — it makes the problem space's *shape* visible.
 
@@ -224,6 +312,34 @@ Use when multiple tickets address **different failure classes of the same system
 | OAuth refresh failed | user silent, no error visible | NEX-792 (`last_auth_failure_at`) | separate fix |
 | GPS payload malformed | route blank on map | NEX-829 (forensic) | NEX-829 (transformer fix) |
 | Lap data incomplete | interval pace mismatch | NEX-516/517 (FIT file pull) | NEX-515 (precision fix) |
+
+### Pattern I: Sub-system decomposition
+
+When one component / layer / engine has internal taxonomy — 3 stages, 6 analyzers, 4-tier classification, N RPC parameters, multiple state-machine states — don't bury it as prose. Decompose into a labeled table inside that component's section 4 entry.
+
+The principle: when a component's role is "**fan out to N sub-components**", the table IS the explanation. Without it, the reader has to keep `analyzer × 6` or `stage × 3` in their head as a vague count; with the table, they scan and absorb in one breath.
+
+Example — explaining what a Quality stage of 6 analyzers does:
+
+| Analyzer | What it judges | Cost |
+|---|---|---|
+| `content_quality` | title / description AI-readability + key attribute coverage | 1× LLM |
+| `media_quality` | image coverage + alt text correctness | 1× LLM |
+| `pricing_quality` | price structure incl. variant breakdown | 1× LLM |
+| `variant_quality` | variant attribute consistency (size × color × material) | 1× LLM |
+| `seller_trust_quality` | warranty / return_window / shipping policy signals | 1× LLM |
+| `url_quality` | handle / canonical URL cleanliness | 1× LLM |
+
+Pair this with Pattern A.2 — the numbered layer in the diagram says "Quality × 6 analyzers"; the section 4 entry shows what each one does. The diagram is the table of contents; this table is one of its expansions.
+
+**Other shapes this pattern fits:**
+
+- A 3-stage pipeline (L1 / L2 / L3) — table of stage × input × output × LLM-cost
+- A 4-tier classification (`t1_one_click` / `t2_fix_in_admin` / `t3_guidance` / `t4_guidance_admin`) — table of tier × meaning × where it surfaces
+- An RPC with 8 kwargs — table of arg × role × default
+- A state machine with 5 statuses — table of status × meaning × allowed transitions
+
+If you find yourself writing "and there are six analyzers, namely content_quality, media_quality, pricing_quality, ..." in prose, stop and decompose into a table instead.
 
 ## Language & tone
 
@@ -254,12 +370,16 @@ If, after verifying ground truth, you discover the *whole framing* of the input 
 
 ## Failure modes (and how to recover)
 
-- **Burying the lede.** If your first sentence is a ticket recap, restart. The business problem comes first.
-- **Trusting the input.** Always verify. Memory and quoted analyses lag merges.
+- **Burying the lede.** If your first sentence is a ticket recap (Mode A) or a layer enumeration (Mode B), restart. The **business problem** comes first.
+- **Trusting the input.** Always verify. Memory, quoted analyses, and architecture docs all lag merges.
+- **Mode-blindness.** Defaulting to ticket-cluster spine when the input is a built system (or vice versa). Detect mode early — look at whether the user is asking "what should we build / why these tickets" (Mode A) or "explain how this thing works / walk me through it" (Mode B). The spine adapts.
+- **Sub-system as prose.** If a layer has 6 analyzers / 3 stages / 4 tiers and you wrote "and there are six analyzers, including content quality, media quality, ..." in prose, that's a Pattern I table waiting to happen. Decompose.
+- **Invariants only in a top list.** Cross-cutting invariants belong in section 2c, but layer-specific invariants land harder inline at the layer they govern with a `❗ 關鍵設計決策:` callout. Don't default-list everything at the top.
+- **Rule without exception.** When the system has "everything X EXCEPT Y" architectural carve-outs (Pattern G.1), naming just the rule leaves the reader confused when they hit Y in code. Always name the exception alongside.
 - **Over-engineering single tickets.** A standalone ticket doesn't need the full 6-step spine. Collapse to (1)(2)(4)(6).
 - **Recommending instead of explaining.** Skill stops at presenting options. The user decides.
-- **Code-review prose.** If the briefing reads like a PR diff, you've over-indexed on technical detail. Cut to one anchor per claim.
-- **No metaphor.** A briefing without at least one sticky image is forgettable. Add one even if it feels obvious.
+- **Code-review prose.** If the briefing reads like a PR diff, you've over-indexed on technical detail. Cut to one anchor per claim — but for Mode B, "one anchor per claim" includes the architectural surface, not just file:line.
+- **No metaphor.** A briefing without at least one sticky image is forgettable. Add one even if it feels obvious. Mode B metaphors land best when they map the *whole system* to a real-world structure with parallel parts (健康檢查 + 求職市場 etc.).
 - **Filler close.** Decision-shaped options IS the close. No summary, no farewell.
 
 ## Worked example (compressed)
@@ -286,6 +406,34 @@ If, after verifying ground truth, you discover the *whole framing* of the input 
 7. Decision framework: 3 "if X then Y" options + one hand-off line
 
 Total output: ~700–1000 zh-tw words. Mix of prose, ASCII pipeline, 4 tables (phase / surfaces / status / failure-modes), 1 metaphor (水管路).
+
+## Worked example 2 (Mode B — system narration, compressed)
+
+**Input**: User just shipped Task 7 of a webhook→LLM decoupling refactor and says "白話的方式搭配 pipeline 架構圖跟我分析，每個環節都要 cover 到，比方說 catalog API 打回來會經過 L1 L2 L3 的分析，這個地方都需要講解."
+
+**Process** (different from Mode A — no Linear states to fetch; ground truth is the codebase):
+1. Read the architecture SSOT (`docs/architecture/<topic>.md` or equivalent) for the layer naming
+2. Trace data flow from input sources to frontend — name every layer the data passes through
+3. Inventory sub-systems in each layer (engines × stages × analyzers × tiers) — these become Pattern I tables
+4. Find load-bearing invariants in their natural layer (for inline `❗` callouts) + cross-cutting exception rules (Pattern G.1)
+5. Verify cited file:line / function names against current code (Mode B's analog of ticket-status verification)
+
+**Output spine** (~1200–1800 zh-tw words; system narrations run longer than roadmaps because the system has more inherent surface — that's expected, not bloat):
+
+1. **Business problem** (1 line) — what the merchant / business actually wants, not the technical scope. e.g. "商家把商品上 Shopify 之後，AI Shopping 那邊能不能搜到、排第幾、商品資訊夠不夠完整是黑箱"
+2. **Pattern A.2 numbered layered diagram** — 6–8 numbered ASCII blocks from input to frontend, separated by `═══` rules. Parallel engines as ⑤-A / ⑤-B
+3. *(Section 3 compressed)* — system already shipped, no future ordering decisions. Replace with a one-line pointer like "M3 剛改動的是 ③ 觸發層 — 之前 webhook 直接觸發 LLM，現在改成 ③ 內的 lazy enqueue gate"
+4. **Per-component × 6–8** — one entry per ① ② ③ ... layer. Each:
+   - One-line "**這層的任務是 X**" lead
+   - Deeper unpack (3–8 lines)
+   - Pattern I sub-system table when the layer has internal taxonomy (e.g. ⑤-A PH 那層展開 6-analyzer 表 + 3-stage 表 + 4-tier 表)
+   - Mid-narrative `❗ 關鍵設計決策:` callouts for invariants specific to this layer (e.g. "L3 不重新生 suggested_value")
+5. *(Section 5 compressed)* — invariants + cited file:line already verified during process step 5. Surface anything stale inline ("doc says Pattern X here, code shows Pattern Y").
+6. **Pattern G.1 cross-cutting exceptions** — explicitly name the "rule + exception" pairs that span layers (e.g. "Engines never import each other. **The exception**: PH→SV promotion event via outbox.")
+7. **Pattern D sticky metaphor** — Mode B metaphors tend to land when they map the *whole system* to a real-world structure with similar parts. e.g. "整個系統像醫院健康檢查（PH）+ 求職市場分析（SV）雙報告，aggregator 是合報告的家醫。LLM 不被動觸發 — 商家走進診間才看片，掛號系統不會自動連續看片。"
+8. **Decision close** — Mode B options skew toward "next deepening" rather than "which ticket first". e.g. "如果你想 deep-dive 某一層 → ... / 如果你想知道下一張要做什麼 → ... / 如果你想看某條 invariant 怎麼 enforce → ...". One concrete hand-off line ("要不要我 ultrathink ...") closes.
+
+The layered structure is the load-bearing part. If a reader can navigate from the ① ② ③ ... diagram into any per-layer entry and back out without losing context, the narration is doing its job.
 
 ## Operating notes
 
