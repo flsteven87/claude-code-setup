@@ -15,7 +15,7 @@ Two lanes exist; the lane is chosen during pre-flight based on what the diff loo
 | **Express** | 1 → 5 (light) → 6 → 7 | Small, clear diff with no load-bearing code semantics. Skips simplify + Codex review. |
 | **Full** | 1 → 2 → 3 → 4 → 4.5 → 5 → 6 → 7 | Default. Any non-trivial code change, or anything the user wants gated through Codex. |
 
-Lane selection is **proposed by Claude, confirmed by user**. Express lane is never auto-applied — the user explicitly says `express` or `full` (or `abort`) at the lane decision step. The goal is to spend Codex tokens where they actually catch bugs, not on `chore(docs)` and `.gitignore` tweaks.
+Lane selection is **auto-routed when every express criterion passes cleanly, surfaced for confirmation only when any criterion is borderline**. Pure docs / config / `.gitignore` / styling-token swaps auto-route to express without a prompt; cases where one criterion needs a judgment call get a prompt; everything else goes through full lane. The goal is to spend Codex tokens where they actually catch bugs and spend the user's time only on decisions that aren't obvious.
 
 ---
 
@@ -47,16 +47,20 @@ If unrelated staged changes appear mixed in, stop and ask whether to ship togeth
 
 Inspect the ship surface and **propose** a lane. Express qualifies when **all** of the following hold:
 
-- **No load-bearing code**. Diff touches only files whose impact is local/textual: `.md`, `.txt`, `.rst`, `.gitignore`, `.editorconfig`, comments inside code files, `.env.example` (not real `.env`), top-level config docs. Anything under `src/`, `backend/`, `frontend/src/`, `migrations/`, `tests/` that contains real code logic disqualifies — unless the change is a pure rename/comment/docstring that a code reader would treat as a no-op.
+- **No load-bearing code**. Diff touches only files whose impact is local/textual: `.md`, `.txt`, `.rst`, `.gitignore`, `.editorconfig`, comments inside code files, `.env.example` (not real `.env`), top-level config docs. Anything under `src/`, `backend/`, `frontend/src/`, `migrations/`, `tests/` that contains real code logic disqualifies — **unless the change is purely textual / visual with the function-level contract unchanged**: pure renames, comments, docstrings, or styling-layer swaps (Tailwind class strings, design-token values like `oklch(...)`, colour / spacing constants in a `_helpers` / `tokens` file) where a code reader would treat the diff as a runtime no-op except for appearance.
 - **No security-sensitive surface**. Authentication, authorization, RLS policies, payment flows, webhook receivers, secrets handling, CORS / CSP — even small changes here go through full lane. The blast radius of a wrong call is too high.
 - **No schema or migration changes**. Any `migrations/*.sql`, Pydantic model field changes, GraphQL schema, OpenAPI spec → full lane.
 - **Small in absolute terms**. ≤ ~200 net lines of meaningful change (auto-generated mass deletions like untracking a directory don't count; a 600k-line `git rm --cached` for a gitignore policy fix is still express-eligible). ≤ ~10 files of meaningful change.
 - **Single coherent concept**. One commit (or N commits already explicitly discussed and chained). Not a grab-bag of unrelated fixes.
 - **Already understood in this session**. The change was designed or reviewed in the current conversation, so the user has full context. If the user just opened a stale worktree from a week ago, default to full lane.
 
-If express qualifies, present the user with a brief that includes the proposed lane, the reasoning bullets above (specific to this diff — not boilerplate), and ask for `express` / `full` / `abort`. If express does **not** qualify, just say so and proceed to stage 2 of the full lane (no decision prompt needed — the rules pre-decided it).
+Classify the run:
 
-The rationale for asking rather than auto-routing: the user is the only one who knows the political weight of a change. A 5-line constant tweak might be the difference between a working invoice and a broken one. Let them say "no, run it through Codex anyway" without friction.
+- **clean-express** — every express criterion passes with a clear ✅, including the load-bearing-code exemption (pure docs / config / styling / token swaps). Announce the lane + per-diff reasoning in one screen and **proceed immediately** — no prompt at 1.5, and stage 5 will also auto-pass for this classification (see stage 5). User can Ctrl-C any time before the push lands.
+- **borderline-express** — express qualifies but at least one criterion needed a judgment call (e.g., touches code under `frontend/src/` and you're not 100% sure it's a pure styling / no-op swap; or one constant in a payments-adjacent path you can't fully exclude). Present the brief and ask for `express` / `full` / `abort`.
+- **full** — at least one disqualifier hit (security, schema, real code-logic change, multi-concept diff, stale-context, oversized). Say so in one line and proceed to stage 2 — no decision prompt.
+
+Rationale: the user can interrupt before commit. A clean-express diff doesn't earn its prompt — typing `express` adds friction without changing the outcome. Borderline cases are exactly where the prompt earns its keep; that's when we ask. The previous default of "always ask when express qualifies" optimized for the high-stakes minority (auth / payment 5-line tweaks) at the cost of the low-stakes majority (docs, gitignore, styling). Those high-stakes cases are already caught by stricter criteria (security / schema / real-logic disqualifiers), not by gating every express run.
 
 ---
 
@@ -141,6 +145,10 @@ The default is **inline**. Deferring should be a deliberate call with a stated r
 
 ### 5. Decision gate (user)
 
+**Clean-express runs** (auto-routed at stage 1.5 with no borderline criteria, lint passed cleanly or skipped): print a one-screen summary — lane + per-diff reasoning + `git diff --stat` + lint result (or "skipped") — and **proceed straight to stage 6**. No prompt. User can Ctrl-C any time before the push.
+
+**Borderline-express and full runs**: show the brief and wait.
+
 Show:
 - Lane (express / full)
 - Final `git diff --stat` (reflects original + simplify + inline patches, whichever applied)
@@ -195,12 +203,18 @@ If /ship ran from inside the current worktree and that worktree is now being rem
 
 To calibrate the lane decision, here are concrete cases that pattern-match each direction.
 
-**Express lane fits:**
+**Clean-express (auto-route, no prompt):**
 - A `.gitignore` policy change + 4 docs files explaining the policy (this very skill's first user case).
 - Fixing a typo in a `README.md` or a `CLAUDE.md` instruction.
 - Adding a missing file to `.gitignore` after observing it accidentally tracked.
 - Tightening a sentence in an existing `docs/architecture/<topic>.md`.
 - Adding a new entry to a `references/` glossary.
+- **Pure styling / design-token swap** — tightening a Tailwind class palette in a frontend `_helpers` / `tokens` file (e.g. swapping `text-success` / `text-warning` to `text-foreground` for type tags that shouldn't borrow alert tokens), changing `oklch(...)` values, dropping a hard-coded colour for a theme token. Contract unchanged, runtime behaviour identical, only visual output changes.
+
+**Borderline-express (express qualifies, but ask before going):**
+- A single-line constant change in a file you can't fully confirm is outside a payments / auth / RLS adjacency.
+- A frontend code edit that's mostly styling but also touches one prop or one effect dependency — you're 90% sure it's no-op but not 100%.
+- A diff that was *partially* designed in this session but partially predates it.
 
 **Express lane does NOT fit (even if small):**
 - A 3-line change to a webhook handler's signature validation.

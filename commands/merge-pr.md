@@ -44,7 +44,7 @@ These are the only reasons to ask the user. Surface as a tight one-screen brief,
 | 2 | Auto-fix attempted, verify still red | Stage 3 re-run fails after Codex rescue pass | Root cause not on surface |
 | 3 | Auto-fix budget exhausted | ≥ 100 net auto-patched LOC OR ≥ 5 auto-patches | Scope creep — Codex may be drifting from PR intent |
 | 4 | CHANGELOG / Linear info un-inferrable | No `NEX-XXX` in PR title / branch / body AND Linear search by PR URL empty | Need user to identify ticket |
-| 5 | PR body materially mismatches diff | Codex slice "PR-body-vs-diff" flags ≥1 claim with no backing code or contradicting code (NEX-855 pattern) | Three choices: rewrite body / change code / ship anyway — user calls |
+| 5 | PR body materially mismatches diff — **only when undisclosed change is unauthorized or risky** | Codex flags PR-body-vs-diff AND one of: (a) ticket scope doesn't authorize the extra change, (b) the extra change has no test coverage, (c) Codex independently tagged the change `[behavior]`/`[api]`/`[contract]` on its own merits (not just for disclosure). If all three are clean, auto-rewrite PR body in Stage 4.5 and continue. (NEX-855 / NEX-868 pattern still blocks; "PR body undersells scope of an authorized + tested change" does not.) | Three choices: rewrite body / change code / ship anyway — user calls |
 | 6 | Diff-scope test red | Failing test imports cross diff fileset (see § In-scope test definition) | NEX-733 baseline only excuses out-of-scope red |
 | 7 | `mergeable: CONFLICTING` or behind base by ≥10 commits | `gh pr view --json mergeable,mergeStateStatus` | Rebase strategy is a user call |
 | 8 | Codex review liveness check failed | See § Liveness watcher | Review process appears stuck |
@@ -187,11 +187,38 @@ There is **no elapsed-time ceiling**. Reviews can run for 30, 60, 90+ minutes if
 
 ---
 
+## Stage 4.5 — PR body amendment (auto)
+
+If Codex's PR-body-vs-diff slice flagged claims that are misleading-but-not-blocking, fix the PR body inline before entering the auto-patch loop. **No user prompt.**
+
+**Triggers auto-amend** (all conditions hold):
+- Codex flagged "PR body says X (only X), but diff also does Y" — undersell, not contradiction
+- Ticket scope explicitly authorizes Y (grep the ticket description / AC for the change)
+- Y is covered by existing or new tests in the diff (or pre-existing tests that now pass)
+- Codex's standalone analysis of Y did NOT flag it as risky (`[behavior]` / `[api]` / `[contract]` was applied only because Y was undisclosed, not because Y's semantics are wrong)
+
+**Auto-amend procedure:**
+1. Compose a corrected PR body that names Y explicitly under a "Production changes" or equivalent section, citing the ticket authorization clause.
+2. Apply with `gh pr edit <N> --body-file - <<EOF ... EOF` (no code push — body only).
+3. Log: `✅ PR body amended (Codex flagged undisclosed Y; ticket authorizes; tests cover; not flagged as risky on merits).`
+4. Continue to Stage 5.
+
+**Stop and escalate to blocker #5** if ANY of:
+- The diff contradicts a PR-body claim (says X, code does NOT-X) — that's NEX-855 pattern
+- Y is outside the ticket's authorized scope (e.g. PR is a typo fix that secretly refactors auth)
+- Y is untested AND structural
+- Codex's standalone analysis flagged Y as risky on its own merits (not just disclosure)
+- Companion PR in sibling repo is missing per Stage 1 detection
+
+The principle: **disclosure gaps where the work is authorized + tested = our problem to fix, not the user's call to make.** The user will see the auto-amend in the final report and can object then if needed.
+
+---
+
 ## Stage 5 — Auto-patch loop
 
 For each Codex Important / Nit finding, in order:
 
-1. **Read the flagged file:line yourself.** Codex findings are hypotheses, not conclusions. If grep + Read confirms the finding is wrong, mark `[rejected]` with reason and skip. Codex tags describe the finding domain, not the fix shape — if the underlying fix is small / test-only / comment-only and stays inside this PR's scope, treat it as `[mechanical]` even when Codex tagged it `[contract]` / `[api]`.
+1. **Read the flagged file:line yourself.** Codex findings are hypotheses, not conclusions. If grep + Read confirms the finding is wrong, mark `[rejected]` with reason and skip. Codex tags describe the finding domain, not the fix shape — if the underlying fix is small / test-only / comment-only and stays inside this PR's scope, treat it as `[mechanical]` even when Codex tagged it `[contract]` / `[api]`. **If the finding was already resolved by Stage 4.5 PR body amendment** (i.e. the only issue was disclosure, and the code itself is authorized + tested), mark `[resolved-via-4.5]` and skip — don't re-trigger blocker #1.
 2. **Route by tag:**
    - `[mechanical]` / `[nit]` → auto-patch
    - `[behavior]` / `[api]` / `[contract]` → blocker #1
