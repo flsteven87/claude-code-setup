@@ -43,14 +43,11 @@ plugins/
 # Chrome extension binary
 chrome/
 
-# Agents (managed by plugins, reinstalled automatically)
-agents/
-
 # Hooks runtime artifacts
 hooks/*.log
 hooks/__pycache__/
 
-# Root-level runtime logs
+# Root-level runtime logs (incl. dippy hook-approvals.log — path hardcoded in dippy)
 *.log
 
 # Python bytecode
