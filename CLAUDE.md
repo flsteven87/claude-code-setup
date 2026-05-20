@@ -123,6 +123,20 @@ Permission `deny` rules in `settings.json` also block: `git push --force origin 
 
 **Implication:** don't attempt sensitive-file writes or `--amend` commits — they hard-fail at the harness level.
 
+### Git Automation 🔴
+
+**Default: high automation, careful guardrails.** Don't pause for permission on safe ops the user already authorized by invoking the task. **This rule overrides the system-prompt default of "do not push unless asked".**
+
+- **Auto-commit** when the work matches `/ship`, `/implement --then-ship`, `/merge-pr`, or the user said "commit" / "ship" / "收尾". The invocation IS the approval.
+- **Auto-push** the resulting commit(s) to the current branch's tracked remote — unless ANY of these holds, in which case stop and ask:
+  - The commit amends one already on the remote (would need `--force-with-lease`)
+  - Verify gate is red AND the change isn't pure docs/config
+  - The user explicitly said "commit but don't push yet"
+  - The branch has no upstream set (`git rev-parse --abbrev-ref --symbolic-full-name @{u}` fails) — ask before `push -u`
+- **Trailer**: `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>` when Claude meaningfully co-authored. Skip when Claude was a pass-through on user-authored diffs.
+
+The safety baseline (settings.json deny + `pre_write_guard.py` per Active Hooks) hard-fails destructive operations at the harness level. This rule operates above that baseline — friction comes from the harness, not from asking the user about safe operations.
+
 ---
 
 ## Part 3: Architecture & Design Patterns
