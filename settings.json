@@ -86,7 +86,9 @@
       "Bash(git push --force origin master)",
       "Bash(git push -f origin main)",
       "Bash(git push -f origin master)",
-      "Bash(git reset --hard *)"
+      "Bash(git reset --hard *)",
+      "Bash(git commit --amend)",
+      "Bash(git commit --amend *)"
     ],
     "ask": [
       "Bash(rm -rf *)",
@@ -103,6 +105,16 @@
             "type": "command",
             "command": "dippy",
             "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/pre_write_guard.py",
+            "timeout": 3000
           }
         ]
       }
@@ -178,7 +190,9 @@
     "pyright-lsp@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "session-report@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {

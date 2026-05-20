@@ -39,7 +39,7 @@
 ### 🔴 Mandatory Practices
 
 - ✅ Run `uv run ruff check .` before any commit
-- ✅ Use Query Key Factories for TanStack Query (see `hooks/factories/`)
+- ✅ Use Query Key Factories for TanStack Query (project pattern; live in project-level `hooks/factories/` when present)
 - ✅ Enable React Compiler + `eslint-plugin-react-compiler` in all frontend projects
 - ✅ Define explicit TypeScript interfaces for component props
 - ✅ Use `redirect_slashes=False` in FastAPI app configuration
@@ -61,10 +61,18 @@ Every file, function, and variable represents the single, latest, elegant soluti
 
 ### AI Behavior Rules 🟡
 
-- **PROACTIVELY run `uv run ruff check .`** after writing/modifying Python code
+- **Ruff runs automatically** via the `auto-format.sh` hook on every `.py` Write/Edit (formats + auto-fixes). Manual `uv run ruff check .` is still required before commit (see Mandatory Practices) to catch cross-file issues.
 - **AUTOMATICALLY fix high-priority errors** (F821, E722, F841, B904) before proceeding
 - **NEVER create documentation files unless explicitly requested**
 - **Active worktrees break repo-walking CLIs** — tools that scan the tree (e.g. `shopify app dev`) abort on duplicate configs inside `.claude/worktrees/<active>/`. Run such CLIs outside the worktree session; `/ship` stage 7 sweeps merged ones
+
+### Response Shape 🔴
+
+The user repeatedly falls back to `/narrate-topic` when responses get menu-shaped instead of decision-shaped. These three rules exist to remove that ping-pong at the source.
+
+- **Recommendation-first, not menu-first.** After analysis, propose the single best call with a one-line rationale. Do NOT dump evidence + 3 narrative options + a sub-recommendation for the user to re-derive — that pattern is what makes them reach for `/narrate-topic`. Options menus are reserved for *genuine value-laden trade-offs the user must own*. Trade-offs decidable by stated principles (CLAUDE.md, `MEMORY.md`, prior conversation) → decide them silently and proceed.
+- **Principle filter before option enumeration.** Before presenting any 2–4 option menu (including `AskUserQuestion`), cross-check each option against the user's stated principles. Options that violate a principle get dropped silently — never listed "for completeness" or "to show I considered them". If one option survives → propose it directly, no menu. If two survive → ask, but keep it tight and skip the third "compromise" option.
+- **Milestone complete = hard stop.** When a discrete unit of work (sub-task, milestone, audit pass, prototype run) finishes, report results and stop. Do NOT append "要不要我繼續…" / "shall I also…?" proposals for adjacent scope. The user batches sessions deliberately ("不准 stack milestones" is in project memory); if they want continuation, they will say so.
 
 ### Communication Preferences
 
@@ -101,6 +109,20 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 
 When in doubt: **plan here, ship there.**
 
+### Active Hooks 🟡
+
+Hooks in `~/.claude/hooks/` enforce or automate behavior deterministically — these run regardless of what Claude remembers:
+
+- **`auto-format.sh`** (PostToolUse, Write/Edit/MultiEdit) — `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS
+- **`pre_write_guard.py`** (PreToolUse, Write/Edit/MultiEdit) — **denies** writes to `.env*`, `*.pem`, `*.key`, SSH private keys, `.ssh/`, `.aws/`, `.gnupg/`, `secrets.*`, `credentials*`
+- **`auto_approve_safe.py`** (PermissionRequest) — auto-approves everything except destructive bash (`rm`, `git rebase`, `git reset --hard`, `sudo`, etc.)
+- **`pre_compact.py`** (PreCompact) — context preservation before auto-compact
+- **`graphify-refresh.sh`** (PostToolUse, Write/Edit/MultiEdit) — refreshes graphify index when present
+
+Permission `deny` rules in `settings.json` also block: `git push --force origin main/master`, `git reset --hard *`, `git commit --amend*`.
+
+**Implication:** don't attempt sensitive-file writes or `--amend` commits — they hard-fail at the harness level.
+
 ---
 
 ## Part 3: Architecture & Design Patterns
@@ -117,9 +139,9 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 
 ---
 
-## Part 4: Backend Development
+## Part 4: LLM & Prompt Engineering
 
-> **Project-specific patterns:** `~/.claude/rules/backend.md` (auto-loaded — async, Pydantic V2, repository, Supabase, DI, API conventions all live there)
+> Cross-cutting: applies to any project that builds LLM prompts or agent pipelines, not only backend.
 
 ### Prompt Engineering 🔴
 
@@ -141,7 +163,13 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 
 ---
 
-## Part 5: Frontend Development
+## Part 5: Backend Development
+
+> **Project-specific patterns:** `~/.claude/rules/backend.md` (auto-loaded — async, Pydantic V2, repository, Supabase, DI, API conventions all live there)
+
+---
+
+## Part 6: Frontend Development
 
 > **Project-specific patterns:** `~/.claude/rules/frontend.md` (auto-loaded — core principles, TanStack Query, SSE, React Compiler all live there)
 
