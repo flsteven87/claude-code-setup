@@ -212,16 +212,6 @@ Skills included in this repo (invoked automatically by relevant tasks):
 
 All 40 skills under `skills/` are tracked as real files — clone the repo and they work immediately, no plugin or marketplace setup required. Plugin-delivered skills (e.g. `superpowers:*`, `frontend-design:*`) remain accessible via their own prefixed names and coexist peacefully.
 
-### Sharing skills with Codex (optional)
-
-If you also use Codex and want it to share this skill catalog:
-
-```bash
-~/.claude/bin/sync-skills.sh
-```
-
-Creates one-way symlinks in `~/.codex/skills/` pointing to each skill under `~/.claude/skills/`. Codex-only skills under `~/.codex/skills/.system/` are preserved untouched. Idempotent — rerun after adding, renaming, or removing skills.
-
 ### CLAUDE.md Standards
 
 The `CLAUDE.md` file enforces development standards across all projects:

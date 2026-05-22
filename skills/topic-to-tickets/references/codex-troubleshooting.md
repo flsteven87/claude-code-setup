@@ -55,14 +55,10 @@ Usually harmless — comes from one MCP failing to refresh, doesn't block the ma
 
 ### "failed to stat skills entry … (symlink): No such file or directory"
 
-Broken symlinks under `~/.codex/skills/`. Codex tries to load Claude-Code skills via symlink and fails. Either:
-- Re-link to the current plugin path (e.g., `~/.claude/plugins/cache/superpowers-marketplace/superpowers/<version>/skills/<name>`)
-- Delete broken symlinks (Codex skills are usable without them)
-
-Find broken symlinks:
+Broken symlinks under `~/.codex/skills/` from a legacy sync setup. Codex tries to load them and fails. Delete them — Codex skills work without any Claude-side mirror:
 
 ```bash
-find ~/.codex/skills -maxdepth 1 -type l ! -exec test -e {} \; -print
+find ~/.codex/skills -maxdepth 1 -type l ! -exec test -e {} \; -delete
 ```
 
 ## Prompt structure for second-opinion review
