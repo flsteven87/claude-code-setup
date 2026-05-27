@@ -42,8 +42,9 @@ tags: [core, strategy, thinking]
 ### Agent B: Memory & Backlog
 ```
 任務：整理所有已知的待辦事項和專案知識
-1. 讀取所有 memory files:
-   - ~/.claude/projects/-Users-po-chi-Desktop-ai-commerce-ready/memory/MEMORY.md
+1. 讀取此專案的所有 memory files:
+   - 用 `git rev-parse --show-toplevel` 取得專案根路徑，把分隔符（`/`、`\`、`:`）全替換成 `-` 得到 encoded-cwd
+   - 主檔：`~/.claude/projects/<encoded-cwd>/memory/MEMORY.md`
    - 以及 MEMORY.md 中列出的所有 topic files
 2. 讀取 docs/audits/open-issues.md（如果存在）
 3. 掃描 docs/plans/ 下所有檔案，識別：已完成（可刪）、進行中、未開始
