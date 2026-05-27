@@ -129,16 +129,6 @@
             "timeout": 10000
           }
         ]
-      },
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/graphify-refresh.sh",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "PreCompact": [

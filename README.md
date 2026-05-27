@@ -1,69 +1,70 @@
 # Claude Code Setup
 
-My personal [Claude Code](https://claude.ai/code) configuration — a battle-tested setup for autonomous coding with layered security, auto-formatting, and custom workflows.
+My personal [Claude Code](https://claude.ai/code) configuration — layered permission defense, auto-formatting, and three end-to-end automation pipelines (`/implement` → `/ship` / `/merge-pr`).
 
-> **Security Notice:** This repo contains hook scripts that **auto-execute shell commands** when Claude Code runs. Review all files in `hooks/` before using. Never blindly clone someone else's Claude Code config without auditing it first.
+> **Security notice:** this repo contains hooks that **auto-execute shell commands** when Claude Code runs. Review every file under `hooks/` before using. Never blindly clone someone else's Claude Code config without auditing it.
 
 ## Architecture
 
 ```
-                          ┌─────────────────────────────┐
-                          │     Claude Code Runtime      │
-                          └──────────────┬──────────────┘
-                                         │
-               ┌─────────────────────────┼─────────────────────────┐
-               │                         │                         │
-    ┌──────────▼──────────┐   ┌──────────▼──────────┐   ┌─────────▼─────────┐
-    │  Layer 1: Deny/Allow │   │  Layer 2: Dippy      │   │  Layer 3: Auto    │
-    │  (settings.json)     │   │  (PreToolUse hook)    │   │  Approve Hook     │
-    │                      │   │                      │   │                   │
-    │  Static rules that   │   │  Command-level gate  │   │  Catches anything │
-    │  Claude evaluates    │   │  that blocks/allows  │   │  that slips       │
-    │  before tool calls   │   │  Bash execution      │   │  through L1 + L2  │
-    └──────────────────────┘   └──────────────────────┘   └───────────────────┘
+                              ┌────────────────────────────┐
+                              │     Claude Code Runtime     │
+                              └─────────────┬──────────────┘
+                                            │
+       ┌────────────────────────────────────┼────────────────────────────────────┐
+       │                    │               │                 │                  │
+┌──────▼──────┐   ┌─────────▼────────┐  ┌───▼───────────┐  ┌──▼───────────────┐
+│ settings    │   │ Dippy            │  │ pre_write_    │  │ auto_approve_    │
+│ .json       │   │ (PreToolUse,     │  │ guard.py      │  │ safe.py          │
+│             │   │  Bash)           │  │ (PreToolUse,  │  │ (Permission-     │
+│ Static      │   │                  │  │  Write/Edit)  │  │  Request)        │
+│ allow/deny  │   │ Enforces uv,     │  │               │  │                  │
+│ rules       │   │ blocks rm -rf,   │  │ Hard-blocks   │  │ Auto-approves    │
+│             │   │ protects .env    │  │ writes to     │  │ safe ops;        │
+│             │   │                  │  │ secrets       │  │ prompts on rm/   │
+│             │   │                  │  │ (.env / .pem  │  │ sudo / rebase    │
+│             │   │                  │  │  / .ssh / …)  │  │                  │
+└─────────────┘   └──────────────────┘  └───────────────┘  └──────────────────┘
 ```
 
-**Three-layer permission defense:**
+Four cooperating layers. Anything that slips one layer is still caught by the next.
 
-1. **settings.json** — Static allow/deny rules evaluated by Claude Code natively
-2. **[Dippy](https://github.com/ldayton/Dippy)** — External command validator (PreToolUse hook) that enforces `uv` over `pip`, blocks `rm -rf`, protects `.env` files
-3. **auto_approve_safe.py** — PermissionRequest hook that auto-approves safe operations and prompts for dangerous ones (git force-push, sudo, kill, etc.)
-
-## What's Included
+## What's tracked
 
 ```
 ~/.claude/
-├── settings.json              # Permissions, hooks, plugins, status line
-├── CLAUDE.md                  # Development standards (architecture, naming, linting)
-├── .mcp.json                  # MCP server config (empty at user level)
-├── setup.sh                   # One-time setup script
+├── CLAUDE.md                  # Development standards (4-layer architecture, naming, codex delegation, …)
+├── settings.json              # Permissions, hooks, plugins, status line config
+├── setup.sh                   # One-time bootstrap (Dippy install, copy config, chmod hooks)
+├── statusline-command.sh      # Status bar: cwd, model, context %, rate limits
 │
-├── hooks/
-│   ├── auto-format.sh         # PostToolUse: ruff (Python) + prettier (JS/TS) after every edit
-│   ├── auto_approve_safe.py   # PermissionRequest: auto-approve safe ops, prompt for dangerous
-│   ├── graphify-refresh.sh    # Optional PostToolUse wrapper: refresh graphify graph when installed
-│   ├── graphify-remind.sh     # Optional PreToolUse wrapper: remind Claude to use graph context
-│   └── pre_compact.py         # PreCompact: backup transcripts before context compaction
+├── hooks/                     # 4 active hooks (see table below)
+│   ├── auto-format.sh
+│   ├── auto_approve_safe.py
+│   ├── pre_compact.py
+│   └── pre_write_guard.py
 │
-├── commands/                  # 15 custom slash commands (/autopilot, /cycle, /review-change, etc.)
-├── skills/                    # Portable core skills tracked by this repo
-├── rules/                     # Modular coding rules (frontend.md)
-├── references/                # Reference docs (frontend-principles.md, prompt-engineering.md)
+├── commands/                  # 3 slash commands (heavy automation pipelines)
+│   ├── implement.md           # /implement — plan-driven implementation w/ size-aware triage
+│   ├── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
+│   └── merge-pr.md            # /merge-pr  — PR auto-pilot (review → fix → merge)
 │
-├── dippy/
-│   └── config                 # Dippy config reference (copied to ~/.dippy/config by setup.sh)
+├── skills/                    # 17 tracked skills (see table below)
+├── rules/                     # backend.md, frontend.md, naming-conventions.md
+├── references/                # prompt-engineering.md, etc.
 │
-└── statusline-command.sh      # Custom status bar (dir, model, context %, rate limits)
+└── dippy/
+    └── config                 # Dippy allow/deny ruleset (copied to ~/.dippy/config by setup.sh)
 ```
 
-> **Not included:** `plugins/` (auto-generated by Claude Code with machine-specific paths), `channels/` (personal Discord channel IDs), runtime data (sessions, logs, backups, etc.)
+> **Not tracked:** `plugins/` (auto-managed by Claude Code, machine-specific paths), `memory/` (auto-memory per-project), `logs/`, `projects/`, anything containing credentials.
 
-## Quick Start
+## Quick start
 
 ### 1. Clone
 
 ```bash
-# Back up existing config if needed
+# Back up existing config first
 [ -d ~/.claude ] && mv ~/.claude ~/.claude.backup
 
 git clone https://github.com/flsteven87/claude-code-setup.git ~/.claude
@@ -75,21 +76,24 @@ git clone https://github.com/flsteven87/claude-code-setup.git ~/.claude
 cd ~/.claude && ./setup.sh
 ```
 
-This will:
-- Verify prerequisites (Claude Code CLI, uv)
-- Install [Dippy](https://github.com/ldayton/Dippy) via `uv tool install dippy`
-- Copy Dippy config to `~/.dippy/config`
-- Make hook scripts executable
-- Print plugin install commands for you to run
+Verifies prerequisites (Claude Code CLI, `uv`), installs [Dippy](https://github.com/ldayton/Dippy), copies `dippy/config` to `~/.dippy/config`, makes hooks executable.
 
 ### 3. Install plugins
 
+The exact plugin set this config assumes (as of 2026-05):
+
 ```bash
 claude plugin install superpowers@superpowers-marketplace
-claude plugin install frontend-design@claude-plugins-official
+claude plugin install codex@openai-codex
+claude plugin install code-review@claude-plugins-official
+claude plugin install hookify@claude-plugins-official
+claude plugin install session-report@claude-plugins-official
+claude plugin install claude-code-setup@claude-plugins-official
+claude plugin install claude-md-management@claude-plugins-official
 claude plugin install typescript-lsp@claude-plugins-official
-claude plugin install discord@claude-plugins-official    # optional
-claude plugin install llm-wiki-skills@llm-wiki-mcp       # optional
+claude plugin install pyright-lsp@claude-plugins-official
+claude plugin install andrej-karpathy-skills@karpathy-skills
+claude plugin install impeccable@impeccable
 ```
 
 ### 4. Verify
@@ -97,155 +101,94 @@ claude plugin install llm-wiki-skills@llm-wiki-mcp       # optional
 ```bash
 claude
 # Inside Claude Code:
-/permissions    # Check permission rules are loaded
-/hooks          # Verify the configured hooks are registered
+/permissions    # Permission rules loaded
+/hooks          # Hooks registered
 ```
 
-## How It Works
+## Hooks
 
-### Permission System
+| Hook | Event | Purpose |
+|---|---|---|
+| `dippy` | PreToolUse (Bash) | Validates every Bash command. Enforces `uv` over `pip`, blocks `rm -rf`, protects `.env*`. Exit 0 = allow, exit 2 = deny |
+| `pre_write_guard.py` | PreToolUse (Write/Edit/MultiEdit) | **Hard-denies** writes to `.env*`, `*.pem`, `*.key`, SSH/AWS/GnuPG private material, `secrets.*`, `credentials*` |
+| `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
+| `auto_approve_safe.py` | PermissionRequest | Auto-approves safe ops; prompts on `rm`, `git rebase`, `git reset --hard`, `sudo`, `kill`, `shutdown`, etc. Logs to `~/.claude/logs/auto_approve.log` |
+| `pre_compact.py` | PreCompact | Snapshots transcript before context compaction (keeps last 20) |
+| `osascript notify` | Stop | macOS native notification when Claude finishes a response |
 
-The `settings.json` uses `acceptEdits` mode — file reads and edits are auto-approved, Bash commands go through the three-layer defense.
+`settings.json` also carries explicit deny rules for `git push --force origin main`, `git reset --hard *`, and `git commit --amend*`.
 
-**Allow rules** (auto-approved):
-- All built-in tools: Read, Edit, Write, Glob, Grep, WebSearch, WebFetch, Task, NotebookEdit
-- All MCP tools: `MCP(*)`
-- All git operations: `Bash(git add *)`, `Bash(git commit *)`, etc.
+## Slash commands
 
-**Deny rules** (always blocked):
-- Destructive filesystem: `rm -rf /`, `rm -rf ~`, `mkfs`, `dd`
-- Destructive git: `git push --force` to main/master, `git reset --hard`
+| Command | What it does |
+|---|---|
+| `/implement` | Plan-driven implementation with size-aware triage. Codex executes; CC orchestrates. Does NOT commit (chain `/ship` after). |
+| `/ship` | Solo / main-based ship pipeline. Express lane for tiny diffs; full lane = simplify (Codex) → verify → Codex review → verify-then-patch → commit → push to `origin/main` → worktree cleanup. |
+| `/merge-pr` | PR auto-pilot. Review + auto-fix findings + merge open GitHub PR to main. |
 
-### Hooks
+Everything else (catchup, handoff, latest, brainstorming, planning, debugging, …) lives in the skills layer below or is delivered by an installed plugin.
 
-| Hook | Event | What It Does |
-|------|-------|-------------|
-| `dippy` | PreToolUse (Bash) | Validates every Bash command against allowlist. Enforces `uv` over `pip`, blocks `rm -rf`, protects `.env` files |
-| `graphify-remind.sh` | PreToolUse (Glob/Grep) | Optional wrapper that reminds Claude to prefer graph context when `~/.codex/bin/graphify-user.py` is installed |
-| `auto-format.sh` | PostToolUse (Edit/Write) | Runs `ruff format` + `ruff check --fix` on Python, `prettier --write` on JS/TS/CSS |
-| `graphify-refresh.sh` | PostToolUse (Edit/Write) | Optional wrapper that refreshes graphify output after edits when graphify is installed |
-| `auto_approve_safe.py` | PermissionRequest | Auto-approves safe operations. Prompts for: `git rebase`, `sudo`, `rm`, `kill`, `shutdown`, etc. Logs all decisions to `~/.claude/logs/auto_approve.log` |
-| `pre_compact.py` | PreCompact | Saves transcript backup before context compaction. Keeps latest 20 backups |
-| macOS notification | Stop | Sends a native notification when Claude finishes responding |
+## Skills (tracked locally)
 
-### Dippy Deep Dive
+17 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
 
-[Dippy](https://github.com/ldayton/Dippy) is not part of Claude Code's standard toolchain — it's a standalone Python CLI that acts as a command gatekeeper. It's registered as a PreToolUse hook:
+| Skill | Use when |
+|---|---|
+| `strategic-next` | Producing the next-step strategy with extended thinking after deep project analysis |
+| `latest` | Rebuilding MEMORY.md from current truth (git + Linear + CHANGELOG) and re-focusing it on what the session needs |
+| `catchup` | Fast evidence-based context rebuild after a reset |
+| `handoff` | End-of-session continuity capture into MEMORY.md |
+| `rehydrate` | Forced deep re-read after `/compact` or long pauses, with best-practice endgame check |
+| `narrate-topic` | Business-first narrative of a ticket cluster / shipped system in zh-tw |
+| `narrate-glance` | 30-second compressed view of one ticket / incident / decision (5 sentences + 1–2 ASCII diagrams) |
+| `reverse-thinking` | Critical pre-build review of an implementation plan / architecture spec |
+| `topic-to-tickets` | Deep audit → Codex push-back → PR-shaped, dependency-ordered Linear tickets |
+| `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
+| `github-workflow` | Repo + workflow ops via `gh` CLI |
+| `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
+| `codebase-audit` | Independent deep technical + business audit of a long-running codebase |
+| `graphify` | Build a persistent knowledge graph from a folder of files (code, docs, papers) |
+| `chat-agent-best-practices` | Reviewing / building production AI chat agents (LangGraph, AG-UI, Mem0, MCP, SSE) |
+| `claude-prompt-engineering-guide` | Claude prompt engineering reference (Opus 4.6 / Sonnet 4.6 / Haiku 4.5) |
+| `humanizer` | Strip signs of AI-generated writing from text |
 
-```json
-{
-  "PreToolUse": [{
-    "matcher": "Bash",
-    "hooks": [{
-      "type": "command",
-      "command": "dippy",
-      "timeout": 5000
-    }]
-  }]
-}
-```
-
-When Claude Code attempts any Bash command, Dippy receives the command via stdin and:
-- **Exit 0** → allow (command matches an `allow` rule)
-- **Exit 2** → deny with message (command matches a `deny` rule)
-- Applies **last-match-wins** rule ordering
-
-Key rules in `~/.dippy/config`:
-
-```bash
-# Force uv ecosystem
-deny pip "Use uv add instead of pip install"
-allow uv
-
-# Allow dev tooling
-allow git add
-allow pnpm
-allow gh
-allow curl
-
-# Safety
-deny rm -rf "Be more specific about what to remove, or use trash"
-deny-redirect **/.env* "Never write secrets directly, ask the user to do it"
-```
-
-**Without Dippy installed**, the PreToolUse hook fails silently (non-zero exit codes other than 2 are treated as warnings), and Claude Code falls back to the other two permission layers. The setup still works, but you lose the `pip` → `uv` enforcement and `.env` write protection.
-
-### Custom Commands
-
-| Command | Description |
-|---------|-------------|
-| `/autopilot` | Fully autonomous E2E workflow — detects work from MEMORY.md or executes a given task |
-| `/cycle` | Runs N cycles of: autopilot → agent-test → designer-test |
-| `/review-change` | Deep code review of recent changes |
-| `/review-and-commit` | Lightweight review + commit |
-| `/go` | Start implementation after confirming direction |
-| `/primer` | Quick project structure overview |
-| `/catchup` | Rebuild context after `/clear` |
-| `/handoff` | Save state to MEMORY.md before `/clear` |
-| `/housekeep` | Deep clean codebase artifacts |
-| `/codebase-audit` | Full technical + business architecture audit |
-| `/agent-test` | Automated QA testing per flow |
-| `/designer-test` | Automated UI design review per page |
-| `/roadmap` | Strategic direction updates to MEMORY.md |
-| `/research-and-build` | Research best practices, then plan and build |
-| `/web-interface-guidelines` | Review UI code against Vercel guidelines |
-
-### Skills
-
-Skills included in this repo (invoked automatically by relevant tasks):
-
-| Skill | Purpose |
-|-------|---------|
-| `double-check` | Deep analysis before careful implementation |
-| `strategic-next` | Project-level "what's next" strategic planning |
-| `ai-agents` | AI agent development (LangChain, LangGraph, multi-agent, context engineering) |
-| `claude-prompt-engineering-guide` | Prompt engineering reference for Claude models |
-| `commit-message` | Structured commit message generation |
-| `github-workflow` | GitHub repo and workflow operations |
-| `dev-review` | Developer contribution review over time periods |
-| `security-review` | Security-focused code audit |
-| `codebase-audit` | Full technical architecture review |
-| `ui-ux-pro-max` | UI/UX design and implementation guidance |
-| `housekeeping` | Auto-memory and artifact cleanup |
-| `iterative-retrieval` | Codebase context retrieval for subagents |
-| `learned` | Project-specific micro-skills and learnings |
-
-All 40 skills under `skills/` are tracked as real files — clone the repo and they work immediately, no plugin or marketplace setup required. Plugin-delivered skills (e.g. `superpowers:*`, `frontend-design:*`) remain accessible via their own prefixed names and coexist peacefully.
-
-### CLAUDE.md Standards
+## CLAUDE.md standards
 
 The `CLAUDE.md` file enforces development standards across all projects:
 
-- **4-Layer Architecture**: API → Service → Repository → Database
-- **Python**: Pydantic V2, async discipline, `uv` tooling, ruff linting
-- **Frontend**: React Compiler (no manual memo), TanStack Query key factories, useEffect cleanup
-- **Naming**: Strict conventions for files, classes, and identifiers
-- **Single Elegant Version**: No legacy code, no `_v2` suffixes, no backward compatibility hacks
+- **4-layer architecture** — API → Service → Repository → DB
+- **Python** — Pydantic V2, async discipline, `uv` tooling, ruff linting
+- **Frontend** — React Compiler (no manual memo), TanStack Query key factories, useEffect cleanup
+- **Naming** — strict conventions across files, classes, identifiers
+- **Single Elegant Version** — no `_v2`, no legacy code, no backward-compat shims
+- **Codex delegation policy** — Codex implements / reviews; Claude Code plans / synthesizes
+- **Response shape** — recommendation-first, principle-filter before option menus, hard stop on milestone complete
+- **Git automation** — high automation, careful guardrails (auto-commit + auto-push for shipped work; deny rules + hooks fail-closed on destructive ops)
 
 ## Customization
 
-### Adapt for your own use
+To adapt for your own use:
 
-1. **CLAUDE.md** — Replace with your own coding standards
-2. **rules/** — Swap for your stack's conventions
-3. **dippy/config** — Adjust allowed/denied commands for your workflow
-4. **settings.json** — Modify permission rules, add/remove hooks
-5. **commands/** — Create your own slash commands
-6. **skills/** — Add domain-specific skills
+1. **CLAUDE.md** — replace with your own standards (this is heavily project / preference specific)
+2. **rules/** — swap for your stack
+3. **dippy/config** — adjust Bash allow/deny
+4. **settings.json** — modify permission rules, add/remove hooks
+5. **commands/** — write your own pipelines
+6. **skills/** — add domain-specific skills
 
 ### Credential management
 
-This repo is designed to contain **zero credentials**. Sensitive data lives elsewhere:
+Zero credentials live in this repo. Sensitive data lives outside:
 
 | Secret | Location | Tracked? |
-|--------|----------|----------|
-| Discord bot token | `~/.claude/channels/discord/.env` | gitignored |
+|---|---|---|
 | MCP server tokens | Project-level `.mcp.json` or `.claude/settings.local.json` | gitignored per project |
 | Auth cache | `~/.claude/mcp-needs-auth-cache.json` | gitignored |
+| Auto-memory / sessions | `~/.claude/projects/<slug>/memory/`, `logs/`, `transcripts/`, etc. | gitignored (whole `projects/` tree) |
 
 ### Path portability
 
-All hook commands use `~` for home directory expansion (e.g., `~/.claude/hooks/auto-format.sh`). Optional integrations that need machine-local binaries should go through wrapper scripts in `hooks/` so the tracked `settings.json` stays portable.
+All hook commands use `~` for `$HOME` expansion (e.g. `~/.claude/hooks/auto-format.sh`), so tracked `settings.json` stays portable across machines.
 
 ## License
 

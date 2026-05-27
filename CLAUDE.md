@@ -87,7 +87,7 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 **Hand off to Codex (preferred):**
 - Implementing a finalized plan (instead of `superpowers:executing-plans` running locally)
 - Mechanical refactors / migrations once the target shape is clear
-- `/simplify` passes on changed code (`simplify` skill)
+- Write-capable simplify / refactor passes on changed code (via a `codex:codex-rescue` brief — Claude Code's built-in `/simplify` was renamed to `/code-review` and made review-only in 2.1.147, so this is the path that still mutates code)
 - Independent code-quality review / second-opinion implementation read
 - Root-cause investigation when Claude Code is stuck after one or two passes
 
@@ -98,9 +98,21 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 - Conversation steering and direct discussion with the user
 
 **Mechanism:**
-- Spawn `codex:codex-rescue` subagent via the Agent tool, or invoke the `codex:rescue` skill
-- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold
-- `codex:codex-rescue` defaults to `--write` (write-capable). For review-only / diagnosis-only handoffs, frame the brief explicitly as "review only, do not edit" and the rescue agent will keep it read-only.
+- **Review** (read-only, no edits): `/codex:review --background` or `/codex:adversarial-review --background` — README-blessed pattern. Runs in main-session background, observable via `/codex:status`, final output via `/codex:result`.
+- **Rescue / delegation** (write-capable by default): `Agent(subagent_type: "codex:codex-rescue", prompt: "...")`. The subagent runs Codex with `--wait` internally and returns Codex's output verbatim. Add `run_in_background=true` on the Agent call itself when you want non-blocking execution with harness notification on completion.
+- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold.
+- For read-only rescues, frame the brief explicitly as "review only, do not edit" — `codex:codex-rescue` defaults to `--write` otherwise.
+- ⚠️ **Pattern traps** (will silently break):
+  - `Agent(subagent_type: "codex:codex-rescue", prompt: "--background ...")` — SessionEnd hook kills Codex when the subagent exits ([#345](https://github.com/openai/codex-plugin-cc/issues/345)). Use `run_in_background=true` on the Agent itself instead.
+  - `Agent(isolation: "worktree", prompt: "... --background")` — worktree is cleaned before Codex finishes ([#198](https://github.com/openai/codex-plugin-cc/issues/198)).
+  - `/codex:rescue --background` — routes through the same buggy subagent path as #345.
+
+**Observability (long runs are fine; silently-stuck runs are not):**
+- `"status: running"` does NOT prove progress. Use `/codex:status <job-id>` to see `phase`, `elapsed`, and `progressPreview` (tail of recent activity).
+- **Stuck heuristic** ([#49](https://github.com/openai/codex-plugin-cc/issues/49), [#164](https://github.com/openai/codex-plugin-cc/issues/164)): if `progressPreview` tail hasn't advanced in ~5 min AND elapsed > 10 min, treat as silently dead — `/codex:cancel <id>` and retry rather than wait it out (job-state file doesn't transition on process death).
+- For long jobs, auto-poll with `/loop 90s /codex:status <id>` while doing other work.
+- `/codex:result <id>` returns the stored final payload for completed / failed / cancelled jobs.
+- ⚠️ **Do NOT** run `/codex:setup --enable-review-gate` — official warning: can create Claude/Codex loops and drain usage limits quickly. Only enable when you plan to actively monitor.
 
 **Adversarial Review (Codex as critic):**
 - After CC drafts a non-trivial plan or substantial implementation, run Codex in read-only review mode to attack the work *before* merge. Their findings have low overlap (~10–20%) with CC's, so this is high-ROI rather than redundant.
@@ -191,7 +203,9 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 ## Optional Graphify
 
 - If `~/.claude/skills/graphify/SKILL.md` exists, treat `/graphify` as a first-class workflow for graph-backed repo exploration.
+- **Per-repo policy overrides user-level defaults.** When a repo has `docs/reference/graphify.md`, read that first — it defines the active surfaces, lifecycle (Agent-Local Lazy vs other), and any repo-specific constraints. Repos without it fall back to the defaults below.
 - When a repository already has a graphify graph, prefer the nearest active surface graph over the repo-root graph.
 - Start with `graphify-out/GRAPH_REPORT.md`. If `graphify-out/wiki/index.md` exists, navigate the wiki before reading raw files.
 - Use graph queries or explanations for relationship questions. Do not paste the full `graph.json` into context.
-- Optional user-level hooks may refresh graphs after `Write|Edit|MultiEdit`. If hooks are unavailable, run `/graphify <path> --update` manually when freshness matters.
+- **Freshness gate (Agent-Local Lazy).** Before `graphify query` / `path` / `explain`, compare `<surface>/graphify-out/.last_build_head` with `git rev-parse HEAD`. Match → use directly. Mismatch + small diff → run `graphify update <path>` (free, AST-only); prefer the repo wrapper if present (`./scripts/graphify.sh update <surface>`). Mismatch + large diff or missing graph → `graphify extract <path>` (LLM cost; ask before running). **Note:** `extract` needs an LLM API key in env, but Claude Code intentionally blanks `ANTHROPIC_API_KEY` to avoid double-billing — `extract` must be run from a plain terminal, not from inside Claude Code. `update` (AST-only) works fine from anywhere.
+- **Anti-patterns (never do).** Never `graphify hook install` (git hooks), never wire graphify into Claude `PostToolUse` (caused CPU saturation in production), never commit `graphify-out/` (always L3 / gitignored). These are explicit bans in repo policy docs.

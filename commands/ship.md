@@ -86,6 +86,8 @@ Then proceed to stage 6 (push) and stage 7 (worktree cleanup).
 
 ### 2. Simplify (Codex)
 
+> ⚠️ Distinct from Claude Code's built-in `/code-review` (formerly `/simplify`, made review-only in 2.1.147). This stage is **write-capable** — codex-rescue applies edits in place. Naming kept because the goal (drop duplication, improve naming, preserve behavior) is the original `/simplify` shape, not the new `/code-review` shape.
+
 Spawn `codex:codex-rescue` subagent with this brief:
 
 > Run a simplify pass on the ship surface (the diff identified in pre-flight; use `git diff <baseline>..HEAD` if pre-committed, else `git diff HEAD`).
