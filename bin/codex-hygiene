@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# codex-hygiene — kill orphan Codex CLI/companion processes and clear stale
+# plugin job state. Workaround for openai/codex-plugin-cc#277 (companion
+# exits 0 but app-server survives orphaned; state file stuck on "running").
+#
+# Safe on macOS: patterns match codex CLI / companion only; the unrelated
+# "Codex Computer Use" desktop app (SkyComputerUseClient) is not touched.
+
+set -u
+
+pkill -f 'codex-companion' 2>/dev/null || true
+pkill -f 'codex/dist'      2>/dev/null || true
+pkill -f 'codex .* app-server' 2>/dev/null || true
+
+state_root="$HOME/.claude/plugins/data"
+deleted=0
+if [ -d "$state_root" ]; then
+  deleted=$(find "$state_root" -path '*/codex*/state/*/jobs/*' -type f 2>/dev/null | wc -l | tr -d ' ')
+  find "$state_root" -path '*/codex*/state/*/jobs/*' -type f -delete 2>/dev/null || true
+fi
+
+echo "codex-hygiene: processes killed, cleared ${deleted} stale job state file(s)"
