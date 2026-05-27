@@ -109,7 +109,7 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 
 **Observability (long runs are fine; silently-stuck runs are not):**
 - `"status: running"` does NOT prove progress. Use `/codex:status <job-id>` to see `phase`, `elapsed`, and `progressPreview` (tail of recent activity).
-- **Stuck heuristic** ([#49](https://github.com/openai/codex-plugin-cc/issues/49), [#164](https://github.com/openai/codex-plugin-cc/issues/164)): if `progressPreview` tail hasn't advanced in ~5 min AND elapsed > 10 min, treat as silently dead — `/codex:cancel <id>` and retry rather than wait it out (job-state file doesn't transition on process death).
+- **Stuck heuristic** ([#49](https://github.com/openai/codex-plugin-cc/issues/49), [#164](https://github.com/openai/codex-plugin-cc/issues/164), [#277](https://github.com/openai/codex-plugin-cc/issues/277)): if `progressPreview` tail hasn't advanced in ~5 min AND elapsed > 10 min, treat as silently dead — `/codex:cancel <id>`, then run `codex-hygiene` (kills orphan codex / companion processes + clears stale `jobs/*` state) before retrying. Job-state file doesn't transition on process death. Pipe/handle contamination also accumulates within one CC process → restart CC (not `/clear`) before a planned series of background Codex jobs.
 - For long jobs, auto-poll with `/loop 90s /codex:status <id>` while doing other work.
 - `/codex:result <id>` returns the stored final payload for completed / failed / cancelled jobs.
 - ⚠️ **Do NOT** run `/codex:setup --enable-review-gate` — official warning: can create Claude/Codex loops and drain usage limits quickly. Only enable when you plan to actively monitor.
