@@ -11,7 +11,6 @@
       "WebFetch",
       "Task",
       "NotebookEdit",
-      "MCP(*)",
       "mcp__serena",
       "mcp__serena__*",
       "mcp__supabase",
@@ -51,7 +50,6 @@
       "Bash(git stash *)",
       "Bash(git fetch *)",
       "Bash(git merge *)",
-      "Bash(git rebase *)",
       "Bash(git tag *)",
       "Bash(git show *)",
       "Bash(git remote *)",
@@ -70,7 +68,6 @@
       "Bash(find *)",
       "Bash(wc *)",
       "Bash(tree *)",
-      "Bash(rm *)",
       "Bash(mv *)",
       "Bash(ls *)"
     ],

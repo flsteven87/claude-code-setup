@@ -129,6 +129,8 @@ Hooks in `~/.claude/hooks/` enforce or automate behavior deterministically — t
 - **`pre_write_guard.py`** (PreToolUse, Write/Edit/MultiEdit) — **denies** writes to `.env*`, `*.pem`, `*.key`, SSH private keys, `.ssh/`, `.aws/`, `.gnupg/`, `secrets.*`, `credentials*`
 - **`auto_approve_safe.py`** (PermissionRequest) — auto-approves everything except destructive bash (`rm`, `git rebase`, `git reset --hard`, `sudo`, etc.)
 - **`pre_compact.py`** (PreCompact) — context preservation before auto-compact
+- **`dippy`** (PreToolUse, Bash) — external rule engine (config: `~/.claude/dippy/config`); **denies** `pip`/`pip3` (enforces `uv add`), additional `rm -rf` guards, sensitive-path protection. Implication: don't try `pip install` — use `uv add`.
+- **Stop hook** — macOS notification (`osascript`) + Glass sound when Claude finishes a turn. Cosmetic only.
 
 Permission `deny` rules in `settings.json` also block: `git push --force origin main/master`, `git reset --hard *`, `git commit --amend*`.
 
