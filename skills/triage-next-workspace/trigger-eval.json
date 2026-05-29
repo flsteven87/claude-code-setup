@@ -1,0 +1,22 @@
+[
+  {"query": "/triage-next", "should_trigger": true},
+  {"query": "剛跑完 /latest,接下來幫我挑一題推進,不要只列清單給我看,直接幫我動", "should_trigger": true},
+  {"query": "我板子上一堆半開的東西,open PR、做到一半的 ticket、合併了沒刪的 branch,幫我選最該收的一個然後推下去", "should_trigger": true},
+  {"query": "memory 剛同步好,清個板吧,挑個降噪效益最高的開始收", "should_trigger": true},
+  {"query": "what should I close next — and just run it forward, don't make me pick from a menu", "should_trigger": true},
+  {"query": "幫我從現在的待辦裡選一題,如果已經有現成的 contract 就直接告訴我可以丟給 Joi/TARS", "should_trigger": true},
+  {"query": "有沒有哪個做到一半的東西可以收尾的,幫我選一個看還差什麼然後給建議", "should_trigger": true},
+  {"query": "挑一題小的、能快速收掉的,然後把它變成可以交出去執行的 ticket", "should_trigger": true},
+  {"query": "接下來最該動哪個?你幫我選好、進入狀況、直接開始跑", "should_trigger": true},
+  {"query": "下一步收什麼,自己判斷不要問我太多,有重大決定再叫我", "should_trigger": true},
+  {"query": "我們接下來應該探索什麼新功能?從產品策略角度給我三個值得做的方向", "should_trigger": false},
+  {"query": "幫我把 memory 同步到最新,git、open PR、Linear、CHANGELOG 全部對一遍重寫 MEMORY.md", "should_trigger": false},
+  {"query": "這串 NEX-1034 R3 chain 到底在幹嘛,白話帶我走一遍每個 ticket 的關係", "should_trigger": false},
+  {"query": "幫我看 NEX-1069 這張票拆得對不對,順便跟 codex 確認一下方向再改", "should_trigger": false},
+  {"query": "review 一下我這個 PR #416 的 diff 有沒有 bug 或可以簡化的地方", "should_trigger": false},
+  {"query": "這個 monthly mileage 的 materializer pipeline 架構解釋給我聽,我有點忘了它怎麼跑", "should_trigger": false},
+  {"query": "幫我把這三張 globalization 票整合成一個乾淨、有依賴順序的 ticket 序列", "should_trigger": false},
+  {"query": "我想規劃一個全新的 AI coach 週報推播功能,先跟我腦力激盪一下要怎麼設計", "should_trigger": false},
+  {"query": "幫我 commit 然後 push 到 origin/main,順便 bump 一個 patch tag", "should_trigger": false},
+  {"query": "NEX-1035 我要開始修了,幫我 debug 為什麼 Truelyman 的 coach inbox 只顯示 Sunny 的通知", "should_trigger": false}
+]

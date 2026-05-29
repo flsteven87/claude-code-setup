@@ -19,9 +19,9 @@ The point of this skill is to **never hand over implementation work that hasn't 
 | Review code changes already made | `/code-review` or `/review-change` |
 | **Audit a topic + restructure tickets + Codex push-back** | **this skill** |
 
-## Output contract
+## Audit deliverables
 
-The user gets back, in this order:
+This is what the skill returns to the user — the audit artifacts, distinct from the *ticket* contract (the SSOT cited in Phase 6). In this order:
 1. **End-state vision** (1 sentence + 3-5 invariants) — anchor for everything downstream
 2. **Codebase ground-truth report** — every load-bearing claim cited as `file:line`
 3. **Reverse-thinking audit Part A-F** — including RISK verdict
@@ -143,6 +143,8 @@ The user's confirmation is the gate. **Do NOT mutate Linear without explicit OK.
 
 ### Phase 6 — Linear ticket mutation
 
+**Contract conformance — the ticket-contract SSOT governs every ticket here.** Produce each ticket body from the policy at `docs/architecture/ticket-contract/` (in the nr-platform repo): use `ticket-template.md` — the compact form for `express`/`standard` lanes, the full form for `heavy` — assign a **lane** with risk reasons, and confirm the ticket passes the README **Definition of Ready** *before* you mutate. Cite the policy path; never copy its schema into this skill — a second copy would drift from the SSOT. A ticket failing any Definition-of-Ready item is not ready for Joi/TARS; keep refining it (or hand back to the caller) rather than shipping a half-contract.
+
 Use `mcp__linear__save_issue` and related tools. See `references/linear-quirks.md` for the full set of gotchas. Critical points:
 
 - **Linear strips multi-row markdown tables AND multi-item bullet lists on re-save.** Wrap all structured content in ` ``` ` code fences.
@@ -155,7 +157,7 @@ Standard mutation pattern:
 ```
 For each ticket in the restructure plan:
 1. Update title to reflect new scope
-2. Rewrite description (with code fences for structured content)
+2. Rewrite description per `ticket-template.md` (with code fences for structured content)
 3. Adjust priority if scope changed
 4. Re-wire blockedBy chain (removeBlockedBy → blockedBy)
 5. Set assignee
