@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.jsx"
+---
+
 # Frontend Development Rules
 
 > Project-specific patterns that differ from standard React conventions.

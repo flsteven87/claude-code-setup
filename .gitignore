@@ -62,3 +62,7 @@ commands.bak-*/
 
 # Auto-generated update timestamp
 .last-cleanup
+.last-update-result.json
+
+# Machine/account-managed state (Claude Code internal, not user config)
+policy-limits.json

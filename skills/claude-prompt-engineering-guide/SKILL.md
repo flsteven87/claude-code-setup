@@ -1,11 +1,11 @@
 ---
 name: claude-prompt-engineering-guide
-description: "Comprehensive Claude prompt engineering reference covering Opus 4.6/Sonnet 4.6/Haiku 4.5, system vs user prompts, Anthropic's official prompt structure, advanced techniques (CoT, adaptive thinking, tool use), MCP integration, and production prompt patterns. Use when designing system prompts, optimizing prompt performance, or learning Claude-specific prompt engineering."
+description: "Comprehensive Claude prompt engineering reference covering current Claude models (Opus / Sonnet / Haiku tiers), system vs user prompts, Anthropic's official prompt structure, advanced techniques (CoT, adaptive thinking, tool use), MCP integration, and production prompt patterns. Use when designing system prompts, optimizing prompt performance, or learning Claude-specific prompt engineering."
 ---
 
 # Claude Professional Prompt Engineering Guide
 
-Comprehensive reference for Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5 prompt engineering.
+Comprehensive reference for Claude Opus 4.8, Sonnet 4.6 & Haiku 4.5 prompt engineering.
 
 ## When to Use
 
@@ -42,7 +42,7 @@ Comprehensive reference for Claude Opus 4.6, Sonnet 4.6 & Haiku 4.5 prompt engin
 
 | Model | Best For | Context | Strengths |
 |-------|----------|---------|-----------|
-| Opus 4.6 | Complex reasoning, coding agents | 200K | Deepest analysis, sustained coherence |
+| Opus 4.8 | Complex reasoning, coding agents | 1M | Deepest analysis, sustained coherence |
 | Sonnet 4.6 | Balanced speed + quality | 200K | Best cost/performance ratio |
 | Haiku 4.5 | Fast tasks, classification | 200K | Lowest latency, highest throughput |
 

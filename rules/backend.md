@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+---
+
 # Backend Development Rules
 
 > Extracted from CLAUDE.md. These rules apply to all backend (Python/FastAPI/Supabase) development.

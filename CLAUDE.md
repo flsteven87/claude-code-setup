@@ -84,40 +84,18 @@ The user repeatedly falls back to `/narrate-topic` when responses get menu-shape
 
 The `codex@openai-codex` plugin is enabled. **Codex is the implementation / review specialist; Claude Code is the planning / synthesis lead.** Default to handing implementation-shaped subtasks to Codex unless the user says otherwise.
 
-**Hand off to Codex (preferred):**
-- Implementing a finalized plan (instead of `superpowers:executing-plans` running locally)
-- Mechanical refactors / migrations once the target shape is clear
-- Write-capable simplify / refactor passes on changed code (via a `codex:codex-rescue` brief — Claude Code's built-in `/simplify` was renamed to `/code-review` and made review-only in 2.1.147, so this is the path that still mutates code)
-- Independent code-quality review / second-opinion implementation read
-- Root-cause investigation when Claude Code is stuck after one or two passes
+**Hand off to Codex (preferred):** implementing a finalized plan; mechanical refactors / migrations once the target shape is clear; write-capable simplify / refactor passes on changed code (via a `codex:codex-rescue` brief — built-in `/simplify` is now review-only); independent code-quality / second-opinion reads; root-cause investigation when CC is stuck after one or two passes.
 
-**Keep on Claude Code:**
-- Brainstorming, plan writing, architectural review, ADR drafting
-- Cross-file synthesis, multi-source research consolidation
-- Ticket structuring (`topic-to-tickets`), strategy decisions (`strategic-next`)
-- Conversation steering and direct discussion with the user
+**Keep on Claude Code:** brainstorming, plan writing, architectural review, cross-file synthesis, multi-source research, ticket structuring (`topic-to-tickets`), strategy (`strategic-next`), conversation steering.
 
 **Mechanism:**
-- **Review** (read-only, no edits): `/codex:review --background` or `/codex:adversarial-review --background` — README-blessed pattern. Runs in main-session background, observable via `/codex:status`, final output via `/codex:result`.
-- **Rescue / delegation** (write-capable by default): `Agent(subagent_type: "codex:codex-rescue", prompt: "...")`. The subagent runs Codex with `--wait` internally and returns Codex's output verbatim. Add `run_in_background=true` on the Agent call itself when you want non-blocking execution with harness notification on completion.
-- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold.
-- For read-only rescues, frame the brief explicitly as "review only, do not edit" — `codex:codex-rescue` defaults to `--write` otherwise.
-- ⚠️ **Pattern traps** (will silently break):
-  - `Agent(subagent_type: "codex:codex-rescue", prompt: "--background ...")` — SessionEnd hook kills Codex when the subagent exits ([#345](https://github.com/openai/codex-plugin-cc/issues/345)). Use `run_in_background=true` on the Agent itself instead.
-  - `Agent(isolation: "worktree", prompt: "... --background")` — worktree is cleaned before Codex finishes ([#198](https://github.com/openai/codex-plugin-cc/issues/198)).
-  - `/codex:rescue --background` — routes through the same buggy subagent path as #345.
+- **Review** (read-only): `/codex:review --background` or `/codex:adversarial-review --background` — observable via `/codex:status`, output via `/codex:result`.
+- **Rescue / delegation** (write-capable by default): `Agent(subagent_type: "codex:codex-rescue", prompt: "...")`. For non-blocking runs set `run_in_background=true` on the Agent itself — never pass `--background` inside a `codex-rescue` prompt or pair it with `isolation: "worktree"` (both kill Codex early).
+- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold. For read-only rescues, say "review only, do not edit" explicitly (it defaults to `--write`).
 
-**Observability (long runs are fine; silently-stuck runs are not):**
-- `"status: running"` does NOT prove progress. Use `/codex:status <job-id>` to see `phase`, `elapsed`, and `progressPreview` (tail of recent activity).
-- **Stuck heuristic** ([#49](https://github.com/openai/codex-plugin-cc/issues/49), [#164](https://github.com/openai/codex-plugin-cc/issues/164), [#277](https://github.com/openai/codex-plugin-cc/issues/277)): if `progressPreview` tail hasn't advanced in ~5 min AND elapsed > 10 min, treat as silently dead — `/codex:cancel <id>`, then run `codex-hygiene` (kills orphan codex / companion processes + clears stale `jobs/*` state) before retrying. Job-state file doesn't transition on process death. Pipe/handle contamination also accumulates within one CC process → restart CC (not `/clear`) before a planned series of background Codex jobs.
-- For long jobs, auto-poll with `/loop 90s /codex:status <id>` while doing other work.
-- `/codex:result <id>` returns the stored final payload for completed / failed / cancelled jobs.
-- ⚠️ **Do NOT** run `/codex:setup --enable-review-gate` — official warning: can create Claude/Codex loops and drain usage limits quickly. Only enable when you plan to actively monitor.
+**Observability:** `status: running` ≠ progress — use `/codex:status <id>` (`phase` / `elapsed` / `progressPreview`). If the preview tail is frozen ~5 min AND elapsed > 10 min, treat as dead: `/codex:cancel <id>`, run `codex-hygiene`, then retry. Auto-poll long jobs with `/loop 90s /codex:status <id>`. ⚠️ Do NOT run `/codex:setup --enable-review-gate` (can loop and drain usage limits).
 
-**Adversarial Review (Codex as critic):**
-- After CC drafts a non-trivial plan or substantial implementation, run Codex in read-only review mode to attack the work *before* merge. Their findings have low overlap (~10–20%) with CC's, so this is high-ROI rather than redundant.
-- Especially valuable for: security-sensitive changes, architectural plans before execution, large refactors, anything touching auth / RLS / data integrity.
-- Brief Codex with the diff or plan + an angle. Don't ask for "general review" — pick from the seven attack surfaces: **auth bypass · data loss · rollback safety · race conditions · degraded dependencies · version skew · observability gaps**.
+**Adversarial Review (Codex as critic):** after CC drafts a non-trivial plan or large implementation, run Codex read-only to attack it *before* merge (~10–20% finding overlap → high-ROI, not redundant). Brief it with the diff/plan + one angle from: **auth bypass · data loss · rollback safety · race conditions · degraded dependencies · version skew · observability gaps**.
 
 When in doubt: **plan here, ship there.**
 
@@ -146,7 +124,7 @@ Permission `deny` rules in `settings.json` also block: `git push --force origin 
   - Verify gate is red AND the change isn't pure docs/config
   - The user explicitly said "commit but don't push yet"
   - The branch has no upstream set (`git rev-parse --abbrev-ref --symbolic-full-name @{u}` fails) — ask before `push -u`
-- **Trailer**: `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>` when Claude meaningfully co-authored. Skip when Claude was a pass-through on user-authored diffs.
+- **Trailer**: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` when Claude meaningfully co-authored. Skip when Claude was a pass-through on user-authored diffs.
 
 The safety baseline (settings.json deny + `pre_write_guard.py` per Active Hooks) hard-fails destructive operations at the harness level. This rule operates above that baseline — friction comes from the harness, not from asking the user about safe operations.
 
@@ -203,10 +181,7 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 ---
 ## Optional Graphify
 
-- If `~/.claude/skills/graphify/SKILL.md` exists, treat `/graphify` as a first-class workflow for graph-backed repo exploration.
-- **Per-repo policy overrides user-level defaults.** When a repo has `docs/reference/graphify.md`, read that first — it defines the active surfaces, lifecycle (Agent-Local Lazy vs other), and any repo-specific constraints. Repos without it fall back to the defaults below.
-- When a repository already has a graphify graph, prefer the nearest active surface graph over the repo-root graph.
-- Start with `graphify-out/GRAPH_REPORT.md`. If `graphify-out/wiki/index.md` exists, navigate the wiki before reading raw files.
-- **Graph-first for relationship / cleanup work; grep-first for symbol lookup.** Use graph (`GRAPH_REPORT.md` sections: God Nodes / Surprising Connections / Hyperedges / Community fan-in; or `graphify query`/`path`/`explain`) for architecture, coupling, dead-code, duplicate-detection, or god-component questions. Use grep / IDE for "where is `foo` defined" or exact string search. Never paste full `graph.json` into context.
-- **Freshness gate (Agent-Local Lazy).** Before `graphify query` / `path` / `explain`, compare `<surface>/graphify-out/.last_build_head` with `git rev-parse HEAD`. Match → use directly. Mismatch + small diff → run `graphify update <path>` (free, AST-only); prefer the repo wrapper if present (`./scripts/graphify.sh update <surface>`). Mismatch + large diff or missing graph → `graphify extract <path>` (LLM cost; ask before running). **Note:** `extract` needs an LLM API key in env, but Claude Code intentionally blanks `ANTHROPIC_API_KEY` to avoid double-billing — `extract` must be run from a plain terminal, not from inside Claude Code. `update` (AST-only) works fine from anywhere.
-- **Anti-patterns (never do).** Never `graphify hook install` (git hooks), never wire graphify into Claude `PostToolUse` (caused CPU saturation in production), never commit `graphify-out/` (always L3 / gitignored). These are explicit bans in repo policy docs.
+- `/graphify` is a first-class workflow for graph-backed repo exploration when `~/.claude/skills/graphify/SKILL.md` exists. **Per-repo `docs/reference/graphify.md` is authoritative** — read it first (defines active surfaces, lifecycle, constraints); it overrides these user-level defaults. Prefer the nearest active surface graph over the repo-root graph.
+- **Graph-first for relationship / cleanup work** (architecture, coupling, dead-code, duplicates, god-components — via `GRAPH_REPORT.md` or `graphify query`/`path`/`explain`); **grep-first for symbol lookup**. Start at `graphify-out/GRAPH_REPORT.md` (or `wiki/index.md` if present); never paste full `graph.json` into context.
+- **Freshness:** before query/path/explain, compare `<surface>/graphify-out/.last_build_head` vs `git rev-parse HEAD`. Mismatch + small diff → `graphify update` (AST-only, free); large diff / missing → `graphify extract` (LLM cost — ask first, run from a plain terminal since CC blanks `ANTHROPIC_API_KEY`).
+- **Never:** `graphify hook install`, wire graphify into `PostToolUse`, or commit `graphify-out/` (gitignored).
