@@ -1,0 +1,22 @@
+[
+  {"query": "剛跑完 /latest，先不指定哪個系列，直接給我現在板上該派什麼的 dispatch 攻略，把在飛的都看一遍", "should_trigger": true},
+  {"query": "NEX-1327 這串 i18n 票，幫我排一下接下來誰先誰後、哪些可以平行哪些要等前面 merge", "should_trigger": true},
+  {"query": "幫我把現在在跑的幾個 ticket 系列畫成一張收斂攻略圖，標出哪些可派、哪些還卡著、heavy lane 在哪", "should_trigger": true},
+  {"query": "ok 我回來了，板上現在到底該先動哪一張？把還在跑的系列都重新算一遍 frontier 給我下一步", "should_trigger": true},
+  {"query": "race crawler 那個 epic NEX-1106 底下還有哪些是現在可以發出去做的，順序排一下", "should_trigger": true},
+  {"query": "我剛用 /topic-to-tickets 把這個 incident 拆成 6 張票了，現在要怎麼分批派工？哪張先派？", "should_trigger": true},
+  {"query": "這幾張 ticket 哪些能同時開工不會撞 surface，哪些一定要序列化等前一張併進 main", "should_trigger": true},
+  {"query": "好幾天沒看板了，PR 應該 merge 了一些，幫我重新算每個系列現在的 dispatch frontier 跟下一波", "should_trigger": true},
+  {"query": "/dispatch-strategy", "should_trigger": true},
+  {"query": "NEX-1329 backend 的 #786 已經 merge 進去了，後面 1336 / 1337 接下來怎麼安排派工順序", "should_trigger": true},
+  {"query": "幫我把這個 shared/→api 反向依賴的架構問題，深度審視後拆成一系列 PR-shaped 的 Linear 票，要 dependency-ordered", "should_trigger": false},
+  {"query": "幫我從整個 backlog 自動挑一題最值得收的、降噪最多的，然後直接 ramp 上去推進它到收尾", "should_trigger": false},
+  {"query": "我們接下來一季最該押注哪個大方向？給我策略層級的 leverage 分析跟優先順序讓我選", "should_trigger": false},
+  {"query": "進入最新狀況，把 memory 跟 main 還有 Linear 同步一下，順便清掉過期的 ticket 條目", "should_trigger": false},
+  {"query": "把 NEX-1336 直接派給 Codex 開始實作，brief 我幫你寫好了", "should_trigger": false},
+  {"query": "NEX-1336 這張票具體要改哪個檔案？RaceEvidenceDialog 的 ENRICHMENT_FIELD_OPTIONS 要怎麼改", "should_trigger": false},
+  {"query": "幫我看一下現在 git 有哪些 branch 沒 merge、worktree 要不要清理一下", "should_trigger": false},
+  {"query": "幫我 review #786 這個 PR 有沒有 bug 或 data-loss 風險", "should_trigger": false},
+  {"query": "用 5 句話加一張圖跟我解釋 NEX-1327 這個 i18n cluster 到底在解什麼", "should_trigger": false},
+  {"query": "現在 prod 健康嗎？那幾個 cronjob 昨晚有沒有正常跑完", "should_trigger": false}
+]
