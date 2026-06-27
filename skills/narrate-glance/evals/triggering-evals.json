@@ -1,0 +1,22 @@
+[
+  {"query": "5 句話 + 一張圖跟我說這張 NEX-1217 票解了什麼、還剩什麼", "should_trigger": true},
+  {"query": "30 秒看懂這個 group-plan member-sync incident 是怎麼回事", "should_trigger": true},
+  {"query": "tldr 這個 monthly mileage materializer 系統在幹嘛", "should_trigger": true},
+  {"query": "簡單跟我說 NEX-1340 解了什麼、還要做什麼，圖解一下", "should_trigger": true},
+  {"query": "一句話 + 一張圖，這個 coach_id SSOT 決策為什麼這樣選", "should_trigger": true},
+  {"query": "lite narrate 這個 race geography 修復就好", "should_trigger": true},
+  {"query": "快速總結這張票，5 句話內，配個 before/after 小圖", "should_trigger": true},
+  {"query": "圖解 + 解釋這個 webhook idempotency 的 bug 修復", "should_trigger": true},
+  {"query": "簡單講這個 daily cache rollout 現在到哪了，30 秒", "should_trigger": true},
+  {"query": "tldr + 小圖：NEX-988 coach-view 日期不一致現在是什麼狀況", "should_trigger": true},
+  {"query": "視覺帶我看這個 read-model 設計的關鍵決策，要真的架構圖、多 tier 那種", "should_trigger": false},
+  {"query": "design review 這個 i18n 架構，畫一張完整架構圖講重點設計決策", "should_trigger": false},
+  {"query": "完整白話走一遍整個 ingestion 系統，每個環節都要 cover 到", "should_trigger": false},
+  {"query": "幫我看懂這整串 epic 的 12 張票在幹嘛、為什麼這樣排", "should_trigger": false},
+  {"query": "重建整個專案的 context，我離開一週了不知道現在在哪", "should_trigger": false},
+  {"query": "race 這串票排個 dispatch 順序給我，哪些先哪些後", "should_trigger": false},
+  {"query": "挑戰一下這個 read-model 設計是不是 best practice，逆向思考", "should_trigger": false},
+  {"query": "把這個 firestore fallback 議題拆成一系列 PR-shaped ticket", "should_trigger": false},
+  {"query": "只談關鍵設計層面 + 架構圖，輕量解析這套 i18n pipeline 怎麼設計的", "should_trigger": false},
+  {"query": "把 NEX-1332 這個黑屏 bug 直接修掉", "should_trigger": false}
+]

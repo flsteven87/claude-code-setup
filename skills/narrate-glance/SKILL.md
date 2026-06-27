@@ -1,6 +1,6 @@
 ---
 name: narrate-glance
-description: "Compress one ticket, incident, system, or decision into 5 sentences + 1-2 ASCII diagrams in zh-tw — a 30-second glance, NOT a deep narration. Use when the user wants quick legibility: '5 句話跟我說明', '5 句話總結', '圖解 + 解釋', '簡單跟我說 X 解了什麼還要做什麼', '30 秒看懂', '一句話 + 一張圖', 'tldr X', 'lite narrate', '/narrate-glance', or any combination of 簡單講/快速/總結 + 一張票/這個 bug/這個 pipeline. Distinguishes from `narrate-topic` (full 6-section onboarding, 200+ lines) by being status-at-a-glance (≤50 lines), and from `catchup` (whole-project context rebuild) by being topic-focused (one ticket/system/decision)."
+description: "Compress one ticket, incident, system, or decision into 5 sentences + 1-2 diagrams (inline ASCII, or one compact rendered SVG) in zh-tw — a 30-second glance, NOT a deep narration. Use when the user wants quick legibility: '5 句話跟我說明', '5 句話總結', '圖解 + 解釋', '簡單跟我說 X 解了什麼還要做什麼', '30 秒看懂', '一句話 + 一張圖', 'tldr X', 'lite narrate', '/narrate-glance', or any combination of 簡單講/快速/總結 + 一張票/這個 bug/這個 pipeline. Distinguishes from `narrate-topic` Mode A/B (full 6-section onboarding, 200+ lines) and Mode C (visual-first design review with a rendered architecture diagram + key design decisions) by being status-at-a-glance (≤50 lines, one small diagram). Do NOT use for '視覺帶我看設計' / '只談關鍵設計' / 'design review' / a rendered multi-tier architecture diagram (→ narrate-topic Mode C), nor for '完整解析' / '每個環節都 cover 到' (→ narrate-topic Mode A/B). Distinct from `catchup` (whole-project context rebuild) by being topic-focused (one ticket/system/decision)."
 status: active
 tags: [core, communication, narrative, zh-tw, glance]
 ---
@@ -16,13 +16,14 @@ The defining property is **dual-axis honesty**: every output separates what is *
 | User wants | Use |
 |---|---|
 | 5 句話 + 圖解 ONE ticket/bug/system/decision | **narrate-glance** (this) |
-| 完整 business-first narration (multi-section, 2-min read) | `narrate-topic` |
+| 完整 business-first narration (multi-section, 2-min read) | `narrate-topic` (Mode A/B) |
+| 關鍵設計決策 + rendered 架構圖（design review；輕量但比 glance 深、有真的圖） | `narrate-topic` (Mode C) |
 | 重建 project-wide context after reset | `catchup` |
 | Memory drift / multi-source consolidation | `latest` |
 | 收尾 / handoff at session end | `handoff` |
 | Strategy / "what next" | `strategic-next` |
 
-If the input is a multi-ticket cluster or roadmap with 4+ items, suggest `narrate-topic` instead — this skill collapses below useful at that scale.
+If the input is a multi-ticket cluster or roadmap with 4+ items, suggest `narrate-topic` instead — this skill collapses below useful at that scale. And if the user wants the **key design decisions** of an architecture with a *rendered* diagram (a design review, not a status check), that's `narrate-topic` Mode C — a glance gives one small picture + the dual-axis status, not a design teardown.
 
 ## Input shape detection (decides template)
 
@@ -120,7 +121,7 @@ Option A (chosen)          Option B (rejected)
   └ <con accepted>           └ <blocker>
 ```
 
-Diagram constraints: ≤30 lines, ≤80 chars wide, ASCII only. The diagram must illustrate something the 5 sentences can't say cleanly — if it's just decoration, drop it.
+Diagram constraints: ≤30 lines, ≤80 chars wide. Default to inline **ASCII** — it's instant and matches the 30-second-glance feel. You *may* instead render ONE compact SVG via `mcp__visualize__show_widget` (call `mcp__visualize__read_me({modules:["diagram"]})` once first, silently) when a clean picture genuinely beats text — a Before/After (P1), a 3-node flow (P3), a side-by-side (P4). Keep it small and stay within the one-diagram ceiling. If you find yourself wanting a multi-tier labeled architecture diagram, you're in `narrate-topic` Mode C, not a glance — hand off. The diagram (ASCII or rendered) must illustrate something the 5 sentences can't say cleanly — if it's just decoration, drop it.
 
 ## Anti-patterns
 
@@ -149,4 +150,5 @@ Diagram constraints: ≤30 lines, ≤80 chars wide, ASCII only. The diagram must
 - Cross-cutting architectural critique → `reverse-thinking`
 - Restructuring tickets → `topic-to-tickets`
 - Whole-project status rebuild → `catchup` or `latest`
-- The user explicitly said "deep dive" / "完整解析" / "把每個環節都 cover 到" → `narrate-topic`
+- The user explicitly said "deep dive" / "完整解析" / "把每個環節都 cover 到" → `narrate-topic` (Mode A/B)
+- The user wants the **key design decisions** + a rendered architecture diagram (design review, "視覺帶我看設計", "只談關鍵設計") → `narrate-topic` Mode C

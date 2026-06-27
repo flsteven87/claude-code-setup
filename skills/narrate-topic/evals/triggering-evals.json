@@ -1,0 +1,22 @@
+[
+  {"query": "我們剛把 race read-model 改成 API-only，我想做個 design review — 視覺帶我看這個設計的關鍵決策就好，不用每張票都走一遍", "should_trigger": true},
+  {"query": "搭配架構圖跟我講這個 catalog i18n 設計的重點，只要關鍵設計層面，畫個圖", "should_trigger": true},
+  {"query": "輕量解析一下這個 read-model 設計，重點決策 + 一張圖，不要 onboarding 那種長篇", "should_trigger": true},
+  {"query": "我對 NEX-1106 這一整串 race data 的 ticket 實在沒概念，幫我看懂在幹嘛、為什麼這樣排", "should_trigger": true},
+  {"query": "把這份多 ticket 分析白話解析給我聽，我沒參與這個 epic，不知道整體在做什麼", "should_trigger": true},
+  {"query": "白話走一遍我們的 garmin ingestion pipeline，從 webhook 到 firestore 每個環節都要 cover 到", "should_trigger": true},
+  {"query": "解釋這個 conversation_engine 系統，data flow 帶我走一次，每一層都講清楚", "should_trigger": true},
+  {"query": "這個 globalization roadmap 一堆票，為什麼要排這個順序？幫我看懂整體邏輯", "should_trigger": true},
+  {"query": "design review 這個 translation module 的架構，只談骨幹設計決策，附一張架構圖", "should_trigger": true},
+  {"query": "畫個架構圖講重點 — 我們這套 i18n 是怎麼設計的、關鍵 invariant 是什麼", "should_trigger": true},
+  {"query": "5 句話 + 一張小圖快速跟我說這張 NEX-1332 黑屏 bug 解了什麼、還剩什麼", "should_trigger": false},
+  {"query": "30 秒看懂這個 weekly-summary cronjob 修復就好，tldr", "should_trigger": false},
+  {"query": "race 這串票接下來怎麼派？排一下執行順序、哪些可以平行做", "should_trigger": false},
+  {"query": "這個 API-only 的計畫是 best practice 嗎？逆向思考挑戰一下方向對不對", "should_trigger": false},
+  {"query": "我接下來該做什麼？幫我看整個 board 挑個高槓桿的優先順序", "should_trigger": false},
+  {"query": "把這個 read-model 議題拆成 PR-shaped tickets，順便跟 codex 確認方向", "should_trigger": false},
+  {"query": "我剛 reset，幫我重建整個 nr-platform 專案現在的狀態跟我在哪", "should_trigger": false},
+  {"query": "幫我把 race_service.py 的 get_all_races 加個 firestore timeout", "should_trigger": false},
+  {"query": "簡單講一下這個 firestore fallback bug，一句話 + 一張圖就好", "should_trigger": false},
+  {"query": "同步一下 memory 跟 Linear git 到最新真相，順便清理一下 memory", "should_trigger": false}
+]

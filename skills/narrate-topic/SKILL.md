@@ -1,6 +1,6 @@
 ---
 name: narrate-topic
-description: "Translate a Linear ticket, topic, epic, multi-ticket roadmap, OR a shipped pipeline / built system architecture into a business-first narrative with calibrated technical depth, anchored to verified ground truth (Linear + git + codebase + memory). Communicates in zh-tw with English technical terms. Use whenever the user wants the big picture of work they didn't author or has half-forgotten: '/narrate-topic', '解析這串 ticket', '這個 epic 在幹嘛', '幫我看懂這個 roadmap', '把這份分析解析給我聽', '我對這系列實在沒概念', '為什麼要這樣排', '解析這份建議', '白話走一遍 [系統]', '搭配 pipeline 架構圖跟我分析', '把架構帶我走一次', '解釋這個 pipeline / engine / 系統', 'data flow 帶我走一遍', '每個環節都要 cover 到', or when handing a fresh person (PM, co-founder, new engineer) into a workstream. Strongly trigger when the user pastes a multi-ticket analysis OR asks for a built-system walkthrough and says 解析/解釋/翻譯/白話/帶我走 — even without naming the skill. CRITICAL difference from adjacent skills: this is read-only legibility, not strategy (strategic-next), restructuring (topic-to-tickets), or critique (reverse-thinking)."
+description: "Translate a Linear ticket, topic, epic, multi-ticket roadmap, OR a shipped pipeline / built system architecture into a business-first narrative with calibrated technical depth, anchored to verified ground truth (Linear + git + codebase + memory). Communicates in zh-tw with English technical terms. Use whenever the user wants the big picture of work they didn't author or has half-forgotten: '/narrate-topic', '解析這串 ticket', '這個 epic 在幹嘛', '幫我看懂這個 roadmap', '把這份分析解析給我聽', '我對這系列實在沒概念', '為什麼要這樣排', '解析這份建議', '白話走一遍 [系統]', '搭配 pipeline 架構圖跟我分析', '把架構帶我走一次', '解釋這個 pipeline / engine / 系統', 'data flow 帶我走一遍', '每個環節都要 cover 到', or when handing a fresh person (PM, co-founder, new engineer) into a workstream. ALSO covers a lightweight, visual-first 'design narration' (Mode C) that renders an architecture diagram + the 3-5 key design decisions instead of a full walkthrough — trigger on '視覺帶我看設計', '只談關鍵設計', 'design review', '搭配架構圖講重點', '輕量解析這個設計', '畫個架構圖講重點'. Strongly trigger when the user pastes a multi-ticket analysis OR asks for a built-system walkthrough and says 解析/解釋/翻譯/白話/帶我走 — even without naming the skill. CRITICAL difference from adjacent skills: this is read-only legibility — not strategy (strategic-next), restructuring (topic-to-tickets), critique (reverse-thinking), dispatch ordering (dispatch-strategy), nor a 30-second 5-sentence glance (narrate-glance — route '30 秒看懂', 'tldr', '5 句話 + 一張圖' there). Mode C (design narration) is a design review = rendered architecture diagram + 3-5 key decisions: heavier than a glance, lighter than the full A/B walkthrough — trigger it for design-key-decision requests, not for quick status."
 status: active
 tags: [core, communication, narrative, zh-tw]
 ---
@@ -15,8 +15,9 @@ Two input shapes show up most often. Recognize which you're in — the spine ada
 |---|---|---|---|
 | **A. Ticket-cluster narration** | a roadmap, an epic, a list of Linear tickets, a multi-ticket analysis someone wrote | a ticket | full — strategic ordering matters, ticket states must be verified |
 | **B. System narration** | a shipped pipeline, an engine, a data-flow architecture; user wants the whole built system explained layer-by-layer | a layer / engine / stage / sub-system | compressed — the system is already built (no future ordering decisions); status verification becomes invariant + file-path verification |
+| **C. Design narration** | a design / architecture the user wants the *key decisions* of — "視覺帶我看設計", "只談關鍵設計", design review — visual-first, not a full walkthrough | a design decision / invariant | replaced by a rendered architecture diagram + a tight key-design list (see the Mode C section) |
 
-Recognize early which mode you're in. The verification you do, the diagram you draw, and the per-component shape all key off this.
+Recognize early which mode you're in. The verification you do, the diagram you draw, and the per-component shape all key off this. **Mode C is the lightweight, visual-first variant** — when the reader wants the design's load-bearing decisions and one good picture, not the 6-section onboarding. Its full spec is in the "Mode C — Design narration" section below.
 
 The output is a self-contained briefing in zh-tw, with English technical terms (function names, file paths, ticket IDs, `webhook`, `ingestion`, `OAuth1`, `idempotency`, etc.) left in English. This matches how bilingual dev work reads naturally.
 
@@ -28,6 +29,7 @@ The skill is **read-only legibility**. It does not propose what to do next, rest
 |---|---|
 | 看懂這個 initiative / epic / roadmap | **narrate-topic** (this, Mode A) |
 | 白話走一遍已 ship 的 pipeline / engine / 系統架構 | **narrate-topic** (this, Mode B) |
+| 視覺帶我看一個設計的關鍵決策（design review，輕量、只談重點） | **narrate-topic** (this, Mode C) |
 | 想清楚下一步該做什麼 | `strategic-next` |
 | 把一個 topic 拆 / 重組成 PR-shaped tickets | `topic-to-tickets` |
 | Challenge / 逆向思考一個既定計畫 | `reverse-thinking` |
@@ -39,6 +41,8 @@ This skill *can* point out broken assumptions in the input (e.g. a ticket the in
 ## The narrative spine (always in this order)
 
 Every output follows these six sections. For a single small ticket, collapse to (1)(2)(4)(6). For a roadmap of 5+ items, use all six. For a **system narration** (Mode B), keep sections (1)(2)(4)(6) full and compress (3)(5) — the system is already shipped so strategic ordering has no future decisions to make, and status verification becomes invariant + file-path verification rather than ticket-state verification. Never reorder — the reader is being onboarded; structure does the work.
+
+For a **design narration** (Mode C) this six-section spine does NOT apply — Mode C deliberately drops the per-component walkthrough, the status table, and the decision framework, and leads with a rendered picture instead. It runs a four-part light spine (business problem → rendered visual → key design decisions → metaphor); jump to the "Mode C — Design narration" section.
 
 ### 1. One-sentence business problem
 Lead with what the **user or business is feeling**, not the technical scope. Open with the conclusion in one sentence; do not warm up.
@@ -132,6 +136,26 @@ End with **2–3 decision-shaped options**, not a recommendation. Frame them as 
 - 如果你想先確認資料源乾淨 → 並行 NEX-516/517 In Testing 進度
 
 Do NOT end with a summary or a "希望這對你有幫助". Briefing-style — the table of options IS the close.
+
+## Mode C — Design narration (visual-first, key-design-only)
+
+Use when the reader wants the **load-bearing design decisions** of an architecture plus one good picture — not a full onboarding. Triggers: "視覺帶我看設計", "只談關鍵設計", "輕量解析這個設計", "design review", "搭配架構圖講重點". This is the middle weight between `narrate-glance` (30-sec status, ≤50 lines, ASCII) and Mode A/B (full 6-section onboarding). Target **300–500 zh-tw words + one rendered diagram**.
+
+Why this mode exists: a 6-section, per-component walkthrough buries the 3–5 decisions that actually shaped the design under verification tables and component recaps. When someone is doing a design review — or re-loading the *shape* of a system they built weeks ago — they want the leverage points and the picture fast, not a tour of every box.
+
+**The four-part light spine (in order):**
+
+1. **One-sentence business problem** — same as section 1 everywhere: the felt pain, not the technical scope.
+2. **Rendered architecture diagram** — the lead artifact, not an afterthought. Render an SVG via `mcp__visualize__show_widget` (call `mcp__visualize__read_me({modules:["diagram"]})` once first, silently). The picture carries the *structure* so the prose can carry the *why*. ASCII (Pattern A) is only a fallback when the visualization tool is unavailable. **Conventions, the role→color legend, and a parametric architecture skeleton live in [`references/design-visual.md`](references/design-visual.md) — read it before your first `show_widget`.**
+3. **3–5 key design decisions** — each a tight paragraph, led by the decision, with a `❗ 關鍵設計決策:` callout (Pattern G) naming the invariant or trade-off it locks. Cite one anchor each (file:line / contract / numeric fact). These are the decisions that, if reversed, change the system — not every component that exists.
+4. **One sticky metaphor** (Pattern D) — maps the whole design to a real-world structure.
+
+**What Mode C deliberately drops, and why:**
+- the **per-component ×N walkthrough** — the diagram + key decisions already carry the shape;
+- the **status verification table** — a design narration isn't tracking ticket states (but any file:line you *do* cite must still be real, so verify the few you cite — see Ground truth verification);
+- the **decision-framework close** — Mode C explains a design, it doesn't tee up a choice. End on the metaphor or the last decision; no options menu, no summary.
+
+**Don't duplicate the visual in prose.** The diagram shows boxes-and-arrows; the prose names the decisions and the why. If a sentence just re-reads the diagram, cut it. The discipline that makes Mode C land is subtraction — five decisions a reader remembers beat fifteen components they skim.
 
 ## Ground truth verification (do this BEFORE writing the narrative)
 
