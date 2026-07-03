@@ -11,6 +11,8 @@ Catches what settings.json deny rules can't easily express:
   - AWS credentials (~/.aws/credentials, ~/.aws/config)
   - GPG (~/.gnupg/)
   - secrets.* basenames
+  - SQL files under any migrations/ directory (project convention: schema
+    changes go through the Supabase MCP, never local migration files)
 
 Wire-up: register at PreToolUse with matcher "Write|Edit|MultiEdit".
 
@@ -35,11 +37,11 @@ SENSITIVE_PATH_SUFFIXES = (
 
 # Basename regex patterns — match against filename only
 SENSITIVE_BASENAME_PATTERNS = [
-    re.compile(r"^\.env(\..+)?$"),                       # .env, .env.local, .env.production
-    re.compile(r".+\.pem$"),                              # *.pem
-    re.compile(r".+\.key$"),                              # *.key
-    re.compile(r"^id_(rsa|ed25519|ecdsa|dsa)$"),         # SSH private keys (skip .pub)
-    re.compile(r"^secrets?\..+$", re.IGNORECASE),        # secret.json, secrets.yaml, etc.
+    re.compile(r"^\.env(\..+)?$"),  # .env, .env.local, .env.production
+    re.compile(r".+\.pem$"),  # *.pem
+    re.compile(r".+\.key$"),  # *.key
+    re.compile(r"^id_(rsa|ed25519|ecdsa|dsa)$"),  # SSH private keys (skip .pub)
+    re.compile(r"^secrets?\..+$", re.IGNORECASE),  # secret.json, secrets.yaml, etc.
     re.compile(r"^credentials(\..+)?$", re.IGNORECASE),  # credentials, credentials.json
 ]
 
@@ -69,6 +71,12 @@ def is_sensitive(file_path: str) -> tuple[bool, str]:
     for pattern in SENSITIVE_BASENAME_PATTERNS:
         if pattern.match(basename):
             return True, f"basename matches /{pattern.pattern}/"
+
+    if basename.endswith(".sql") and "migrations" in parts:
+        return (
+            True,
+            "SQL migration file — apply schema changes via Supabase MCP instead",
+        )
 
     return False, ""
 

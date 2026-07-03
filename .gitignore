@@ -66,3 +66,6 @@ commands.bak-*/
 
 # Machine/account-managed state (Claude Code internal, not user config)
 policy-limits.json
+
+# Backup files
+*.bak-*

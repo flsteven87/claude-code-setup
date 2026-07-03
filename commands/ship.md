@@ -167,6 +167,8 @@ If every Important finding was patched inline and the user only sees deferred Ni
 
 ### 6. Commit & push
 
+**Residue sweep (before staging):** run `git status --short` and cross-check every entry against the ship surface from pre-flight. Anything that isn't part of the intended change — temp/debug scripts, abandoned-approach leftovers, stray logs, one-off test files, editor droppings — gets deleted or `.gitignore`d BEFORE `git add -A`, never shipped. If unsure whether a file is residue, ask; never silently include it.
+
 Branch on the ship-surface shape:
 
 - **Uncommitted state**: draft a **Conventional Commit** message (prefix one of `feat|fix|chore|docs|refactor|test|perf`, colon, space, imperative subject under 70 chars, no period; body optional, focus on *why* not *what*; no `Co-Authored-By` unless project CLAUDE.md specifies). `git add -A && git commit -m "<message>" && git push origin main`.

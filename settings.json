@@ -88,7 +88,10 @@
     ],
     "ask": [
       "Bash(rm -rf *)",
-      "Bash(rm -fr *)"
+      "Bash(rm -fr *)",
+      "Bash(git checkout -- *)",
+      "Bash(git checkout .)",
+      "Bash(git restore *)"
     ],
     "defaultMode": "acceptEdits"
   },
@@ -100,7 +103,7 @@
           {
             "type": "command",
             "command": "dippy",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       },
@@ -110,7 +113,7 @@
           {
             "type": "command",
             "command": "uv run ~/.claude/hooks/pre_write_guard.py",
-            "timeout": 3000
+            "timeout": 5
           }
         ]
       }
@@ -122,7 +125,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/auto-format.sh",
-            "timeout": 10000
+            "timeout": 15
           }
         ]
       }
@@ -134,7 +137,7 @@
           {
             "type": "command",
             "command": "uv run ~/.claude/hooks/pre_compact.py",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       }
@@ -145,7 +148,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null || true"
+            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; L=~/.claude/hook-approvals.log; if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; true"
           }
         ]
       }
@@ -157,7 +160,19 @@
           {
             "type": "command",
             "command": "uv run ~/.claude/hooks/auto_approve_safe.py",
-            "timeout": 3000
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/codex-reconcile-phantoms.sh --hook",
+            "timeout": 8,
+            "statusMessage": "Reconciling stale Codex jobs"
           }
         ]
       }

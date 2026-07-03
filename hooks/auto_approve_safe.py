@@ -3,12 +3,20 @@
 # requires-python = ">=3.11"
 # ///
 """
-PermissionRequest hook: Auto-approve everything EXCEPT destructive git ops and rm.
+PermissionRequest hook: Auto-approve everything EXCEPT destructive commands.
 
 Strategy:
   - Static allow list in settings.json handles ~90% of cases
   - This hook catches EVERYTHING ELSE that slips through
-  - Only git commit/push/rebase and rm/rmdir require manual confirmation
+  - Dangerous patterns fall through to a manual prompt (no JSON = normal flow)
+
+Layering (deny > ask > allow > this hook):
+  - settings.json deny already hard-blocks force pushes and `git reset --hard *`;
+    the equivalent patterns below still matter for compound/wrapped forms the
+    prefix-style permission rules don't match (e.g. `cd x && git reset --hard`).
+  - Patterns are word-boundary regexes searched ANYWHERE in the command, so
+    wrapper prefixes (`command sudo ls`, `env sudo ...`) cannot bypass them.
+    False positives cost one prompt; false negatives cost an auto-approval.
 
 Output format (PermissionRequest):
   - Exit 0 + JSON with hookSpecificOutput.decision.behavior = "allow" | "deny"
@@ -16,6 +24,7 @@ Output format (PermissionRequest):
 """
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -25,33 +34,33 @@ LOG_FILE = Path.home() / ".claude" / "logs" / "auto_approve.log"
 # Tools that REQUIRE manual user interaction (never auto-approve)
 INTERACTIVE_TOOLS = [
     "AskUserQuestion",  # User must see and answer questions
-    "EnterPlanMode",    # User must consent to plan mode
-    "ExitPlanMode",     # User must review and approve plan
+    "EnterPlanMode",  # User must consent to plan mode
+    "ExitPlanMode",  # User must review and approve plan
 ]
 
-# Commands that REQUIRE manual confirmation (deny pattern = show prompt)
+# Commands that REQUIRE manual confirmation (match = show prompt)
 # NOTE: git add/commit/push removed to enable /autopilot auto-commit
 DANGEROUS_BASH_PATTERNS = [
-    "git rebase",
-    "git reset --hard",
-    "git push --force",
-    "git push -f",
-    "rm ",
-    "rm\t",
-    "rmdir ",
-    "sudo ",
-    "> /dev/",
-    "chmod 777",
-    "kill -9",
-    "killall ",
-    "pkill ",
-    "shutdown",
-    "reboot",
-    "launchctl ",
-    "defaults write",
-    "networksetup",
-    "csrutil",
-    "spctl",
+    r"\bgit\s+rebase\b",
+    r"\bgit\s+reset\s+--hard\b",
+    r"\bgit\s+push\s+(--force|-f)\b",
+    r"\bgit\s+checkout\s+(--\s|\.(\s|$))",  # discard-changes forms (Scope Discipline)
+    r"\bgit\s+restore\b",
+    r"\brm\b",
+    r"\brmdir\b",
+    r"\bsudo\b",
+    r">\s*/dev/",
+    r"\bchmod\s+777\b",
+    r"\bkill\s+-9\b",
+    r"\bkillall\b",
+    r"\bpkill\b",
+    r"\bshutdown\b",
+    r"\breboot\b",
+    r"\blaunchctl\b",
+    r"\bdefaults\s+write\b",
+    r"\bnetworksetup\b",
+    r"\bcsrutil\b",
+    r"\bspctl\b",
 ]
 
 
@@ -79,15 +88,12 @@ def make_allow_response() -> dict:
 
 
 def is_dangerous_bash(command: str) -> bool:
-    """Check if a bash command requires manual confirmation."""
-    cmd = command.strip()
-    # Handle piped/chained commands - check each part
-    for part in cmd.replace("&&", "|").replace("||", "|").replace(";", "|").split("|"):
-        part = part.strip()
-        for pattern in DANGEROUS_BASH_PATTERNS:
-            if part.startswith(pattern) or part.startswith(f"'{pattern}"):
-                return True
-    return False
+    """Check if a bash command requires manual confirmation.
+
+    Word-boundary regex search over the WHOLE command string — covers chained,
+    piped, and wrapper-prefixed forms without fragile segment splitting.
+    """
+    return any(re.search(pattern, command) for pattern in DANGEROUS_BASH_PATTERNS)
 
 
 def main():
