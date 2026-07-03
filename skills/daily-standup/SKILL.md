@@ -46,7 +46,7 @@ The only thing worth honouring if the user says it: a different window ("過去�
 Hard rules, because they're the team's agreement and the reason the format works:
 - **Plain business language, not jargon — the most important rule.** Every bullet must be legible to a *non-engineer*: say what changed for the user or the product, never the mechanism. `月跑量排行榜數字更準` — not `monthly mileage Redis LWW-heal`. The translation discipline is Step 3, and it's where most of the value is.
 - **≤ 3 bullets per section.** More than three and people stop reading. If you have more than three things, you're not selecting — pick the three that matter most (user-facing > product capability > the rest).
-- **Short outcome, not a sentence.** A phrase a teammate skims in two seconds. `營養追蹤 App+Web Beta 完成`, not `我今天完成了營養追蹤功能的 App 和 Web 版本`.
+- **Short outcome, not a sentence — but business-facing 昨天已完成 items earn a little more.** Default is a phrase a teammate skims in two seconds (`營養追蹤 App+Web Beta 完成`, not `我今天完成了營養追蹤功能的 App 和 Web 版本`). The one exception: in **昨天已完成**, a genuinely user/product-facing ticket may carry a short trailing clause on *why it matters or what it unlocks* — one extra breath, not a sentence (`賽事資料平台改以新資料庫為準，為支援更多國際賽事打底`, not just `賽事資料平台上線`). This allowance is **only** for business-facing completed work; internal plumbing stays a terse roll-up, and 今日重點 / 需要幫忙 stay phrase-length.
 - **Bug pile → one bullet.** Many small fixes collapse into a single roll-up bullet, ticket numbers only, no per-bug description.
 - **List every ticket a bullet spans.** One user-facing bullet usually clusters several PRs across repos and several tickets — show them all as `（NEX-A / NEX-B）`, not just one representative, and the roll-up bullet carries the whole set of codes it covers. Only cite codes you can actually source (commit subject/body, or memory); a quick fix with no ticket simply gets none — never invent a code.
 
@@ -93,9 +93,11 @@ This is where the skill earns its keep, and it's two moves.
 
 The test: read the bullet aloud to someone who has never seen the code. If they can picture what changed for a user, it's ready. If they'd ask "what's a projection / a reader audit / Redis?", translate again. Keep the `NEX-XXXX` code as a tag at the end for anyone who wants to dig — but the words before it must stand on their own.
 
+For a business-facing item in **昨天已完成**, prefer the fuller plain-outcome form that carries the *why/what-it-unlocks* clause (the Race Explorer row above is the model — `…接上新的賽事資料庫，為支援更多賽事打底`, not the bare `…接上新資料庫`). It's a touch more text, but for user/product work the extra context is what makes the line useful to the lead briefing onward. Don't extend this to internal plumbing or to the forward-looking sections.
+
 ## Step 4 — The forward-looking sections
 
-- **🎯 今日重點 is a draft.** Seed it from In-Progress tickets + open PRs + memory's `Now`, but mark it clearly as a draft the user confirms — end the section with `（今日重點為草稿，請確認/改）`. A blank plan is useless; an editable guess is useful. Apply the same business-language translation here, and the same dormant-epic filter from Step 2.
+- **🎯 今日重點 is a forward guess.** Seed it from In-Progress tickets + open PRs + memory's `Now`. It's a draft the user edits before posting — but do **not** print a draft-marker line; just emit the bullets. A blank plan is useless; an editable guess is useful. Apply the same business-language translation here, and the same dormant-epic filter from Step 2.
 - **🙋 需要幫忙 defaults to「（無）」.** Only fill it from a real blocker or a PR genuinely waiting on someone. Never fabricate a help-request to look busy — an empty 需要幫忙 is the normal, honest case.
 
 Note: git/Linear can't see non-engineering work (customer visits, sales, meetings). By default the skill does **not** emit a placeholder for it — if the user did off-git work that day, they add a line or two themselves.
@@ -126,7 +128,6 @@ A heavy ship day: 14 commits across nr-platform + nr-app, ~7 themes, plus dorman
 🎯 今日重點
 - 繼續賽事資料平台：讓 Race Explorer 能呈現新資料庫的賽事（NEX-1113 / NEX-832）
 - 修帳號設定頁「顯示名稱被截斷」的問題（NEX-961）
-（今日重點為草稿，請確認/改）
 ```
 
 Notice the discipline: **no jargon** (no "Redis", "projection", "audit", "contract"); each bullet **lists every ticket its cluster spans** (`NEX-1113 / NEX-832`, `NEX-1137 / NEX-1126`) rather than one representative; purely-internal work folded into "內部優化" rather than each given a line; dormant epics (NEX-632/214/506) filtered out of 今日重點. Reproduce this altitude, not more.
@@ -140,7 +141,7 @@ Notice the discipline: **no jargon** (no "Redis", "projection", "audit", "contra
 | Tagging a bullet with only one ticket when its cluster spans several | List them all — `（NEX-A / NEX-B）`; never invent a code for a fix that has no ticket |
 | Writing full sentences / a `dev-review`-style wall | Short plain-language outcomes; this is a 10-second skim, not a report |
 | More than 3 bullets in a section | Cluster by ticket/theme, keep top 3, collapse the tail into the roll-up |
-| Presenting 今日重點 as fact | Mark it a draft; it's a forward guess from In-Progress tickets |
+| Presenting 今日重點 as fact | Treat it as a forward guess from In-Progress tickets the user will edit — but don't print a draft-marker line |
 | Surfacing dormant epics as today's focus | Filter against memory ownership — raw Linear "In Progress" has stale shells |
 | Inventing a 需要幫忙 item | Default「（無）」unless there's a real blocker / PR waiting |
 | Filtering git by `--author="Steven Wu"` | Use the email — the name-only filter misses `steven-wu-nexrex` commits |
