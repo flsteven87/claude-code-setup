@@ -133,7 +133,7 @@ Hooks in `~/.claude/hooks/` and `~/.claude/bin/` enforce or automate behavior de
 - **`pre_compact.py`** (PreCompact) — context preservation before auto-compact
 - **`codex-reconcile-phantoms.sh`** (UserPromptSubmit, in `bin/`) — reconciles stale/dead Codex-inline job state before every prompt; warns if a live job exists in cwd
 - **`dippy`** (PreToolUse, Bash) — external rule engine (config: `~/.claude/dippy/config`); **denies** `pip`/`pip3` (enforces `uv add`) and the literal `rm -rf` prefix, plus sensitive-path protection. Writes `~/.claude/hook-approvals.log` on every Bash call (rotated by the Stop hook at >5MB). Implication: don't try `pip install` — use `uv add`.
-- **Stop hook** — macOS notification (`osascript`) + Glass sound when a turn finishes; also rotates `hook-approvals.log`.
+- **Stop hook** — macOS notification (`osascript`) + Glass sound when a turn finishes; also rotates hook logs (`hook-approvals.log`, `logs/auto_approve.log`) at >5MB.
 
 Permission rules in `settings.json` — evaluated **deny → ask → allow, first match wins** (an ask rule beats a broader allow):
 

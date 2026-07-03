@@ -80,16 +80,12 @@ Verifies prerequisites (Claude Code CLI, `uv`), installs [Dippy](https://github.
 
 ### 3. Install plugins
 
-The exact plugin set this config assumes (as of 2026-05):
+The exact plugin set this config assumes (as of 2026-07):
 
 ```bash
 claude plugin install superpowers@superpowers-marketplace
 claude plugin install codex@openai-codex
 claude plugin install code-review@claude-plugins-official
-claude plugin install hookify@claude-plugins-official
-claude plugin install session-report@claude-plugins-official
-claude plugin install claude-code-setup@claude-plugins-official
-claude plugin install claude-md-management@claude-plugins-official
 claude plugin install typescript-lsp@claude-plugins-official
 claude plugin install pyright-lsp@claude-plugins-official
 claude plugin install andrej-karpathy-skills@karpathy-skills
@@ -148,8 +144,6 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, â
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
 | `codebase-audit` | Independent deep technical + business audit of a long-running codebase |
 | `graphify` | Build a persistent knowledge graph from a folder of files (code, docs, papers) |
-| `chat-agent-best-practices` | Reviewing / building production AI chat agents (LangGraph, AG-UI, Mem0, MCP, SSE) |
-| `claude-prompt-engineering-guide` | Claude prompt engineering reference (Opus 4.6 / Sonnet 4.6 / Haiku 4.5) |
 | `humanizer` | Strip signs of AI-generated writing from text |
 
 ## CLAUDE.md standards

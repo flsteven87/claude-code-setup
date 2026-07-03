@@ -148,7 +148,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; L=~/.claude/hook-approvals.log; if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; true"
+            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; for L in ~/.claude/hook-approvals.log ~/.claude/logs/auto_approve.log; do if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; done; true"
           }
         ]
       }
