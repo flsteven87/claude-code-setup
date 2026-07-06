@@ -215,6 +215,7 @@
       }
     }
   },
+  "tui": "fullscreen",
   "autoDreamEnabled": true,
   "theme": "dark-daltonized",
   "agentPushNotifEnabled": true
