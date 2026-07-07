@@ -1,6 +1,6 @@
 ---
 name: dispatch-strategy
-description: Plan the dispatch order for a series of topic tickets and render a visual convergence playbook, grounded in live git + Linear. Two modes. (1) Targeted — name an epic / cluster / ticket-list and get its dispatch waves. (2) Auto / board — run it with NO topic (the natural step right after /latest) and it auto-discovers the live workstreams from the freshly-synced MEMORY.md current-state + Linear epics with in-flight or newly-unblocked children, no topic needed. It maps each series' blockedBy/blocks DAG against current reality, classifies tickets into dispatch-now / blocked-next / in-flight / deferred, finds the real parallelism and the single next action, and draws a swim-lane SVG (state-colored nodes, fan-out markers, a convergence banner). Read-only — it PLANS dispatch order; it never edits tickets, writes code, or hands a ticket to an agent. Communicates in Traditional Chinese (zh-tw). Use whenever the user has a related ticket series OR just wants the next move, asking 'what do I dispatch next', '這個系列接下來怎麼派', 'dispatch 策略', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or runs it after /latest with no topic for a board-level playbook, or returns to a multi-ticket workstream after the board has moved and needs a fresh execution frontier. Strongly trigger on '/dispatch-strategy' with OR without arguments. This is NOT /topic-to-tickets (that CREATES/restructures tickets; this READS an existing set and orders it). NOT /triage-next (that picks ONE item off the WHOLE board and drives it; this lays out the full multi-series wave plan without driving). NOT /strategic-next (big-bet direction choice; this is execution sequencing). NOT executing a dispatch or implementing a single ticket — it only plans. NOT explaining or visualizing what a ticket means (that's /narrate-glance / /narrate-topic; the visual here is a dispatch map, not an explainer).
+description: Plan the dispatch order for a series of topic tickets and render a visual convergence playbook, grounded in live git + Linear. Two modes. (1) Targeted — name an epic / cluster / ticket-list and get its dispatch waves. (2) Auto / board — run it with NO topic (the natural step right after /latest) and it auto-discovers the live workstreams from the freshly-synced MEMORY.md current-state + Linear epics with in-flight or newly-unblocked children, no topic needed. It maps each series' blockedBy/blocks DAG against current reality, classifies tickets into dispatch-now / blocked-next / in-flight / deferred, finds the real parallelism and the single next action, and draws a swim-lane SVG (state-colored nodes, fan-out markers, a convergence banner). Read-only — it PLANS dispatch order; it never edits tickets, writes code, or hands a ticket to an agent. Communicates in Traditional Chinese (zh-tw). Use whenever the user has a related ticket series OR just wants the next move, asking 'what do I dispatch next', '這個系列接下來怎麼派', 'dispatch 策略', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or runs it after /latest with no topic for a board-level playbook, or returns to a multi-ticket workstream after the board has moved and needs a fresh execution frontier. Strongly trigger on '/dispatch-strategy' with OR without arguments. Absorbs the retired /triage-next — also trigger on '清板', '降噪選題', '下一步收什麼', '挑一題收尾', '接下來收哪個', '幫我選一題推進', 'what should I close next' (board mode ranks by open-loop reduction and tags each frontier item's closing move; the user then says 接手 to drive). This is NOT /topic-to-tickets (that CREATES/restructures tickets; this READS an existing set and orders it). NOT /strategic-next (big-bet direction choice; this is execution sequencing). NOT executing a dispatch or implementing a single ticket — it only plans. NOT explaining or visualizing what a ticket means (that's /narrate; the visual here is a dispatch map, not an explainer).
 ---
 
 # dispatch-strategy — ticket series → grounded dispatch wave plan + visual
@@ -15,7 +15,7 @@ It is a **planner, not a driver**. It reads git + Linear + (where load-bearing) 
 |---|---|
 | Turn a topic into a clean set of tickets | `/topic-to-tickets` |
 | **Plan the dispatch order/waves (+ visual) against current reality** | **this skill** |
-| Pick the single best thing off the *whole board* and drive it | `/triage-next` |
+| 清板／挑一題收尾（pick what to close next off the whole board） | **this skill**, board mode — then say 「接手 <item>」 to drive it |
 | Choose a big-bet *direction* among competing topics | `/strategic-next` |
 | Sync memory to ground truth first | `/latest` |
 
@@ -44,9 +44,9 @@ When no series is named, the skill must figure out *which* series are worth plan
 2. **Resolve each to a series** — for each anchor ID, `get_issue`; if it's an epic/umbrella, pull its `parentId` children; if it's a cluster umbrella, pull the listed children.
 3. **Keep only LIVE series** — a series is live (a dispatch decision is actually pending) if it has ≥1 child that is In-flight, a frontier (blocker just merged), or freshly unblocked. **Drop** series that are fully Done, or entirely deep-backlog with nothing newly actionable — they have no pending dispatch decision. Don't plan the whole board; plan where a decision is waiting.
 4. **Cross-check git for "silently advanced" series** — grep `git log --oneline -30 origin/main` for ticket IDs / PR numbers; a series memory calls "dispatched, awaiting PR" whose PR already merged is live in a *different* way (its frontier just advanced).
-5. **Cap at the top ~3-4 live series** by immediacy (recently-moved > stale). Note any others as "other live series (not shown)" so the cap is visible, never silent.
+5. **Cap at the top ~3-4 live series**, ranked by ordered criteria (inherited from the retired triage-next — reason through signals, no magic-number scores): **open-loop reduction first** (half-open things: stalled WIP, mergeable-but-unmerged PRs, a finished rung blocking its successors, few steps-to-fully-closed) > **momentum** (smallest thing that ships value; express/standard lane over heavy) > **delegatability** (readiest to become a clean contract). Immediacy (recently-moved > stale) breaks ties. Note any others as "other live series (not shown)" so the cap is visible, never silent.
 
-If discovery finds nothing live (everything Done or deep-backlog), say so plainly and point at `/triage-next` (pick something new off the board) or `/strategic-next` (choose a direction) — don't manufacture a plan.
+If discovery finds nothing live (everything Done or deep-backlog), say so plainly and point at `/strategic-next` (choose a direction) — don't manufacture a plan.
 
 ### 1 — Resolve the series
 
@@ -95,6 +95,12 @@ For every 🟢 item, name the executor and the gate, per the project's delegatio
 
 Honor any human-decision flags on a ticket — if `human_decision_needed: yes` and undecided, it is NOT frontier no matter how unblocked; the action is to surface the decision.
 
+**Tag each frontier item's closing move** (inherited from the retired triage-next), so 「接手」 has an unambiguous meaning per item:
+
+- **開約** — no contract yet → first `/topic-to-tickets` builds one (it owns the mutation gate)
+- **直接派** — already a contract passing the Definition of Ready in `docs/architecture/ticket-contract/README.md` → hand to the executor as-is
+- **收半成品** — code/PR already exists → `/code-review` deep pass first, then finish; never re-dispatch from scratch
+
 ### 6 — Synthesize across series, then render the visual
 
 In board mode you now hold 2-4 planned series. Don't just stack their per-series plans — **find the single convergence**: very often one action (review a contract-defining PR, merge the foundation ticket) unblocks the most across series, and one in-flight item is the true bottleneck. Collapse to **one cross-series next action**. Where two series share a code surface (e.g. two frontier tickets both touching the curator console), flag the conflict so they're serialized, not blind-parallelized — apparent cross-series parallelism is where merge conflicts hide.
@@ -116,7 +122,7 @@ Communicate in zh-tw (English only for tokens: ticket IDs, PR #, SHAs, file path
 （若無落差：「無 — Linear 與 main 一致」）
 
 ### 🟢 Frontier（現在可 dispatch，依序）
-1. <ticket> · <priority> · <lane> — why-now：<blocker 已清> · 路由：<Codex / Joi / self> · brief：<一行>
+1. <ticket> · <priority> · <lane> — why-now：<blocker 已清> · 路由：<Codex / Joi / self> · 收法：<開約 / 直接派 / 收半成品> · brief：<一行>
 2. ...
 （標出哪幾項可平行：<fork point>；其餘須序列化的原因：<contract/module 衝突>）
 
@@ -166,7 +172,7 @@ The lesson the skill encodes: a 6-ticket series can have a frontier of *zero* wh
 ## Discipline checklist
 
 - Board mode: discover from `MEMORY.md`, but re-ground every candidate against live Linear + git before planning — memory points, Linear/git decide.
-- Keep only live series (a dispatch decision is pending); cap at ~3-4 and name what was dropped. If nothing is live, point at `/triage-next` or `/strategic-next` instead of inventing a plan.
+- Keep only live series (a dispatch decision is pending); cap at ~3-4 ranked open-loop-reduction > momentum > delegatability, and name what was dropped. If nothing is live, point at `/strategic-next` instead of inventing a plan.
 - Ground truth before classification — `git fetch` + per-ticket `get_issue(includeRelations)`; never the `state:"started"` filter alone.
 - Verify the load-bearing edge in code before declaring "unblocked"; codebase beats Linear status.
 - One-in-flight for a strict chain; parallelize only at a genuine fan-out — including *across* series that share a code surface.
