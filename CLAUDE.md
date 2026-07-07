@@ -66,28 +66,40 @@ Every file, function, and variable represents the single, latest, elegant soluti
 - **AUTOMATICALLY fix high-priority errors** (F821, E722, F841, B904) before proceeding
 - **NEVER create documentation files unless explicitly requested**
 - **Active worktrees break repo-walking CLIs** — tools that scan the tree (e.g. `shopify app dev`) abort on duplicate configs inside `.claude/worktrees/<active>/`. Run such CLIs outside the worktree session; `/ship` stage 7 sweeps merged ones
+- **OAuth MCP failure → surface immediately.** When Linear (or any OAuth-based MCP) fails to connect, tell the user in one line to re-auth via `/mcp` — never silently retry, spawn workaround fetch sessions, or proceed on stale data. *(one broken-Linear incident cost 3 manual parallel sessions)*
 
 ### Response Shape 🔴
 
-The user repeatedly falls back to `/narrate-topic` when responses get menu-shaped instead of decision-shaped. These three rules exist to remove that ping-pong at the source.
+The user repeatedly falls back to `/narrate` when responses get menu-shaped instead of decision-shaped. These three rules exist to remove that ping-pong at the source.
 
-- **Recommendation-first, not menu-first.** After analysis, propose the single best call with a one-line rationale. Do NOT dump evidence + 3 narrative options + a sub-recommendation for the user to re-derive — that pattern is what makes them reach for `/narrate-topic`. Options menus are reserved for *genuine value-laden trade-offs the user must own*. Trade-offs decidable by stated principles (CLAUDE.md, `MEMORY.md`, prior conversation) → decide them silently and proceed.
+- **Recommendation-first, not menu-first.** After analysis, propose the single best call with a one-line rationale. Do NOT dump evidence + 3 narrative options + a sub-recommendation for the user to re-derive — that pattern is what makes them reach for `/narrate`. Options menus are reserved for *genuine value-laden trade-offs the user must own*. Trade-offs decidable by stated principles (CLAUDE.md, `MEMORY.md`, prior conversation) → decide them silently and proceed. When a decision genuinely is the user's, frame it at business altitude in one plain sentence + a recommendation — a question the user must decode technically ("你問的問題都有點太技術") is a menu in disguise.
 - **Principle filter before option enumeration.** Before presenting any 2–4 option menu (including `AskUserQuestion`), cross-check each option against the user's stated principles. Options that violate a principle get dropped silently — never listed "for completeness" or "to show I considered them". If one option survives → propose it directly, no menu. If two survive → ask, but keep it tight and skip the third "compromise" option.
 - **Milestone complete = hard stop.** When a discrete unit of work (sub-task, milestone, audit pass, prototype run) finishes, report results and stop. Do NOT append "要不要我繼續…" / "shall I also…?" proposals for adjacent scope. The user batches sessions deliberately ("不准 stack milestones" is in project memory); if they want continuation, they will say so.
 
 ### Execution Defaults 🔴
 
-Session-log mining (2026-07-03 harness audit) found each of these re-typed 3–17× across projects. They are standing policy — apply them without being asked:
+Session-log mining (2026-07-03 harness audit; extended 2026-07-07 across 202 ACR/NexRex sessions) found each of these re-typed 3–37× across projects. They are standing policy — apply them without being asked:
 
 - **Minimal fix first.** Default to the smallest best-practice change that solves the problem. Expanding scope, adding abstraction layers, or "while we're here" improvements need the user's explicit go-ahead. *(re-stated 17×)*
 - **Clean & precise is the constant bar.** No fallback paths, no defensive hacks, no patchwork (補丁) — holistic, consistent changes that read as the final version. This holds without the user invoking `/reverse-thinking` or `karpathy-guidelines`. *(7× + 3×)*
+- **Quality gate is built-in.** Before finalizing any plan, spec, or ticket batch: run the Codex adversarial review (see Delegation to Codex) plus an endgame-best-practice / karpathy pass automatically. "Double confirm with codex", "終局 best practice", "不要過度工程" are the default bar, never user-triggered extras — the user should not have to type them. *(the three phrases were retyped ~80× in one month)*
+- **Done = observed at the end state.** Deploys, migrations, cronjobs, feature toggles, and UI changes are reported complete only after verifying the observable end state — workflow green *and* rollout live, page actually rendering (screenshot UI diffs against the approved design). "Merged" ≠ deployed; intent ≠ done. *(#1 residual friction post-07-03: "改動有部屬嗎？"/"我好像沒看到")*
 - **Small diff → inline patch + ship.** When a fix is small and clear, patch it inline and fold it into the current `/ship` — don't open a ticket, don't stop to ask. *(13×)*
 - **Production data SOP.** Any change touching real production data: dry-run → report findings → wait for explicit approval → backup → execute. Never merge dry-run and execution into one step. *(11×)*
 
+### Stage-Appropriate Engineering 🔴
+
+Both active products are pre-PMF startups. The dominant over-engineering pattern (rejected 10+× in session logs) is proposing maturity-stage tooling for pipelines still being architected. Default posture:
+
+- **User-facing quality > automation completeness.** Ship the visible outcome first; lifecycle automation deepens later. ("先求 user-facing 有足夠品質，不求全自動化" — restated 3× in a single week.)
+- **Maturity-stage infra is opt-in only.** Eval suites, CI guards, alerting, dashboards, ADR processes: do not propose, ticket, or memory-record them unless the user explicitly asks. Canonical rejection: "常見的過度工程化就是過早做 eval — eval 是拿成熟穩定的 pipeline 來優化 prompt 用的".
+- **Simplest shape that works.** Prefer the plain structure — jsonb column over side table, one language before an i18n matrix, manual trigger before a schedule — until real usage forces the next step.
+
 ### Communication Preferences
 
-- **Talk to user in zh-tw** but write code and comments in professional English
-- **Plain-language reporting.** Status and decision explanations default to 白話; expand every internal codename/shorthand on first use (never bare "D1 = P1"-style jargon). If a context-switching reader couldn't follow it cold, rewrite before sending. *(demanded 18× in session logs)*
+- **Talk to user in zh-tw** but write code and comments in professional English. zh-tw survives context transitions: after `/compact`, subagent/workflow relays, or English upstream content, user-facing reports stay zh-tw — translate, never paste English verbatim. *(「講中文」still had to be said on 2026-07-06)*
+- **Plain-language reporting.** Status and decision explanations default to 白話; expand every internal codename/shorthand on first use (never bare "D1 = P1"-style jargon — "SV", "uncordon", "ops 債" each cost a follow-up question). If a context-switching reader couldn't follow it cold, rewrite before sending. *(demanded 18× in session logs)*
+- **Report the delta, not the diff.** Every completed work unit — a `/ship`, a session close, or a relayed background-agent/task completion — ends with a fixed zh-tw micro-block: **淨變化** (1–3 bullets, each stating what is now true from the product/user's perspective — "教練手機看到的內容跟 web 一致了", never "fixed the serializer"); **在哪看** (one line: URL / page / command / screenshot); **沒包含** (explicit exclusions + where they went: 開票 / handoff / 刻意不做). Raw agent output (TARS, Codex, workflows, task-notifications) is never forwarded verbatim — translate into this form first. Applies to completed work units, not every conversational turn. *(evidence: "你能白話跟我說明我們做了哪些事情…", "我以為我們只有 mock UI?", "這些票是我做的嗎？")*
 - **Use UV for all Python operations**: `uv run python`, `uv add package`, `uv run pytest`
 - **Web freshness**: Verify fast-moving topics online before asserting them. Include exact dates when the user asks for "latest" or references relative dates.
 
@@ -193,7 +205,7 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 - **LLM misbehaving → fix context architecture, not add runtime guards** — validators, router state machines, post-gen checks are training wheels
 - **Positive framing beats negative** — "fallback to X" outperforms "never do Y"; negative rules backfire under output-shape pressure
 - **No ranking or priority signals in LLM-facing payloads** — the LLM will use them as silent default-pickers
-- **Eval is the gate; observability is for seeing, not intercepting**
+- **Eval is the gate — for mature pipelines.** Observability is for seeing, not intercepting. Do not propose eval infra while the pipeline is still being architected (see Stage-Appropriate Engineering)
 
 ---
 

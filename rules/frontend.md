@@ -12,8 +12,17 @@ paths:
 ## Core Principles 🔴
 
 - **Hyper-Minimalist UI** — Less, but better. Every element must earn its place.
-- **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first.
+- **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first. New pages must be visually indistinguishable from existing ones — same theme/layout provider, design tokens, spacing. Never introduce a parallel visual style.
 - **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
+
+## UI Design Language 🔴
+
+Mined from repeated user corrections (2026-06/07 session audit). Repo `AGENTS.md` adds project specifics.
+
+- **UX copy is for non-technical users** — zero technical or pipeline vocabulary in user-facing strings (no "identity match tier"-style wording); the fewest words that work.
+- **Show the value, not its existence** — render the actual data (dates, numbers, names) inline; never "有/沒有" boolean indicators the user must click through to inspect.
+- **Calm, not flashy** — no 浮誇 styling or decoration; no alarmist warnings for normal states (a first-time record is "new", not a caution).
+- **Mock fidelity** — shipped UI must match the approved design; verify with a screenshot before reporting done, not by code review alone.
 
 ## TanStack Query Patterns 🟡
 
