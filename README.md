@@ -49,7 +49,7 @@ Four cooperating layers. Anything that slips one layer is still caught by the ne
 │   ├── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
 │   └── merge-pr.md            # /merge-pr  — PR auto-pilot (review → fix → merge)
 │
-├── skills/                    # 17 tracked skills (see table below)
+├── skills/                    # 15 tracked skills (see table below)
 ├── rules/                     # backend.md, frontend.md, naming-conventions.md
 ├── references/                # prompt-engineering.md, etc.
 │
@@ -126,7 +126,7 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 
 ## Skills (tracked locally)
 
-17 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
+15 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
@@ -135,14 +135,14 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 | `catchup` | Fast evidence-based context rebuild after a reset |
 | `handoff` | End-of-session continuity capture into MEMORY.md |
 | `rehydrate` | Forced deep re-read after `/compact` or long pauses, with best-practice endgame check |
-| `narrate-topic` | Business-first narrative of a ticket cluster / shipped system in zh-tw |
-| `narrate-glance` | 30-second compressed view of one ticket / incident / decision (5 sentences + 1–2 ASCII diagrams) |
+| `narrate` | One-page visual brief of one topic — fixed contract: BLUF → one diagram → key-nodes table → gaps; `--full` for the deep walkthrough (replaces narrate-glance + narrate-topic) |
+| `dispatch-strategy` | Dispatch waves + swim-lane visual for a ticket series against live git/Linear; board mode also picks what to close next (absorbed triage-next) |
 | `reverse-thinking` | Critical pre-build review of an implementation plan / architecture spec |
 | `topic-to-tickets` | Deep audit → Codex push-back → PR-shaped, dependency-ordered Linear tickets |
 | `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
 | `github-workflow` | Repo + workflow ops via `gh` CLI |
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
-| `codebase-audit` | Independent deep technical + business audit of a long-running codebase |
+| `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
 | `graphify` | Build a persistent knowledge graph from a folder of files (code, docs, papers) |
 | `humanizer` | Strip signs of AI-generated writing from text |
 
@@ -157,6 +157,9 @@ The `CLAUDE.md` file enforces development standards across all projects:
 - **Single Elegant Version** — no `_v2`, no legacy code, no backward-compat shims
 - **Codex delegation policy** — Codex implements / reviews; Claude Code plans / synthesizes
 - **Response shape** — recommendation-first, principle-filter before option menus, hard stop on milestone complete
+- **Execution defaults** — built-in quality gate (Codex adversarial review before any plan/ticket finalizes), done = observed at the end state (deploys verified live, UI screenshot-matched), minimal fix first, production-data dry-run SOP
+- **Stage-appropriate engineering** — pre-PMF posture: user-facing quality > automation completeness; eval/guard/dashboard infra is opt-in only
+- **Communication** — zh-tw plain-language reporting that survives compaction and agent relays; completed work reported as delta (淨變化 / 在哪看 / 沒包含), never as raw diff or forwarded agent output
 - **Git automation** — high automation, careful guardrails (auto-commit + auto-push for shipped work; deny rules + hooks fail-closed on destructive ops)
 
 ## Customization
