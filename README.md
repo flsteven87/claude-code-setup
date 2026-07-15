@@ -38,18 +38,22 @@ Four cooperating layers. Anything that slips one layer is still caught by the ne
 ├── setup.sh                   # One-time bootstrap (Dippy install, copy config, chmod hooks)
 ├── statusline-command.sh      # Status bar: cwd, model, context %, rate limits
 │
-├── hooks/                     # 4 active hooks (see table below)
+├── hooks/                     # 6 active hooks (see table below)
 │   ├── auto-format.sh
 │   ├── auto_approve_safe.py
 │   ├── pre_compact.py
-│   └── pre_write_guard.py
+│   ├── pre_write_guard.py
+│   ├── verify_gate.py
+│   └── workflow_route_guard.py
 │
 ├── commands/                  # 3 slash commands (heavy automation pipelines)
 │   ├── implement.md           # /implement — plan-driven implementation w/ size-aware triage
 │   ├── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
 │   └── merge-pr.md            # /merge-pr  — PR auto-pilot (review → fix → merge)
 │
-├── skills/                    # 15 tracked skills (see table below)
+├── skills/                    # 16 tracked skills (see table below)
+├── workflows/
+│   └── deep-research.js       # Routed research workflow with per-stage models
 ├── rules/                     # backend.md, frontend.md, naming-conventions.md
 ├── references/                # prompt-engineering.md, etc.
 │
@@ -90,6 +94,7 @@ claude plugin install typescript-lsp@claude-plugins-official
 claude plugin install pyright-lsp@claude-plugins-official
 claude plugin install andrej-karpathy-skills@karpathy-skills
 claude plugin install impeccable@impeccable
+claude plugin install ralph-loop@claude-plugins-official
 ```
 
 ### 4. Verify
@@ -110,6 +115,8 @@ claude
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
 | `auto_approve_safe.py` | PermissionRequest | Auto-approves safe ops; prompts on `rm`, `git rebase`, `git reset --hard`, `sudo`, `kill`, `shutdown`, etc. Logs to `~/.claude/logs/auto_approve.log` |
 | `pre_compact.py` | PreCompact | Snapshots transcript before context compaction (keeps last 20) |
+| `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks unrouted named workflows so worker agents do not inherit the top-tier session model |
+| `verify_gate.py` | Stop | Blocks completion while a delivery pipeline still has unobserved end-state checks |
 | `osascript notify` | Stop | macOS native notification when Claude finishes a response |
 
 `settings.json` also carries explicit deny rules for `git push --force origin main`, `git reset --hard *`, and `git commit --amend*`.
@@ -126,7 +133,7 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 
 ## Skills (tracked locally)
 
-15 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
+16 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
@@ -145,6 +152,7 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 | `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
 | `graphify` | Build a persistent knowledge graph from a folder of files (code, docs, papers) |
 | `humanizer` | Strip signs of AI-generated writing from text |
+| `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
 
 ## CLAUDE.md standards
 

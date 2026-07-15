@@ -273,9 +273,12 @@ Three independent finalize actions — run in parallel where possible:
 2. **Memory write-back.** Append a one-liner to MEMORY.md "Current Phase" section's ship inventory: `PR [#<N>](url) (NEX-XXX <one-line>, merged <date> as <squash-SHA>)`. Don't restructure — just add the bullet.
 3. **Local worktree cleanup.** `git fetch --prune origin` to drop the deleted remote branch. If the user is currently in a worktree for this branch, `cd` to main repo + `git pull --ff-only` + `git worktree remove` as in /ship Stage 7. If on main already, just pull.
 
-Output a 4-line final report:
+4. **Observe deployment (done = observed).** Merged ≠ deployed. If the repo runs CI/deploy off `main`: arm the gate — `uv run ~/.claude/hooks/verify_gate.py arm "merge #<N>" "deploy run for <squash-SHA> green" "changed surface observed"` — then follow `gh run list --commit <squash-SHA>` to green and (for UI changes) load the affected page. Clear with `uv run ~/.claude/hooks/verify_gate.py clear` only after observing; the Stop hook blocks the turn from ending until then. Red run → surface immediately, same as CI-red blocker handling. No downstream (docs-only) → skip, don't arm.
+
+Output a 5-line final report:
 ```
 ✅ Merged #<N> → <squash-SHA>
+✅ Deploy observed → <run URL / page state>  (or "no downstream — skipped")
 ✅ Linear NEX-XXX → Done
 ✅ Memory updated
 Patches applied during review: N (M net LOC) | Codex review: Tmin

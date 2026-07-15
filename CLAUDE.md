@@ -83,9 +83,20 @@ Session-log mining (2026-07-03 harness audit; extended 2026-07-07 across 202 ACR
 - **Minimal fix first.** Default to the smallest best-practice change that solves the problem. Expanding scope, adding abstraction layers, or "while we're here" improvements need the user's explicit go-ahead. *(re-stated 17×)*
 - **Clean & precise is the constant bar.** No fallback paths, no defensive hacks, no patchwork (補丁) — holistic, consistent changes that read as the final version. This holds without the user invoking `/reverse-thinking` or `karpathy-guidelines`. *(7× + 3×)*
 - **Quality gate is built-in.** Before finalizing any plan, spec, or ticket batch: run the Codex adversarial review (see Delegation to Codex) plus an endgame-best-practice / karpathy pass automatically. "Double confirm with codex", "終局 best practice", "不要過度工程" are the default bar, never user-triggered extras — the user should not have to type them. *(the three phrases were retyped ~80× in one month)*
-- **Done = observed at the end state.** Deploys, migrations, cronjobs, feature toggles, and UI changes are reported complete only after verifying the observable end state — workflow green *and* rollout live, page actually rendering (screenshot UI diffs against the approved design). "Merged" ≠ deployed; intent ≠ done. *(#1 residual friction post-07-03: "改動有部屬嗎？"/"我好像沒看到")*
+- **Done = observed at the end state.** Deploys, migrations, cronjobs, feature toggles, and UI changes are reported complete only after verifying the observable end state — workflow green *and* rollout live, page actually rendering (screenshot UI diffs against the approved design). "Merged" ≠ deployed; intent ≠ done. Harness-enforced since 2026-07-07: `/ship` 6.5 and `/merge-pr` arm the `verify_gate.py` Stop hook — the turn cannot end until observed-then-cleared (see Active Hooks). *(#1 residual friction post-07-03: "改動有部屬嗎？"/"我好像沒看到")*
 - **Small diff → inline patch + ship.** When a fix is small and clear, patch it inline and fold it into the current `/ship` — don't open a ticket, don't stop to ask. *(13×)*
 - **Production data SOP.** Any change touching real production data: dry-run → report findings → wait for explicit approval → backup → execute. Never merge dry-run and execution into one step. *(11×)*
+
+### Autonomous Loops 🔴
+
+Defaults for unattended/batch agent runs (evidence + dates: `~/Desktop/loop-engineering-research-2026-07-07.md`):
+
+- **Batch grind work → `/ralph-loop`** (official plugin, installed 2026-07-07): tasks with clear success criteria + automatic verification (tests/lint/typecheck) — coverage backfill, mechanical migrations, lint sweeps. NOT for judgment/design work, vague specs, or production debugging.
+- **`--max-iterations` is mandatory** (default is unlimited; `--completion-promise` is exact-string matching and can't express SUCCESS vs BLOCKED). Typical range 25–100.
+- **Park, don't spin**: 3 failed attempts on the same item → log it to a pending-for-human file and move on. Agent self-reports of "fixed" are not evidence (documented case: 20 consecutive false "fixed" claims on one error).
+- **Externalize state**: progress/status file + one commit per iteration — files and git history are the loop's memory; context is disposable.
+- **Staged adoption**: run attended (HITL) until the prompt is trusted, only then AFK. Overnight runs must fit the Max-plan session-limit window.
+- **Machine-off recurring work → `/schedule`** (cloud routine). `/loop` dies with the machine — in-session polling only.
 
 ### Stage-Appropriate Engineering 🔴
 
@@ -114,7 +125,7 @@ The `codex@openai-codex` plugin is enabled. **Codex is the implementation / revi
 **Mechanism:**
 - **Review** (read-only): `/codex:review --background` or `/codex:adversarial-review --background` — observable via `/codex:status`, output via `/codex:result`.
 - **Rescue / delegation** (write-capable by default): `Agent(subagent_type: "codex:codex-rescue", prompt: "...")`. For non-blocking runs set `run_in_background=true` on the Agent itself — never pass `--background` inside a `codex-rescue` prompt or pair it with `isolation: "worktree"` (both kill Codex early).
-- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold. For read-only rescues, say "review only, do not edit" explicitly (it defaults to `--write`).
+- Pass a self-contained brief (paths, line numbers, success criteria) — Codex starts cold. For read-only rescues, say "review only, do not edit" explicitly (it defaults to `--write`). Never ask a read-only job to run tests/`uv` — its sandbox denies all writes and the job thrashes on `Operation not permitted`; briefs that need test-run verification go to a write-capable rescue (workspace-write). *(2026-07-08 sandbox EPERM incident)*
 
 **Observability:** `status: running` ≠ progress — use `/codex:status <id>` (`phase` / `elapsed` / `progressPreview`). If the preview tail is frozen ~5 min AND elapsed > 10 min, treat as dead: `/codex:cancel <id>`, run `codex-hygiene`, then retry. ALWAYS auto-poll any job expected to run >5 min with `/loop 90s /codex:status <id>` — never wait passively (recurring "codex 又掛掉沒東西" sessions trace back to unwatched jobs). ⚠️ Do NOT run `/codex:setup --enable-review-gate` (can loop and drain usage limits).
 
@@ -133,6 +144,8 @@ Claude-native workers **inherit the session model unless routed down**. Route by
 
 **Dynamic workflows / ultracode (the gap frontmatter can't cover):** a workflow's `agent()` calls inherit the session model. Historically `agent()` had no `effort` option ([issue #43083](https://github.com/anthropics/claude-code/issues/43083)); newer CLI builds expose `opts.effort` — check the Workflow tool description in-session and use it when present (`'low'` for mechanical stages). Either way, pin every stage's `model`: scan/mechanical → `{model:'haiku'}`, review/verify → `{model:'sonnet'}`, leave ONLY synthesis/judge on the session model. An un-routed workflow bills every agent (up to 1000) at the session tier — the #1 cost blowout.
 
+**Named/built-in workflows ship with NO routing.** `Workflow({name: ...})` is banned (a PreToolUse hook denies it) — even when a skill's instructions say to invoke by name; that is not an exemption. Instead: use the routed copy in `~/.claude/workflows/` via `scriptPath` (e.g. `deep-research.js`), or resolve the built-in script, pin every stage's model, then launch. *(2026-07-07: un-routed `deep-research` billed 74 agents — search, fetch, AND verify — at session tier)*
+
 **Never** set `settings.json "model": "fable"` or a global `CLAUDE_CODE_SUBAGENT_MODEL` — both defeat per-role routing. Multi-agent is not inherently cheaper (Anthropic's own multi-agent win used ~15× tokens); savings come only from routing cheap roles to cheap models.
 
 ### Active Hooks 🟡
@@ -141,6 +154,8 @@ Hooks in `~/.claude/hooks/` and `~/.claude/bin/` enforce or automate behavior de
 
 - **`auto-format.sh`** (PostToolUse, Write/Edit/MultiEdit) — `uv run ruff format` + `ruff check --fix` on `.py`. Prettier on TS/JS/CSS is opportunistic: `npx --no` silently skips it unless the project has prettier installed.
 - **`pre_write_guard.py`** (PreToolUse, Write/Edit/MultiEdit) — **denies** writes to `.env*`, `*.pem`, `*.key`, SSH private keys, `.ssh/`, `.aws/`, `.gnupg/`, `secrets.*`, `credentials*`, and `*.sql` under any `migrations/` directory (schema changes go through Supabase MCP)
+- **`workflow_route_guard.py`** (PreToolUse, Workflow) — **denies** `Workflow({name: ...})` launches; named/built-in workflows are un-routed, so use the routed copy in `~/.claude/workflows/` via `scriptPath`
+- **`verify_gate.py`** (Stop) — deterministic done=observed gate. Pipelines arm it (`uv run ~/.claude/hooks/verify_gate.py arm "<task>" "<check>"…`); the turn cannot end until the end state is observed and `… clear` is run. Cwd-scoped, 6h TTL, platform force-ends after 8 consecutive blocks
 - **`auto_approve_safe.py`** (PermissionRequest) — auto-approves everything except a word-boundary-regex dangerous list (`rm`, `sudo`, `git rebase`, `git reset --hard`, force pushes, discard-forms of `git checkout`/`git restore`, `kill`, macOS system-config commands); matches fall through to a manual prompt. It only sees what settings.json rules didn't already decide — `allow`ed commands never reach it, and `deny`/`ask` rules win over its output.
 - **`pre_compact.py`** (PreCompact) — context preservation before auto-compact
 - **`codex-reconcile-phantoms.sh`** (UserPromptSubmit, in `bin/`) — reconciles stale/dead Codex-inline job state before every prompt; warns if a live job exists in cwd

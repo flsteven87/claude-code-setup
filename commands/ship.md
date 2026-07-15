@@ -12,8 +12,8 @@ Two lanes exist; the lane is chosen during pre-flight based on what the diff loo
 
 | Lane | Stages | When |
 |---|---|---|
-| **Express** | 1 → 5 (light) → 6 → 7 | Small, clear diff with no load-bearing code semantics. Skips simplify + Codex review. |
-| **Full** | 1 → 2 → 3 → 4 → 4.5 → 5 → 6 → 7 | Default. Any non-trivial code change, or anything the user wants gated through Codex. |
+| **Express** | 1 → 5 (light) → 6 → 6.5 → 7 | Small, clear diff with no load-bearing code semantics. Skips simplify + Codex review. |
+| **Full** | 1 → 2 → 3 → 4 → 4.5 → 5 → 6 → 6.5 → 7 | Default. Any non-trivial code change, or anything the user wants gated through Codex. |
 
 Lane selection is **auto-routed when every express criterion passes cleanly, surfaced for confirmation only when any criterion is borderline**. Pure docs / config / `.gitignore` / styling-token swaps auto-route to express without a prompt; cases where one criterion needs a judgment call get a prompt; everything else goes through full lane. The goal is to spend Codex tokens where they actually catch bugs and spend the user's time only on decisions that aren't obvious.
 
@@ -64,7 +64,7 @@ Rationale: the user can interrupt before commit. A clean-express diff doesn't ea
 
 ---
 
-## Express lane (stages 5 → 6 → 7)
+## Express lane (stages 5 → 6 → 6.5 → 7)
 
 Skip stages 2 (simplify), 3 (verify), 4 (Codex review), 4.5 (verify-then-patch). The diff has been judged too small or too low-blast-radius for them to earn their keep.
 
@@ -78,11 +78,11 @@ Then go to **stage 5 (decision gate)** with a one-screen express summary:
 
 Wait for `ship` / `abort`. No `fix-first` option in express lane — if the user wants changes, they say `abort` and edit, then re-run /ship.
 
-Then proceed to stage 6 (push) and stage 7 (worktree cleanup).
+Then proceed to stage 6 (push), 6.5 (observe), and stage 7 (worktree cleanup).
 
 ---
 
-## Full lane (stages 2 → 3 → 4 → 4.5 → 5 → 6 → 7)
+## Full lane (stages 2 → 3 → 4 → 4.5 → 5 → 6 → 6.5 → 7)
 
 ### 2. Simplify (Codex)
 
@@ -175,6 +175,20 @@ Branch on the ship-surface shape:
 - **Pre-committed state**: commits already exist. Just `git push origin main` (or `git push origin HEAD:main` if shipping from a non-main branch like a worktree). If stage 2 / 4.5 added uncommitted edits on top, decide with the user whether to amend the last commit or append a new one before pushing.
 
 Confirm push succeeded and report the new HEAD SHA.
+
+### 6.5. Observe (done = observed)
+
+"Pushed" is not "done" — merged ≠ deployed. This stage is the deterministic version of CLAUDE.md's "Done = observed at the end state".
+
+- **Detect the downstream.** Does this repo run CI/deploy off `main` (`.github/workflows/` with a push-to-main trigger)? If nothing observable happens downstream (docs-only repo, no CI), skip this stage entirely — do not arm the gate.
+- **Arm the gate** immediately after the push lands:
+  ```bash
+  uv run ~/.claude/hooks/verify_gate.py arm "<one-line task>" "CI/deploy run for <SHA> green" "changed surface observed (page renders / endpoint responds)"
+  ```
+  Checks are phrased as *observable end states*, never intentions. The Stop hook now blocks the turn from ending until the gate is cleared.
+- **Observe.** `gh run list --commit <SHA>` → follow to green (`gh run watch <run-id>` or poll). For UI changes, load the affected page (screenshot when the diff is visual); for API changes, hit the endpoint.
+- **Clear and report.** `uv run ~/.claude/hooks/verify_gate.py clear`, then include the evidence (run URL, observed page/endpoint state) in the final report.
+- **Red run** → treat like a stage-3 verify failure: surface immediately with the failing job's output. Never clear the gate to make a red run look done; clearing after a deliberate abort requires saying so to the user.
 
 ### 7. Worktree cleanup (post-push)
 

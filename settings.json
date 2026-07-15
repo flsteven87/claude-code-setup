@@ -33,6 +33,8 @@
       "mcp__Claude_in_Chrome__*",
       "mcp__061a993d-7b72-449c-882f-88987af82973",
       "mcp__061a993d-7b72-449c-882f-88987af82973__*",
+      "mcp__linear__save_comment",
+      "mcp__linear__save_issue",
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
@@ -116,6 +118,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/workflow_route_guard.py",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -149,6 +161,11 @@
           {
             "type": "command",
             "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; for L in ~/.claude/hook-approvals.log ~/.claude/logs/auto_approve.log; do if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; done; true"
+          },
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/verify_gate.py",
+            "timeout": 5
           }
         ]
       }
@@ -193,7 +210,8 @@
     "hookify@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
-    "impeccable@impeccable": true
+    "impeccable@impeccable": true,
+    "ralph-loop@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
