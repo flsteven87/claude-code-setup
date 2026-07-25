@@ -87,7 +87,8 @@ Verifies prerequisites (Claude Code CLI, `uv`), installs [Dippy](https://github.
 The exact plugin set this config assumes (as of 2026-07):
 
 ```bash
-claude plugin install superpowers@superpowers-marketplace
+claude plugin marketplace add mattpocock/skills
+claude plugin install mattpocock-skills@mattpocock
 claude plugin install codex@openai-codex
 claude plugin install code-review@claude-plugins-official
 claude plugin install typescript-lsp@claude-plugins-official
@@ -133,7 +134,7 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 
 ## Skills (tracked locally)
 
-16 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `superpowers:*`, `codex:*`) coexist via their own prefixed names.
+16 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|

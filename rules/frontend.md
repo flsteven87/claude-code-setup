@@ -9,6 +9,21 @@ paths:
 
 > Project-specific patterns that differ from standard React conventions.
 
+## Absolute Prohibitions 🔴
+
+- ❌ `any` type in critical paths (query hooks, error handling, API responses)
+- ❌ `React.createElement` — always use JSX
+- ❌ `React.FC` — use function declarations with typed props
+- ❌ `require()` imports — ES modules only
+- ❌ Barrel imports from icon/component libraries (`import { X } from 'lucide-react'` → use deep imports)
+- ❌ Sequential `await` for independent operations — use `Promise.all()`
+
+## Mandatory Practices 🔴
+
+- ✅ Use Query Key Factories for TanStack Query (live in project-level `hooks/factories/` when present)
+- ✅ Enable React Compiler + `eslint-plugin-react-compiler` in all frontend projects
+- ✅ Define explicit TypeScript interfaces for component props
+
 ## Core Principles 🔴
 
 - **Hyper-Minimalist UI** — Less, but better. Every element must earn its place.

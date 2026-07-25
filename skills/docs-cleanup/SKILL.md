@@ -71,7 +71,7 @@ Build the candidate set. For plans and specs, capture **tracked-vs-untracked** a
 (both drive the verdict). One pass:
 
 ```bash
-for f in docs/superpowers/plans/*.md docs/superpowers/specs/*.md; do
+for f in docs/plans/*.md docs/specs/*.md docs/*/plans/*.md docs/*/specs/*.md; do
   if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
     echo "TRACKED  $(git log -1 --format=%cd --date=short -- "$f")  $f"
   else echo "UNTRACKED       $f"; fi

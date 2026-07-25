@@ -66,6 +66,21 @@ LLM prompts should teach **how to think**, not **what to output**. A principle-d
 | Repeating the same instruction in different words | Adds noise, signals uncertainty, wastes tokens |
 | "Be thorough and comprehensive" | Produces padding; specify what thoroughness means |
 
+## Agent Pipeline Design
+
+> Moved from CLAUDE.md 2026-07-25. Applies when building multi-stage agent pipelines, not just
+> single prompts.
+
+- **LLM misbehaving → fix context architecture, not add runtime guards.** Validators, router state
+  machines, and post-generation checks are training wheels — they mask a context problem instead of
+  solving it.
+- **Positive framing beats negative.** "Fallback to X" outperforms "never do Y"; negative rules
+  backfire under output-shape pressure.
+- **No ranking or priority signals in LLM-facing payloads.** The LLM will use them as silent
+  default-pickers rather than reasoning from the content.
+- **Eval is the gate — for mature pipelines only.** Observability is for seeing, not intercepting.
+  Do not propose eval infrastructure while the pipeline is still being architected.
+
 ## Review Checklist
 
 When reviewing prompts in the codebase:

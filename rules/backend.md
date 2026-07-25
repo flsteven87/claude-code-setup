@@ -7,6 +7,35 @@ paths:
 
 > Extracted from CLAUDE.md. These rules apply to all backend (Python/FastAPI/Supabase) development.
 
+## 4-Layer Architecture 🔴
+
+```
+API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repositories/) → Supabase
+```
+
+- **API**: HTTP handling, validation, auth. Uses `Depends(get_service)`.
+- **Service**: Business logic. NO direct DB calls. Raise domain exceptions (no HTTP knowledge).
+- **Repository**: Inherits `SupabaseRepository`. NO business logic.
+
+❌ Never bypass a layer — API must go through Service → Repository.
+
+## Absolute Prohibitions 🔴
+
+- ❌ Direct `result.data` access in repositories — use `_handle_supabase_result()`
+- ❌ Creating local SQL migration files — apply schema changes directly via the Supabase MCP (`apply_migration` / `execute_sql`). Hard-enforced by `pre_write_guard.py`.
+- ❌ Bare `except:` clauses — always specify the exception type
+- ❌ Missing exception chaining — always `raise ... from e`
+- ❌ Sequential `await` for independent operations — use `asyncio.gather()`
+- ❌ `FORWARDED_ALLOW_IPS=*` in production
+- ❌ `FOR ALL TO public USING (true)` RLS policies
+- ❌ PostgreSQL functions with `SET search_path = ''`
+
+## Mandatory Practices 🔴
+
+- ✅ Run `uv run ruff check .` before any commit (the `auto-format.sh` hook only formats + auto-fixes per file; this catches cross-file issues)
+- ✅ Auto-fix high-priority ruff errors (F821, E722, F841, B904) before proceeding
+- ✅ Use `redirect_slashes=False` in FastAPI app configuration
+
 ## Async/Sync Discipline 🔴
 
 **Rule:** `async def` must await ALL I/O. Blocking calls freeze the entire event loop.
