@@ -1,6 +1,6 @@
 ---
 name: narrate
-description: "One-page visual brief of ONE topic — a ticket, epic, shipped system, pipeline, UI feature, or decision. Replaces narrate-glance and narrate-topic (both old names route here). Use when the user wants to understand what something is or where it stands at business altitude: '/narrate', '30 秒看懂', 'tldr', '5 句話', '圖解', '白話走一遍', '跟我說明現況', '這個 epic 在幹嘛', '解析這串 ticket', '把架構帶我走一次', 'sitemap mental model', '視覺帶我看設計', 'design review', '架構圖講重點', or any 白話/解析/視覺化 request about one topic ('完整解析'/'每個環節都 cover' → same skill, --full). Read-only legibility — NOT strategy (next-move), ticket restructuring (mattpocock-skills:to-tickets), critique (reverse-thinking), dispatch ordering (dispatch-strategy), or whole-project rebuild (catchup)."
+description: "One-page visual brief of ONE topic — a ticket, epic, shipped system, pipeline, UI feature, or decision. Replaces narrate-glance and narrate-topic (both old names route here). Use when the user wants to understand what something is or where it stands at business altitude: '/narrate', '30 秒看懂', 'tldr', '5 句話', '圖解', '白話走一遍', '跟我說明現況', '這個 epic 在幹嘛', '解析這串 ticket', '把架構帶我走一次', 'sitemap mental model', '視覺帶我看設計', 'design review', '架構圖講重點', or any 白話/解析/視覺化 request about one topic ('完整解析'/'每個環節都 cover' → same skill, --full). Read-only legibility — NOT strategy (next-move), ticket restructuring (mattpocock-skills:to-tickets), critique (reverse-thinking), or whole-project rebuild (catchup)."
 status: active
 tags: [core, communication, narrative, zh-tw, glance]
 ---
@@ -35,7 +35,7 @@ Caps are ceilings, not quotas — 3 table rows and 1 gap line is a fine brief.
 | 設計／架構決策 | **Role-colored 架構圖** | 顏色 = 角色（SSOT／module／退役中），底部 amber banner = 終局 invariant |
 | Bug 修復／incident | **Before / After** | 兩小格對照 |
 | 純二選一決策 | **對照兩欄** | chosen vs rejected |
-| Ticket 系列的派工順序 | — | 這不是 narrate；交給 dispatch-strategy（wave 圖是它的） |
+| Ticket 系列的派工順序 | — | 這不是 narrate；下一步做什麼交給 `/next-move` |
 
 ## Rendering
 
