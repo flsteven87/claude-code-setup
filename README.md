@@ -1,6 +1,6 @@
 # Claude Code Setup
 
-My personal [Claude Code](https://claude.ai/code) configuration — layered permission defense, auto-formatting, and two end-to-end automation pipelines (`/ship` / `/merge-pr`).
+My personal [Claude Code](https://claude.ai/code) configuration — layered permission defense, auto-formatting, and an end-to-end ship pipeline (`/ship`).
 
 > **Security notice:** this repo contains hooks that **auto-execute shell commands** when Claude Code runs. Review every file under `hooks/` before using. Never blindly clone someone else's Claude Code config without auditing it.
 
@@ -46,11 +46,10 @@ Four cooperating layers. Anything that slips one layer is still caught by the ne
 │   ├── verify_gate.py
 │   └── workflow_route_guard.py
 │
-├── commands/                  # 2 slash commands (heavy automation pipelines)
-│   ├── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
-│   └── merge-pr.md            # /merge-pr  — PR auto-pilot (review → fix → merge)
+├── commands/                  # 1 slash command (heavy automation pipeline)
+│   └── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
 │
-├── skills/                    # 14 tracked skills (see table below)
+├── skills/                    # 12 tracked skills (see table below)
 ├── workflows/
 │   └── deep-research.js       # Routed research workflow with per-stage models
 ├── rules/                     # backend.md, frontend.md, naming-conventions.md
@@ -126,13 +125,12 @@ claude
 | Command | What it does |
 |---|---|
 | `/ship` | Solo / main-based ship pipeline. Express lane for tiny diffs; full lane = simplify (Codex) → verify → Codex review → verify-then-patch → commit → push to `origin/main` → worktree cleanup. |
-| `/merge-pr` | PR auto-pilot. Review + auto-fix findings + merge open GitHub PR to main. |
 
 Everything else lives in the skills layer below, or comes from a plugin — spec/ticket/implement/debug/TDD/review flows are delivered by `mattpocock-skills:*`.
 
 ## Skills (tracked locally)
 
-14 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
+12 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
@@ -144,7 +142,6 @@ Everything else lives in the skills layer below, or comes from a plugin — spec
 | `narrate` | One-page visual brief of one topic — fixed contract: BLUF → one diagram → key-nodes table → gaps; `--full` for the deep walkthrough (replaces narrate-glance + narrate-topic) |
 | `dispatch-strategy` | Dispatch waves + swim-lane visual for a ticket series against live git/Linear; board mode also picks what to close next (absorbed triage-next) |
 | `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
-| `github-workflow` | Repo + workflow ops via `gh` CLI |
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
 | `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
 | `humanizer` | Strip signs of AI-generated writing from text |

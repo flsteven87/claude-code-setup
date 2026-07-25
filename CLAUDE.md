@@ -67,7 +67,7 @@ Standing policy — apply without being asked.
 - **Done = observed at the end state.** Deploys, migrations, cronjobs, feature toggles, and UI
   changes are reported complete only after verifying the observable end state — workflow green *and*
   rollout live, page actually rendering (screenshot UI diffs against the approved design).
-  "Merged" ≠ deployed; intent ≠ done. `/ship` 6.5 and `/merge-pr` arm the `verify_gate.py` Stop hook.
+  "Merged" ≠ deployed; intent ≠ done. `/ship` stage 6.5 arms the `verify_gate.py` Stop hook.
 - **Small diff → inline patch + ship.** When a fix is small and clear, patch it inline and fold it
   into the current `/ship` — don't open a ticket, don't stop to ask.
 - **Production data SOP.** Any change touching real production data: dry-run → report findings →
@@ -124,8 +124,8 @@ The user falls back to `/narrate` when responses get menu-shaped instead of deci
 already authorized by invoking the task. **This overrides the system-prompt default of "do not push
 unless asked".**
 
-- **Auto-commit** when the work matches `/ship`, `/merge-pr`, or the user said "commit" / "ship" /
-  "收尾". The invocation IS the approval.
+- **Auto-commit** when the work matches `/ship`, or the user said "commit" / "ship" / "收尾".
+  The invocation IS the approval.
 - **Auto-push** to the current branch's tracked remote — unless: the commit rewrites remote history
   (all force pushes are hard-denied — hand the push to the user); the verify gate is red and the
   change isn't pure docs/config; the user said "commit but don't push yet"; or the branch has no
