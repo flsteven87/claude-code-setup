@@ -1,6 +1,6 @@
 ---
 name: rehydrate
-description: Use right after `/compact`, or when situational awareness is suspect (resuming after a long pause, returning from a long-running subagent, user says 「進入狀況」 / "rehydrate" / "再走一遍"). Forces a deep ultrathink-grade re-read of MEMORY.md, the active plan doc, and the codebase files the next step will touch — then runs an endgame best-practice check against the project's stated principle (Contextra: Single Elegant Endgame) before handing off to `/writing-plans` or `/implement`. If any check fails, stops and surfaces the tension with file:line evidence rather than silently proceeding. NOT a memory-rewrite tool (use `/latest`), NOT a fresh-start summarizer (use `/catchup`).
+description: Use right after `/compact`, or when situational awareness is suspect (resuming after a long pause, returning from a long-running subagent, user says 「進入狀況」 / "rehydrate" / "再走一遍"). Forces a deep ultrathink-grade re-read of MEMORY.md, the active plan doc, and the codebase files the next step will touch — then runs an endgame best-practice check against the project's stated principle (Contextra: Single Elegant Endgame) before handing off to `/mattpocock-skills:to-spec` or `/mattpocock-skills:implement`. If any check fails, stops and surfaces the tension with file:line evidence rather than silently proceeding. NOT a memory-rewrite tool (use `/latest`), NOT a fresh-start summarizer (use `/catchup`).
 ---
 
 # /rehydrate — Post-compact context reload + endgame check
@@ -42,7 +42,7 @@ When the compacted summary and MEMORY.md diverge, MEMORY.md wins.
 Name precisely, no paraphrase:
 
 - **The plan doc being executed** (absolute path under `docs/plans/...` or equivalent)
-- **The slash command queued next** — `/writing-plans` if still designing, `/implement <plan>` if plan is approved and ready to execute, `/ship` if implementation is already done and we're heading to merge
+- **The slash command queued next** — `/mattpocock-skills:to-spec` if still designing, `/mattpocock-skills:implement <plan>` if plan is approved and ready to execute, `/ship` if implementation is already done and we're heading to merge
 - **The files the next step will touch** (absolute paths; do not trust the summary's paraphrase)
 - **The invariants and locked decisions that govern those files** — cite by section / anchor / V-X / L-N
 
@@ -87,7 +87,7 @@ Any answer "no" or "not sure" → **stop and surface the tension in plain langua
 If checks 1-4 all passed:
 
 - Print a **≤ 5-sentence** confirmation in zh-tw naming: the plan doc + the queued slash command + the single most-load-bearing invariant the next step preserves + any deferred-but-acknowledged tension.
-- Then invoke the queued slash command (`/writing-plans` for design, `/implement` for execution, `/ship` for merge). Do **not** re-narrate the plan — the user already read it; they invoked rehydrate so the next step doesn't start from a stale snapshot, not so it gets re-pitched.
+- Then invoke the queued slash command (`/mattpocock-skills:to-spec` for design, `/mattpocock-skills:implement` for execution, `/ship` for merge). Do **not** re-narrate the plan — the user already read it; they invoked rehydrate so the next step doesn't start from a stale snapshot, not so it gets re-pitched.
 
 If any check failed:
 
@@ -116,5 +116,5 @@ All user-facing output in zh-tw. English reserved for technical tokens only — 
 - **`/catchup`** — fresh-session orientation from `git` + memory + minimal file reads. Lighter than rehydrate; no endgame check, no plan-doc deep-read, no auto-dispatch. Use when context is genuinely empty.
 - **`/latest`** — full memory rewrite + sibling consolidation. Much heavier than rehydrate; runs in zh-tw and rewrites MEMORY.md against ground truth. Use when memory has drifted, not just because of compact.
 - **`/handoff`** — end-of-session surgical memory update. Opposite end of the session: rehydrate runs at the start, handoff runs at the close.
-- **`/writing-plans`** — the dispatch target when we're still in design phase.
-- **`/implement`** — the dispatch target when the plan is approved.
+- **`/mattpocock-skills:to-spec`** — the dispatch target when we're still in design phase.
+- **`/mattpocock-skills:implement`** — the dispatch target when the plan is approved.

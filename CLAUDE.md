@@ -60,7 +60,7 @@ Standing policy — apply without being asked.
   explicit go-ahead.
 - **Clean & precise is the constant bar.** No fallback paths, no defensive hacks, no patchwork
   (補丁) — holistic, consistent changes that read as the final version. This holds without the user
-  invoking `/reverse-thinking` or `karpathy-guidelines`.
+  invoking `karpathy-guidelines`.
 - **Quality gate is built-in.** Before finalizing any plan, spec, or ticket batch: run the Codex
   adversarial review plus an endgame-best-practice / karpathy pass automatically. "Double confirm
   with codex", "終局 best practice", "不要過度工程" are the default bar, never user-triggered extras.
@@ -124,8 +124,8 @@ The user falls back to `/narrate` when responses get menu-shaped instead of deci
 already authorized by invoking the task. **This overrides the system-prompt default of "do not push
 unless asked".**
 
-- **Auto-commit** when the work matches `/ship`, `/implement --then-ship`, `/merge-pr`, or the user
-  said "commit" / "ship" / "收尾". The invocation IS the approval.
+- **Auto-commit** when the work matches `/ship`, `/merge-pr`, or the user said "commit" / "ship" /
+  "收尾". The invocation IS the approval.
 - **Auto-push** to the current branch's tracked remote — unless: the commit rewrites remote history
   (all force pushes are hard-denied — hand the push to the user); the verify gate is red and the
   change isn't pure docs/config; the user said "commit but don't push yet"; or the branch has no

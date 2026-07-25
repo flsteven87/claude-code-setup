@@ -1,11 +1,11 @@
 ---
 name: dispatch-strategy
-description: Plan the dispatch order for a series of topic tickets and render a visual convergence playbook, grounded in live git + Linear. Two modes. (1) Targeted — name an epic / cluster / ticket-list and get its dispatch waves. (2) Auto / board — run it with NO topic (the natural step right after /latest) and it auto-discovers the live workstreams from the freshly-synced MEMORY.md current-state + Linear epics with in-flight or newly-unblocked children, no topic needed. It maps each series' blockedBy/blocks DAG against current reality, classifies tickets into dispatch-now / blocked-next / in-flight / deferred, finds the real parallelism and the single next action, and draws a swim-lane SVG (state-colored nodes, fan-out markers, a convergence banner). Read-only — it PLANS dispatch order; it never edits tickets, writes code, or hands a ticket to an agent. Communicates in Traditional Chinese (zh-tw). Use whenever the user has a related ticket series OR just wants the next move, asking 'what do I dispatch next', '這個系列接下來怎麼派', 'dispatch 策略', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or runs it after /latest with no topic for a board-level playbook, or returns to a multi-ticket workstream after the board has moved and needs a fresh execution frontier. Strongly trigger on '/dispatch-strategy' with OR without arguments. Absorbs the retired /triage-next — also trigger on '清板', '降噪選題', '下一步收什麼', '挑一題收尾', '接下來收哪個', '幫我選一題推進', 'what should I close next' (board mode ranks by open-loop reduction and tags each frontier item's closing move; the user then says 接手 to drive). This is NOT /topic-to-tickets (that CREATES/restructures tickets; this READS an existing set and orders it). NOT /strategic-next (big-bet direction choice; this is execution sequencing). NOT executing a dispatch or implementing a single ticket — it only plans. NOT explaining or visualizing what a ticket means (that's /narrate; the visual here is a dispatch map, not an explainer).
+description: Plan the dispatch order for a series of topic tickets and render a visual convergence playbook, grounded in live git + Linear. Two modes. (1) Targeted — name an epic / cluster / ticket-list and get its dispatch waves. (2) Auto / board — run it with NO topic (the natural step right after /latest) and it auto-discovers the live workstreams from the freshly-synced MEMORY.md current-state + Linear epics with in-flight or newly-unblocked children, no topic needed. It maps each series' blockedBy/blocks DAG against current reality, classifies tickets into dispatch-now / blocked-next / in-flight / deferred, finds the real parallelism and the single next action, and draws a swim-lane SVG (state-colored nodes, fan-out markers, a convergence banner). Read-only — it PLANS dispatch order; it never edits tickets, writes code, or hands a ticket to an agent. Communicates in Traditional Chinese (zh-tw). Use whenever the user has a related ticket series OR just wants the next move, asking 'what do I dispatch next', '這個系列接下來怎麼派', 'dispatch 策略', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or runs it after /latest with no topic for a board-level playbook, or returns to a multi-ticket workstream after the board has moved and needs a fresh execution frontier. Strongly trigger on '/dispatch-strategy' with OR without arguments. Absorbs the retired /triage-next — also trigger on '清板', '降噪選題', '下一步收什麼', '挑一題收尾', '接下來收哪個', '幫我選一題推進', 'what should I close next' (board mode ranks by open-loop reduction and tags each frontier item's closing move; the user then says 接手 to drive). This is NOT /mattpocock-skills:to-tickets (that CREATES/restructures tickets; this READS an existing set and orders it). NOT /strategic-next (big-bet direction choice; this is execution sequencing). NOT executing a dispatch or implementing a single ticket — it only plans. NOT explaining or visualizing what a ticket means (that's /narrate; the visual here is a dispatch map, not an explainer).
 ---
 
 # dispatch-strategy — ticket series → grounded dispatch wave plan + visual
 
-`/topic-to-tickets` decomposes a topic into PR-shaped, dependency-ordered tickets. But the moment those tickets exist, the board starts moving: a PR merges, a blocker clears, one ticket goes In Progress, another is silently already done. The original dependency order printed at decomposition time **goes stale within a session**. This skill answers the recurring question you actually face when you sit back down: *given where main and Linear are RIGHT NOW, what is the dispatch frontier — in what order, with what parallelism, routed to whom — and what is the single next thing I do?* And it answers it for the series you name, or — given nothing — for whatever is currently live.
+`/mattpocock-skills:to-tickets` decomposes a topic into PR-shaped, dependency-ordered tickets. But the moment those tickets exist, the board starts moving: a PR merges, a blocker clears, one ticket goes In Progress, another is silently already done. The original dependency order printed at decomposition time **goes stale within a session**. This skill answers the recurring question you actually face when you sit back down: *given where main and Linear are RIGHT NOW, what is the dispatch frontier — in what order, with what parallelism, routed to whom — and what is the single next thing I do?* And it answers it for the series you name, or — given nothing — for whatever is currently live.
 
 It is a **planner, not a driver**. It reads git + Linear + (where load-bearing) the code, and emits a dispatch plan + a visual. It does not create tickets, edit tickets, write code, or dispatch agents. The human (or a follow-up skill) acts on the plan. Keeping it read-only is what makes it safe to run every session as the board moves.
 
@@ -13,7 +13,7 @@ It is a **planner, not a driver**. It reads git + Linear + (where load-bearing) 
 
 | You want… | Skill |
 |---|---|
-| Turn a topic into a clean set of tickets | `/topic-to-tickets` |
+| Turn a topic into a clean set of tickets | `/mattpocock-skills:to-tickets` |
 | **Plan the dispatch order/waves (+ visual) against current reality** | **this skill** |
 | 清板／挑一題收尾（pick what to close next off the whole board） | **this skill**, board mode — then say 「接手 <item>」 to drive it |
 | Choose a big-bet *direction* among competing topics | `/strategic-next` |
@@ -50,7 +50,7 @@ If discovery finds nothing live (everything Done or deep-backlog), say so plainl
 
 ### 1 — Resolve the series
 
-(Targeted mode starts here; board mode arrives here with the discovered set.) Accept any of: an epic/umbrella ticket ID (pull all `parentId` children), an explicit list of ticket IDs, or a named cluster from memory. Produce the full member set. If the user names just the epic, fetch the epic body too — `/topic-to-tickets` umbrellas usually carry an authoritative "children (dependency order)" list and end-state invariants worth honoring.
+(Targeted mode starts here; board mode arrives here with the discovered set.) Accept any of: an epic/umbrella ticket ID (pull all `parentId` children), an explicit list of ticket IDs, or a named cluster from memory. Produce the full member set. If the user names just the epic, fetch the epic body too — `/mattpocock-skills:to-tickets` umbrellas usually carry an authoritative "children (dependency order)" list and end-state invariants worth honoring.
 
 ### 2 — Ground against reality (read-only, this is the whole value)
 
@@ -97,7 +97,7 @@ Honor any human-decision flags on a ticket — if `human_decision_needed: yes` a
 
 **Tag each frontier item's closing move** (inherited from the retired triage-next), so 「接手」 has an unambiguous meaning per item:
 
-- **開約** — no contract yet → first `/topic-to-tickets` builds one (it owns the mutation gate)
+- **開約** — no contract yet → first `/mattpocock-skills:to-tickets` builds one (it owns the mutation gate)
 - **直接派** — already a contract passing the Definition of Ready in `docs/architecture/ticket-contract/README.md` → hand to the executor as-is
 - **收半成品** — code/PR already exists → `/code-review` deep pass first, then finish; never re-dispatch from scratch
 
@@ -154,7 +154,7 @@ If the series is a strict chain with everything downstream blocked, the honest o
 
 ## Worked example (i18n cluster, the richest DAG)
 
-Series `NEX-1327` (catalog i18n) decomposed by `/topic-to-tickets` into P1→P5. After grounding: P1 `NEX-1338` is In-flight (dispatched, no PR yet), P2→P5 all Blocked, with a fan-out at P3.
+Series `NEX-1327` (catalog i18n) decomposed by `/mattpocock-skills:to-tickets` into P1→P5. After grounding: P1 `NEX-1338` is In-flight (dispatched, no PR yet), P2→P5 all Blocked, with a fan-out at P3.
 
 ```
 NEX-1338 (P1 foundation) ──> NEX-1339 (P2 translate lib) ──> NEX-1108 (P3 apply)

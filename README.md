@@ -1,6 +1,6 @@
 # Claude Code Setup
 
-My personal [Claude Code](https://claude.ai/code) configuration — layered permission defense, auto-formatting, and three end-to-end automation pipelines (`/implement` → `/ship` / `/merge-pr`).
+My personal [Claude Code](https://claude.ai/code) configuration — layered permission defense, auto-formatting, and two end-to-end automation pipelines (`/ship` / `/merge-pr`).
 
 > **Security notice:** this repo contains hooks that **auto-execute shell commands** when Claude Code runs. Review every file under `hooks/` before using. Never blindly clone someone else's Claude Code config without auditing it.
 
@@ -46,12 +46,11 @@ Four cooperating layers. Anything that slips one layer is still caught by the ne
 │   ├── verify_gate.py
 │   └── workflow_route_guard.py
 │
-├── commands/                  # 3 slash commands (heavy automation pipelines)
-│   ├── implement.md           # /implement — plan-driven implementation w/ size-aware triage
+├── commands/                  # 2 slash commands (heavy automation pipelines)
 │   ├── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
 │   └── merge-pr.md            # /merge-pr  — PR auto-pilot (review → fix → merge)
 │
-├── skills/                    # 16 tracked skills (see table below)
+├── skills/                    # 14 tracked skills (see table below)
 ├── workflows/
 │   └── deep-research.js       # Routed research workflow with per-stage models
 ├── rules/                     # backend.md, frontend.md, naming-conventions.md
@@ -126,15 +125,14 @@ claude
 
 | Command | What it does |
 |---|---|
-| `/implement` | Plan-driven implementation with size-aware triage. Codex executes; CC orchestrates. Does NOT commit (chain `/ship` after). |
 | `/ship` | Solo / main-based ship pipeline. Express lane for tiny diffs; full lane = simplify (Codex) → verify → Codex review → verify-then-patch → commit → push to `origin/main` → worktree cleanup. |
 | `/merge-pr` | PR auto-pilot. Review + auto-fix findings + merge open GitHub PR to main. |
 
-Everything else (catchup, handoff, latest, brainstorming, planning, debugging, …) lives in the skills layer below or is delivered by an installed plugin.
+Everything else lives in the skills layer below, or comes from a plugin — spec/ticket/implement/debug/TDD/review flows are delivered by `mattpocock-skills:*`.
 
 ## Skills (tracked locally)
 
-16 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
+14 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
@@ -145,8 +143,6 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 | `rehydrate` | Forced deep re-read after `/compact` or long pauses, with best-practice endgame check |
 | `narrate` | One-page visual brief of one topic — fixed contract: BLUF → one diagram → key-nodes table → gaps; `--full` for the deep walkthrough (replaces narrate-glance + narrate-topic) |
 | `dispatch-strategy` | Dispatch waves + swim-lane visual for a ticket series against live git/Linear; board mode also picks what to close next (absorbed triage-next) |
-| `reverse-thinking` | Critical pre-build review of an implementation plan / architecture spec |
-| `topic-to-tickets` | Deep audit → Codex push-back → PR-shaped, dependency-ordered Linear tickets |
 | `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
 | `github-workflow` | Repo + workflow ops via `gh` CLI |
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |

@@ -1,6 +1,6 @@
 ---
 name: narrate
-description: "One-page visual brief of ONE topic — a ticket, epic, shipped system, pipeline, UI feature, or decision. Replaces narrate-glance and narrate-topic (both old names route here). Use when the user wants to understand what something is or where it stands at business altitude: '/narrate', '30 秒看懂', 'tldr', '5 句話', '圖解', '白話走一遍', '跟我說明現況', '這個 epic 在幹嘛', '解析這串 ticket', '把架構帶我走一次', 'sitemap mental model', '視覺帶我看設計', 'design review', '架構圖講重點', or any 白話/解析/視覺化 request about one topic ('完整解析'/'每個環節都 cover' → same skill, --full). Read-only legibility — NOT strategy (strategic-next), ticket restructuring (topic-to-tickets), critique (reverse-thinking), dispatch ordering (dispatch-strategy), or whole-project rebuild (catchup)."
+description: "One-page visual brief of ONE topic — a ticket, epic, shipped system, pipeline, UI feature, or decision. Replaces narrate-glance and narrate-topic (both old names route here). Use when the user wants to understand what something is or where it stands at business altitude: '/narrate', '30 秒看懂', 'tldr', '5 句話', '圖解', '白話走一遍', '跟我說明現況', '這個 epic 在幹嘛', '解析這串 ticket', '把架構帶我走一次', 'sitemap mental model', '視覺帶我看設計', 'design review', '架構圖講重點', or any 白話/解析/視覺化 request about one topic ('完整解析'/'每個環節都 cover' → same skill, --full). Read-only legibility — NOT strategy (strategic-next), ticket restructuring (mattpocock-skills:to-tickets), dispatch ordering (dispatch-strategy), or whole-project rebuild (catchup)."
 status: active
 tags: [core, communication, narrative, zh-tw, glance]
 ---

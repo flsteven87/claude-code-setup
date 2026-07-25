@@ -23,7 +23,7 @@ Lane selection is **auto-routed when every express criterion passes cleanly, sur
 
 ### 1. Pre-flight
 
-Detect what's actually being shipped. Don't assume a dirty working tree — multi-batch `/implement` runs and previously-confirmed commits both leave the repo in **pre-committed state** (clean tree, N commits ahead of `origin/main`).
+Detect what's actually being shipped. Don't assume a dirty working tree — multi-batch `/mattpocock-skills:implement` runs and previously-confirmed commits both leave the repo in **pre-committed state** (clean tree, N commits ahead of `origin/main`).
 
 ```bash
 git status --short
@@ -207,7 +207,7 @@ If /ship ran from inside the current worktree and that worktree is now being rem
 
 ## When NOT to use this command
 
-- Implementation isn't done — use brainstorming → writing-plans → executing-plans first; `/ship` starts after code is written or after a deliberate commit.
+- Implementation isn't done — use `/mattpocock-skills:grill-me` → `to-spec` / `to-tickets` → `implement` first; `/ship` starts after code is written or after a deliberate commit.
 - PR-based work — use a feature branch + the `/code-review` plugin after pushing.
 - Mixed worktree with unrelated uncommitted changes from other tasks — split first.
 
