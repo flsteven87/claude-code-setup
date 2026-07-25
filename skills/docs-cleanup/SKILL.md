@@ -61,7 +61,7 @@ conditions**. The near-universal shape:
 | **L1 append-only** | **ADRs, audit snapshots** | **NEVER delete** — historical evidence by design |
 | **L1↔L2 spec** | design specs | feature fully ships → noun absorbed into architecture, file deleted |
 | **L2 ephemeral** | **plans, issue drafts** | **PR merge deletes them** |
-| **L3 auto** | graphify output, auto-memory | gitignored / tool-owned; don't hand-edit |
+| **L3 auto** | generated indexes, auto-memory | gitignored / tool-owned; don't hand-edit |
 
 If the repo has **no** governance doc, apply that default model anyway — it's the sane baseline.
 

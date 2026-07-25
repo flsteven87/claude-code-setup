@@ -1,5 +1,209 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "agentPushNotifEnabled": true,
+  "autoDreamEnabled": true,
+  "enabledPlugins": {
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "claude-code-setup@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": false,
+    "code-review@claude-plugins-official": true,
+    "codex@openai-codex": true,
+    "hookify@claude-plugins-official": false,
+    "impeccable@impeccable": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "session-report@claude-plugins-official": false,
+    "superpowers@superpowers-marketplace": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "repo": "pbakaus/impeccable",
+        "source": "github"
+      }
+    },
+    "karpathy-skills": {
+      "source": {
+        "repo": "forrestchang/andrej-karpathy-skills",
+        "source": "github"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "repo": "openai/codex-plugin-cc",
+        "source": "github"
+      }
+    }
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook notification",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "command": "uv run ~/.claude/hooks/auto_approve_safe.py",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook waiting-approval",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "~/.claude/hooks/auto-format.sh",
+            "timeout": 15,
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|MultiEdit|Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook active",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "command": "uv run ~/.claude/hooks/pre_compact.py",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "dippy",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "uv run ~/.claude/hooks/pre_write_guard.py",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|MultiEdit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "uv run ~/.claude/hooks/workflow_route_guard.py",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "Workflow"
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook active",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook end",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook idle",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; for L in ~/.claude/hook-approvals.log ~/.claude/logs/auto_approve.log; do if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; done; true",
+            "type": "command"
+          },
+          {
+            "command": "uv run ~/.claude/hooks/verify_gate.py",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook idle",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "~/.claude/bin/codex-reconcile-phantoms.sh --hook",
+            "statusMessage": "Reconciling stale Codex jobs",
+            "timeout": 8,
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook thinking",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Read",
@@ -67,6 +271,14 @@
       "Bash(mv *)",
       "Bash(ls *)"
     ],
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(git checkout -- *)",
+      "Bash(git checkout .)",
+      "Bash(git restore *)"
+    ],
+    "defaultMode": "acceptEdits",
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
@@ -87,154 +299,12 @@
       "Bash(git push --force-with-lease*)",
       "Bash(git rebase -i *)",
       "Bash(git clean -f*)"
-    ],
-    "ask": [
-      "Bash(rm -rf *)",
-      "Bash(rm -fr *)",
-      "Bash(git checkout -- *)",
-      "Bash(git checkout .)",
-      "Bash(git restore *)"
-    ],
-    "defaultMode": "acceptEdits"
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "dippy",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_write_guard.py",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Workflow",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/workflow_route_guard.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/auto-format.sh",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_compact.py",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; for L in ~/.claude/hook-approvals.log ~/.claude/logs/auto_approve.log; do if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; done; true"
-          },
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/verify_gate.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/auto_approve_safe.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/bin/codex-reconcile-phantoms.sh --hook",
-            "timeout": 8,
-            "statusMessage": "Reconciling stale Codex jobs"
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "command": "bash ~/.claude/statusline-command.sh",
+    "type": "command"
   },
-  "enabledPlugins": {
-    "superpowers@superpowers-marketplace": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "codex@openai-codex": true,
-    "andrej-karpathy-skills@karpathy-skills": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "session-report@claude-plugins-official": false,
-    "hookify@claude-plugins-official": false,
-    "claude-code-setup@claude-plugins-official": false,
-    "claude-md-management@claude-plugins-official": false,
-    "impeccable@impeccable": true,
-    "ralph-loop@claude-plugins-official": true
-  },
-  "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
-    "karpathy-skills": {
-      "source": {
-        "source": "github",
-        "repo": "forrestchang/andrej-karpathy-skills"
-      }
-    },
-    "impeccable": {
-      "source": {
-        "source": "github",
-        "repo": "pbakaus/impeccable"
-      }
-    }
-  },
-  "tui": "fullscreen",
-  "autoDreamEnabled": true,
   "theme": "dark-daltonized",
-  "agentPushNotifEnabled": true
+  "tui": "fullscreen"
 }

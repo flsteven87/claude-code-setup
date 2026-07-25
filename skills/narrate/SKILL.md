@@ -51,7 +51,6 @@ Lite by default — ≤5 reads total:
 - Ticket ID in scope → Linear state via MCP（top 3 張為限）
 - `git log --oneline -5 -- <path>` 或 grep ticket ID → 最近有沒有動
 - **凡是要進節點表的 path，一律 grep／Read 驗證存在** — 那張表是這個 skill 的信用來源
-- graphify shortcut: `<surface>/graphify-out/` 存在且 `.last_build_head` 新 → 節點與 path 直接取自 `GRAPH_REPORT.md`，不重讀 code
 - 發現矛盾（Linear 說 Todo、code 已 shipped）→ 中性寫進缺口，不加戲
 
 If verification wants more than 5 reads, you are either in --full or in the wrong skill.

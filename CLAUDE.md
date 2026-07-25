@@ -233,11 +233,3 @@ API (src/api/v1/endpoints/) → Service (src/services/) → Repository (src/repo
 ## Part 6: Frontend Development
 
 > **Project-specific patterns:** `~/.claude/rules/frontend.md` (auto-loaded — core principles, TanStack Query, SSE, React Compiler all live there)
-
----
-## Optional Graphify
-
-- `/graphify` is a first-class workflow for graph-backed repo exploration when `~/.claude/skills/graphify/SKILL.md` exists. **Per-repo `docs/reference/graphify.md` is authoritative** — read it first (defines active surfaces, lifecycle, constraints); it overrides these user-level defaults. Prefer the nearest active surface graph over the repo-root graph.
-- **Graph-first for relationship / cleanup work** (architecture, coupling, dead-code, duplicates, god-components — via `GRAPH_REPORT.md` or `graphify query`/`path`/`explain`); **grep-first for symbol lookup**. Start at `graphify-out/GRAPH_REPORT.md` (or `wiki/index.md` if present); never paste full `graph.json` into context.
-- **Freshness:** before query/path/explain, compare `<surface>/graphify-out/.last_build_head` vs `git rev-parse HEAD`. Mismatch + small diff → `graphify update` (AST-only, free); large diff / missing → `graphify extract` (LLM cost — ask first, run from a plain terminal since CC blanks `ANTHROPIC_API_KEY`).
-- **Never:** `graphify hook install`, wire graphify into `PostToolUse`, or commit `graphify-out/` (gitignored).

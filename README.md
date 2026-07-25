@@ -150,7 +150,6 @@ Everything else (catchup, handoff, latest, brainstorming, planning, debugging, �
 | `github-workflow` | Repo + workflow ops via `gh` CLI |
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
 | `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
-| `graphify` | Build a persistent knowledge graph from a folder of files (code, docs, papers) |
 | `humanizer` | Strip signs of AI-generated writing from text |
 | `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
 
