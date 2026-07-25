@@ -1,13 +1,13 @@
 ---
 name: daily-standup
-description: Use when Steven needs a short daily standup / morning team-channel update — reviewing yesterday's work (git + Linear across nr-platform / nr-app / nr-landing) and drafting today's focus. Produces an ultra-short, copy-paste-ready Traditional Chinese update with three sections (✅ 昨天已完成 / 🙋 需要幫忙事項 / 🎯 今日重點), max 3 plain-language bullets each, written for a non-technical reader. Triggers on '/daily-standup', 'standup', '站立會議', '每日更新', '寫今天要貼的進度', '同步昨天進度', '早上 update', 'daily update', '今天的 standup', or any time the user wants a brief morning team sync. This is the SHORT daily version for pasting into a chat channel — for the heavyweight multi-day narrative report, use dev-review instead. Make sure to use this skill whenever the user wants a quick daily team-channel update even if they don't say the word 'standup'.
+description: Use when Steven needs a short daily standup / morning team-channel update — reviewing yesterday's work (git + Linear across nr-platform / nr-app / nr-landing) and drafting today's focus. Produces an ultra-short, copy-paste-ready Traditional Chinese update with three sections (✅ 昨天已完成 / 🙋 需要幫忙事項 / 🎯 今日重點), max 3 plain-language bullets each, written for a non-technical reader. Triggers on '/daily-standup', 'standup', '站立會議', '每日更新', '寫今天要貼的進度', '同步昨天進度', '早上 update', 'daily update', '今天的 standup', or any time the user wants a brief morning team sync. This is the SHORT daily version for pasting into a chat channel — for the heavyweight multi-day narrative report, use nexrex-weekly-engineering-report instead. Make sure to use this skill whenever the user wants a quick daily team-channel update even if they don't say the word 'standup'.
 ---
 
 # Daily Standup
 
 Turn yesterday's git + Linear activity into a **very short, business-readable** standup the user pastes into the team channel each morning. Two people read it: engineers, and non-engineers (the team lead, who sometimes relays it onward to sales or customers). So every line must (a) be skimmable in seconds and (b) make sense to someone who has never seen the code. A long technical report defeats both. If you're writing prose or implementation detail, you've already failed — compress harder and translate to plain outcomes.
 
-This is the daily, disposable counterpart to `dev-review` (the long multi-day narrative saved to Desktop). Never produce a `dev-review`-shaped wall here.
+This is the daily, disposable counterpart to `nexrex-weekly-engineering-report` (the long multi-day narrative saved to Desktop). Never produce a `nexrex-weekly-engineering-report`-shaped wall here.
 
 ## The brief the user is mirroring
 
@@ -139,7 +139,7 @@ Notice the discipline: **no jargon** (no "Redis", "projection", "audit", "contra
 | **Engineer jargon in bullets** (Redis / projection / audit / SSOT / contract) | **Translate to the user/business outcome — Step 3. This is the #1 failure mode.** |
 | Giving purely-internal plumbing its own line | At standup altitude, fold it into the roll-up ("內部優化") or drop it — only user/product-perceptible work earns a line |
 | Tagging a bullet with only one ticket when its cluster spans several | List them all — `（NEX-A / NEX-B）`; never invent a code for a fix that has no ticket |
-| Writing full sentences / a `dev-review`-style wall | Short plain-language outcomes; this is a 10-second skim, not a report |
+| Writing full sentences / a `nexrex-weekly-engineering-report`-style wall | Short plain-language outcomes; this is a 10-second skim, not a report |
 | More than 3 bullets in a section | Cluster by ticket/theme, keep top 3, collapse the tail into the roll-up |
 | Presenting 今日重點 as fact | Treat it as a forward guess from In-Progress tickets the user will edit — but don't print a draft-marker line |
 | Surfacing dormant epics as today's focus | Filter against memory ownership — raw Linear "In Progress" has stale shells |

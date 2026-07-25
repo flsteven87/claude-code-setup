@@ -1,6 +1,6 @@
 ---
 name: dispatch-strategy
-description: Plan the dispatch order for a series of topic tickets and render a visual convergence playbook, grounded in live git + Linear. Two modes. (1) Targeted — name an epic / cluster / ticket-list and get its dispatch waves. (2) Auto / board — run it with NO topic (the natural step right after /latest) and it auto-discovers the live workstreams from the freshly-synced MEMORY.md current-state + Linear epics with in-flight or newly-unblocked children, no topic needed. It maps each series' blockedBy/blocks DAG against current reality, classifies tickets into dispatch-now / blocked-next / in-flight / deferred, finds the real parallelism and the single next action, and draws a swim-lane SVG (state-colored nodes, fan-out markers, a convergence banner). Read-only — it PLANS dispatch order; it never edits tickets, writes code, or hands a ticket to an agent. Communicates in Traditional Chinese (zh-tw). Use whenever the user has a related ticket series OR just wants the next move, asking 'what do I dispatch next', '這個系列接下來怎麼派', 'dispatch 策略', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or runs it after /latest with no topic for a board-level playbook, or returns to a multi-ticket workstream after the board has moved and needs a fresh execution frontier. Strongly trigger on '/dispatch-strategy' with OR without arguments. Absorbs the retired /triage-next — also trigger on '清板', '降噪選題', '下一步收什麼', '挑一題收尾', '接下來收哪個', '幫我選一題推進', 'what should I close next' (board mode ranks by open-loop reduction and tags each frontier item's closing move; the user then says 接手 to drive). This is NOT /mattpocock-skills:to-tickets (that CREATES/restructures tickets; this READS an existing set and orders it). NOT /strategic-next (big-bet direction choice; this is execution sequencing). NOT executing a dispatch or implementing a single ticket — it only plans. NOT explaining or visualizing what a ticket means (that's /narrate; the visual here is a dispatch map, not an explainer).
+description: Order a NAMED ticket series into dispatch waves and draw its swim-lane convergence playbook, grounded in live git + Linear. Use when the user names an epic / cluster / ticket list and asks '這個系列接下來怎麼派', '排一下這串票的執行順序', '哪些可以平行', '誰先誰後', '畫出收斂攻略圖', 'NEX-XXXX 系列下一步派什麼', or '/dispatch-strategy <series>'. Read-only — it PLANS dispatch order; it never edits tickets, writes code, or dispatches work. Communicates in Traditional Chinese (zh-tw). NOT /next-move — a bare '下一步做什麼' / '清板' / '挑一題收尾' with no series named goes there, not here. NOT /mattpocock-skills:to-tickets (that CREATES tickets; this orders an existing set). NOT /narrate (that explains one topic; the visual here is a dispatch map).
 ---
 
 # dispatch-strategy — ticket series → grounded dispatch wave plan + visual
@@ -16,10 +16,10 @@ It is a **planner, not a driver**. It reads git + Linear + (where load-bearing) 
 | Turn a topic into a clean set of tickets | `/mattpocock-skills:to-tickets` |
 | **Plan the dispatch order/waves (+ visual) against current reality** | **this skill** |
 | 清板／挑一題收尾（pick what to close next off the whole board） | **this skill**, board mode — then say 「接手 <item>」 to drive it |
-| Choose a big-bet *direction* among competing topics | `/strategic-next` |
+| Choose a big-bet *direction* among competing topics | `/next-move` |
 | Sync memory to ground truth first | `/latest` |
 
-Natural chain: `/latest` (sync) → `/dispatch-strategy` (no arg → auto board playbook, OR name a series) → dispatch the frontier (Codex / external agent / self) → review returned PRs → re-run next session (frontier has advanced).
+Natural chain: `/latest` (sync) → `/next-move` (pick the workstream) → `/dispatch-strategy <series>` (order it) → dispatch the frontier (Codex / external agent / self) → review returned PRs → re-run next session (frontier has advanced).
 
 ## Two modes
 
@@ -46,7 +46,7 @@ When no series is named, the skill must figure out *which* series are worth plan
 4. **Cross-check git for "silently advanced" series** — grep `git log --oneline -30 origin/main` for ticket IDs / PR numbers; a series memory calls "dispatched, awaiting PR" whose PR already merged is live in a *different* way (its frontier just advanced).
 5. **Cap at the top ~3-4 live series**, ranked by ordered criteria (inherited from the retired triage-next — reason through signals, no magic-number scores): **open-loop reduction first** (half-open things: stalled WIP, mergeable-but-unmerged PRs, a finished rung blocking its successors, few steps-to-fully-closed) > **momentum** (smallest thing that ships value; express/standard lane over heavy) > **delegatability** (readiest to become a clean contract). Immediacy (recently-moved > stale) breaks ties. Note any others as "other live series (not shown)" so the cap is visible, never silent.
 
-If discovery finds nothing live (everything Done or deep-backlog), say so plainly and point at `/strategic-next` (choose a direction) — don't manufacture a plan.
+If discovery finds nothing live (everything Done or deep-backlog), say so plainly and point at `/next-move` (choose a direction) — don't manufacture a plan.
 
 ### 1 — Resolve the series
 
@@ -172,7 +172,7 @@ The lesson the skill encodes: a 6-ticket series can have a frontier of *zero* wh
 ## Discipline checklist
 
 - Board mode: discover from `MEMORY.md`, but re-ground every candidate against live Linear + git before planning — memory points, Linear/git decide.
-- Keep only live series (a dispatch decision is pending); cap at ~3-4 ranked open-loop-reduction > momentum > delegatability, and name what was dropped. If nothing is live, point at `/strategic-next` instead of inventing a plan.
+- Keep only live series (a dispatch decision is pending); cap at ~3-4 ranked open-loop-reduction > momentum > delegatability, and name what was dropped. If nothing is live, point at `/next-move` instead of inventing a plan.
 - Ground truth before classification — `git fetch` + per-ticket `get_issue(includeRelations)`; never the `state:"started"` filter alone.
 - Verify the load-bearing edge in code before declaring "unblocked"; codebase beats Linear status.
 - One-in-flight for a strict chain; parallelize only at a genuine fan-out — including *across* series that share a code surface.

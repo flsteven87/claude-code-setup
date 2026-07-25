@@ -7,7 +7,7 @@ description: >-
   "把已 ship 的 plan/spec 清掉" / "current-latest 清理" / "深度審查 docs", after shipping features when
   plan/spec files pile up, when reviewing docs/ for staleness, when a DOCS_POLICY lifecycle sweep is
   due, or when architecture docs may have drifted from code. Distinct from /latest (auto-memory
-  consolidation) and git-state-audit (git tree) — this one owns REPO docs lifecycle. Verifies every
+  consolidation) and git-converge-main (git tree) — this one owns REPO docs lifecycle. Verifies every
   claim against current code before deleting or asserting; communicates in Traditional Chinese (zh-tw).
 ---
 
@@ -41,7 +41,7 @@ a periodic docs lifecycle sweep is due; someone suspects architecture docs drift
 says any trigger phrase in the description.
 
 **Not this skill** for: auto-memory (`MEMORY.md` + topic files) → that's `/latest` or `/handoff`;
-git tree / branches / worktrees → `git-state-audit`; writing a *new* doc → just write it.
+git tree / branches / worktrees → `git-converge-main`; writing a *new* doc → just write it.
 This skill owns the **repo `docs/` tree** lifecycle. (It will, however, clean up dangling references
 that its own deletions leave inside memory files — see Phase 6.)
 

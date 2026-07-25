@@ -131,11 +131,33 @@ Everything else lives in the skills layer below, or comes from a plugin — spec
 ## Skills (tracked locally)
 
 13 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required.
-`handoff/SKILL.md` is kept **byte-identical** to `~/.codex/skills/handoff/SKILL.md` on purpose: both agents checkpoint into the same repo-root `MEMORY.md`, so either can resume the other's work. Edit both, or the cross-agent handoff silently diverges. (Codex carries an extra `agents/openai.yaml` for its own platform metadata — that file has no Claude Code equivalent and is not a content difference.) Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
+### Skills shared with Codex
+
+Four skills are mirrored from `~/.codex/skills/` so both agents do the job identically. **Codex is the
+source of truth** — author there, then mirror here. Each Codex copy carries an extra `agents/openai.yaml`
+(platform metadata, no Claude Code equivalent); the Claude Code copies convert Codex's `$skill` invocation
+syntax to `/skill` and resolve `$skill_dir` to `$HOME/.claude/skills/<name>`.
+
+| Shared skill | Why it must not drift |
+|---|---|
+| `handoff` | Both agents checkpoint into the same repo-root `MEMORY.md`; either resumes the other's work. `SKILL.md` is byte-identical. |
+| `next-move` | One portfolio decision model across both agents |
+| `git-converge-main` | Script-backed (`scripts/git_converge.py` + tests); divergent copies would apply different mutation rules to the same repo |
+| `nexrex-weekly-engineering-report` | Script-backed (`scripts/collect_git_activity.py` + tests); the report contract is the deliverable |
+
+Check parity with:
+
+```bash
+for s in handoff next-move git-converge-main nexrex-weekly-engineering-report; do
+  diff -q ~/.codex/skills/$s/SKILL.md ~/.claude/skills/$s/SKILL.md
+done
+```
+
+`handoff` should be silent. The other three differ only by the `$`→`/` conversion. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
-| `strategic-next` | Producing the next-step strategy with extended thinking after deep project analysis |
+| `next-move` | Pick the single next engineering move by reconciling code + Linear + git + the MEMORY.md checkpoint (shared with Codex) |
 | `latest` | Rebuilding MEMORY.md from current truth (git + Linear + CHANGELOG) and re-focusing it on what the session needs |
 | `catchup` | Fast evidence-based context rebuild after a reset |
 | `handoff` | End-of-session continuity capture into MEMORY.md |
@@ -143,8 +165,8 @@ Everything else lives in the skills layer below, or comes from a plugin — spec
 | `narrate` | One-page visual brief of one topic — fixed contract: BLUF → one diagram → key-nodes table → gaps; `--full` for the deep walkthrough (replaces narrate-glance + narrate-topic) |
 | `reverse-thinking` | Critical pre-build review of a plan / architecture spec — distill the end state, back-derive preconditions, check the plan against them (not against its own framing) |
 | `dispatch-strategy` | Dispatch waves + swim-lane visual for a ticket series against live git/Linear; board mode also picks what to close next (absorbed triage-next) |
-| `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
-| `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |
+| `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean current main — script-backed audit → plan → apply (shared with Codex) |
+| `nexrex-weekly-engineering-report` | Factual one-page multi-day contributor report from Linear + git evidence, script-backed (shared with Codex) |
 | `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
 | `humanizer` | Strip signs of AI-generated writing from text |
 | `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |

@@ -22,7 +22,7 @@ Default trigger: immediately after `/compact`. Also valid when:
 - Fresh-session startup with no prior context → `/catchup` or `/latest`
 - Trivial follow-ups in the same context window where memory is fresh
 - Memory needs full sync + restructure → `/latest`
-- Git state cleanup → `/git-state-audit`
+- Git state cleanup → `/git-converge-main`
 
 ## Workflow
 
