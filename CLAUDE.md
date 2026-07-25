@@ -172,8 +172,13 @@ Default to handing implementation-shaped subtasks to Codex. **When in doubt: pla
   ALWAYS auto-poll jobs expected to run >5 min with `/loop 90s /codex:status <id>`.
   ⚠️ Do NOT run `/codex:setup --enable-review-gate`.
 - **Adversarial review** (the Codex half of "Quality gate is built-in"): brief it read-only with the
-  diff/plan + one angle from: auth bypass · data loss · rollback safety · race conditions ·
-  degraded dependencies · version skew · observability gaps.
+  diff/plan + one angle from: **end-state alignment** · auth bypass · data loss · rollback safety ·
+  race conditions · degraded dependencies · version skew · observability gaps.
+  **End-state alignment is the mandatory first angle for a plan or spec** (the others are
+  implementation-risk angles that judge a plan on its own framing): distill the end state to one
+  sentence + one architecture diagram + 3–5 invariants, back-derive what must be true, then ask
+  whether the plan walks toward that or accumulates debt against it. If Codex is unavailable, run
+  this angle inline — it is the check that catches a clean plan pointed the wrong way.
 
 ### Multi-Agent Model Economics 🔴
 
