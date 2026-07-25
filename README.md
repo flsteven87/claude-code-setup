@@ -49,7 +49,7 @@ Four cooperating layers. Anything that slips one layer is still caught by the ne
 ├── commands/                  # 1 slash command (heavy automation pipeline)
 │   └── ship.md                # /ship      — main-based ship pipeline (simplify → verify → review → push)
 │
-├── skills/                    # 12 tracked skills (see table below)
+├── skills/                    # 13 tracked skills (see table below)
 ├── workflows/
 │   └── deep-research.js       # Routed research workflow with per-stage models
 ├── rules/                     # backend.md, frontend.md, naming-conventions.md
@@ -130,7 +130,8 @@ Everything else lives in the skills layer below, or comes from a plugin — spec
 
 ## Skills (tracked locally)
 
-12 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required. Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
+13 skills live as real files under `skills/` — clone the repo and they work immediately, no plugin install required.
+`handoff/SKILL.md` is kept **byte-identical** to `~/.codex/skills/handoff/SKILL.md` on purpose: both agents checkpoint into the same repo-root `MEMORY.md`, so either can resume the other's work. Edit both, or the cross-agent handoff silently diverges. (Codex carries an extra `agents/openai.yaml` for its own platform metadata — that file has no Claude Code equivalent and is not a content difference.) Plugin-delivered skills (e.g. `mattpocock-skills:*`, `codex:*`) coexist via their own prefixed names.
 
 | Skill | Use when |
 |---|---|
@@ -140,6 +141,7 @@ Everything else lives in the skills layer below, or comes from a plugin — spec
 | `handoff` | End-of-session continuity capture into MEMORY.md |
 | `rehydrate` | Forced deep re-read after `/compact` or long pauses, with best-practice endgame check |
 | `narrate` | One-page visual brief of one topic — fixed contract: BLUF → one diagram → key-nodes table → gaps; `--full` for the deep walkthrough (replaces narrate-glance + narrate-topic) |
+| `reverse-thinking` | Critical pre-build review of a plan / architecture spec — distill the end state, back-derive preconditions, check the plan against them (not against its own framing) |
 | `dispatch-strategy` | Dispatch waves + swim-lane visual for a ticket series against live git/Linear; board mode also picks what to close next (absorbed triage-next) |
 | `git-state-audit` | Audit + clean local + remote git state (status, branches, stash, worktrees, dangling commits) |
 | `dev-review` | Time-period contribution review across NexRex repos (zh-tw narrative) |

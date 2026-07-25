@@ -60,7 +60,7 @@ Standing policy — apply without being asked.
   explicit go-ahead.
 - **Clean & precise is the constant bar.** No fallback paths, no defensive hacks, no patchwork
   (補丁) — holistic, consistent changes that read as the final version. This holds without the user
-  invoking `karpathy-guidelines`.
+  invoking `/reverse-thinking` or `karpathy-guidelines`.
 - **Quality gate is built-in.** Before finalizing any plan, spec, or ticket batch: run the Codex
   adversarial review plus an endgame-best-practice / karpathy pass automatically. "Double confirm
   with codex", "終局 best practice", "不要過度工程" are the default bar, never user-triggered extras.
@@ -174,11 +174,10 @@ Default to handing implementation-shaped subtasks to Codex. **When in doubt: pla
 - **Adversarial review** (the Codex half of "Quality gate is built-in"): brief it read-only with the
   diff/plan + one angle from: **end-state alignment** · auth bypass · data loss · rollback safety ·
   race conditions · degraded dependencies · version skew · observability gaps.
-  **End-state alignment is the mandatory first angle for a plan or spec** (the others are
-  implementation-risk angles that judge a plan on its own framing): distill the end state to one
-  sentence + one architecture diagram + 3–5 invariants, back-derive what must be true, then ask
-  whether the plan walks toward that or accumulates debt against it. If Codex is unavailable, run
-  this angle inline — it is the check that catches a clean plan pointed the wrong way.
+  **End-state alignment is the mandatory first angle for a plan or spec** — the other seven are
+  implementation-risk angles that judge a plan on its own framing. `/reverse-thinking` is the full
+  method (distill end state → back-derive preconditions → check against codebase reality) and is
+  what to run inline when Codex is unavailable.
 
 ### Multi-Agent Model Economics 🔴
 
