@@ -56,14 +56,20 @@ fi
 
 # --- Hooks ---
 echo ""
-echo -e "${BOLD}Verifying hooks are executable...${RESET}"
+echo -e "${BOLD}Verifying hooks and scripts are executable...${RESET}"
 
-for hook in ~/.claude/hooks/*.sh; do
-  if [ -x "$hook" ]; then
-    pass "$(basename "$hook") is executable"
+# bin/codex-reconcile-phantoms.sh is wired as a UserPromptSubmit hook and is invoked
+# directly, so bin/ needs the same treatment as hooks/.
+for script in ~/.claude/hooks/*.sh ~/.claude/bin/*; do
+  # Skip symlinks: update-all.sh links bin/* out to ~/.local/bin, and chmod would
+  # follow a link to a target this script has no business touching.
+  [ -L "$script" ] && continue
+  [ -f "$script" ] || continue
+  if [ -x "$script" ]; then
+    pass "$(basename "$script") is executable"
   else
-    chmod +x "$hook"
-    pass "$(basename "$hook") made executable"
+    chmod +x "$script"
+    pass "$(basename "$script") made executable"
   fi
 done
 
@@ -72,16 +78,27 @@ echo ""
 echo -e "${BOLD}Plugins to install:${RESET}"
 echo "  Run these inside Claude Code or via CLI:"
 echo ""
-echo "    claude plugin install superpowers@superpowers-marketplace"
 echo "    claude plugin install codex@openai-codex"
 echo "    claude plugin install code-review@claude-plugins-official"
 echo "    claude plugin install typescript-lsp@claude-plugins-official"
 echo "    claude plugin install pyright-lsp@claude-plugins-official"
-echo "    claude plugin install andrej-karpathy-skills@karpathy-skills"
-echo "    claude plugin install impeccable@impeccable"
 echo "    claude plugin install ralph-loop@claude-plugins-official"
+echo "    claude plugin install andrej-karpathy-skills@karpathy-skills"
 echo ""
 warn "Plugin installation is interactive — Claude Code manages this itself"
+echo ""
+echo -e "${BOLD}mattpocock-skills is self-hosted, not installed:${RESET}"
+echo "  skills/mattpocock-skills/ carries its own manifest and symlinks into the"
+echo "  marketplace clone. Installing the plugin makes the skills-dir scan skip it."
+echo ""
+echo "    claude plugin marketplace add mattpocock/skills   # populates the symlink target"
+echo ""
+fail_hint="run: claude plugin marketplace add mattpocock/skills"
+if [ -d ~/.claude/plugins/marketplaces/mattpocock/skills ]; then
+  pass "mattpocock marketplace clone present (symlink target resolves)"
+else
+  warn "mattpocock marketplace clone missing — $fail_hint"
+fi
 
 # --- Verify ---
 echo ""

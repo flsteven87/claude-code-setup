@@ -1,8 +1,7 @@
 ---
 name: latest
-description: "Safely refresh the active default checkout and reconcile its root MEMORY.md with current Git, pull requests, tickets, changelog, and directly relevant repository evidence. Use when project memory has drifted or needs consolidation."
+description: "Safely refresh the active default checkout and reconcile its root MEMORY.md with current Git, pull requests, tickets, changelog, and directly relevant repository evidence. Use when the user explicitly asks to consolidate or refresh project memory; it moves the working checkout, so never fire it unprompted."
 argument-hint: "[specific workstream or scope]"
-disable-model-invocation: true
 ---
 
 # Latest

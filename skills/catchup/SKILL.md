@@ -1,8 +1,7 @@
 ---
 name: catchup
-description: "Resume an active repository from its root MEMORY.md by reconciling the recorded checkpoint with current Git and referenced artifacts. Use for a fast, read-only context rebuild."
+description: "Resume an active repository from its root MEMORY.md by reconciling the recorded checkpoint with current Git and referenced artifacts. Use when the user explicitly asks to catch up or rebuild context; a fast, read-only rebuild."
 argument-hint: "[specific workstream or memory path]"
-disable-model-invocation: true
 ---
 
 # Catchup

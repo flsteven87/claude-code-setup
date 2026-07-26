@@ -2,7 +2,6 @@
 name: handoff
 description: "Checkpoint the active repository into its root MEMORY.md so Codex or Claude Code can resume safely. Use when the user explicitly asks for a handoff, wrap-up, or end-of-session checkpoint."
 argument-hint: "[next-session focus]"
-disable-model-invocation: true
 ---
 
 # Handoff
