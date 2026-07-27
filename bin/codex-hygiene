@@ -1,10 +1,25 @@
 #!/usr/bin/env bash
-# codex-hygiene — kill orphan Codex CLI/companion processes and clear stale
-# plugin job state. Workaround for openai/codex-plugin-cc#277 (companion
-# exits 0 but app-server survives orphaned; state file stuck on "running").
+# codex-hygiene — blunt recovery when the Codex plugin is wedged.
 #
-# Safe on macOS: patterns match codex CLI / companion only; the unrelated
-# "Codex Computer Use" desktop app (SkyComputerUseClient) is not touched.
+# ⚠️ THIS IS NOT SELECTIVE. It pkills every matching Codex process and deletes
+# EVERY per-job state file, with no liveness or staleness check. A healthy job
+# running in another Claude Code window dies with the rest, and its state is
+# gone rather than marked failed. Run it only when Codex is already unusable and
+# you accept losing whatever is in flight.
+#
+# For the routine case — a job stuck on "running" because its process died —
+# use codex-reconcile-phantoms.sh instead. That one probes liveness, only
+# touches jobs whose pid is dead, marks them failed instead of deleting, and is
+# safe while other windows are live.
+#
+# The symptom this exists for, observed locally: the companion exits 0 while the
+# app-server survives orphaned, leaving the state file stuck on "running".
+# openai/codex-plugin-cc#277 is the nearest upstream report and is still open,
+# though its title describes a Windows review-hang rather than this orphan case —
+# treat the link as related, not as a diagnosis.
+#
+# Scope on macOS: the patterns match the codex CLI and companion only; the
+# unrelated "Codex Computer Use" desktop app (SkyComputerUseClient) is untouched.
 
 set -u
 
@@ -19,4 +34,4 @@ if [ -d "$state_root" ]; then
   find "$state_root" -path '*/codex*/state/*/jobs/*' -type f -delete 2>/dev/null || true
 fi
 
-echo "codex-hygiene: processes killed, cleared ${deleted} stale job state file(s)"
+echo "codex-hygiene: Codex processes killed, deleted ${deleted} job state file(s) (all of them, live or not)"

@@ -3,29 +3,29 @@
 # Usage: ~/.claude/bin/update-all.sh
 set -e
 
-echo "▶ 1/6Claude CLI"
+echo "▶ 1/6  Claude CLI"
 claude update 2>&1 | grep -E "(Current|Successfully|already)" || true
 
 echo
-echo "▶ 2/6Plugin marketplaces (5 configured)"
+marketplaces=$(ls -1 "$HOME/.claude/plugins/marketplaces" 2>/dev/null | wc -l | tr -d ' ')
+echo "▶ 2/6  Plugin marketplaces (${marketplaces:-0} configured)"
 claude plugin marketplace update 2>&1 | tail -3
 
 echo
-echo "▶ 3/6Plugins"
+echo "▶ 3/6  Plugins"
 claude plugin list 2>/dev/null | awk '/^  ❯ /{print $2}' | while read -r p; do
   out=$(claude plugin update "$p" 2>&1 | tail -1)
   echo "  $p — ${out#✔ }"
 done
 
 echo
-echo "▶ 4/6Codex CLI"
+echo "▶ 4/6  Codex CLI"
 npm install -g @openai/codex@latest 2>&1 | tail -3
 
 echo
-echo "▶ 5/6Python tools (uv) + npx cache hint"
+echo "▶ 5/6  Python tools (uv)"
 uv tool upgrade --all 2>&1 | tail -5 || true
 echo "  npx + uvx-based MCP servers (@latest tags) auto-refresh on next launch"
-echo "  serena/uv: ran 'uv cache prune' previously — refreshes on next uvx call"
 
 echo
 echo "▶ 6/6  Sync ~/.claude/bin/ → ~/.local/bin/ (PATH entry)"
