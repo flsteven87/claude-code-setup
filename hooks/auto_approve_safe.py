@@ -3,24 +3,29 @@
 # requires-python = ">=3.11"
 # ///
 """
-PermissionRequest hook: Auto-approve everything EXCEPT destructive commands.
+PermissionRequest hook: auto-approve everything except what a prompt can still save.
 
-Strategy:
-  - Static allow list in settings.json handles ~90% of cases
-  - This hook catches EVERYTHING ELSE that slips through
-  - Dangerous patterns fall through to a manual prompt (no JSON = normal flow)
+Where this sits (settings.json deny > ask > allow, then this hook):
+  - settings.json settles 26% of Bash calls outright (measured 2026-07-27); the
+    rest arrive here.
+  - pre_bash_guard.py runs earlier, at PreToolUse, and denies deletions, force
+    pushes, and pip with a recoverable alternative. Those never reach this hook,
+    so they never cost a prompt.
+  - What is left is the narrow list below. Matching one emits no JSON, which
+    Claude Code reads as "no decision" and turns into the normal prompt.
 
-Layering (deny > ask > allow > this hook):
-  - settings.json deny already hard-blocks force pushes and `git reset --hard *`;
-    the equivalent patterns below still matter for compound/wrapped forms the
-    prefix-style permission rules don't match (e.g. `cd x && git reset --hard`).
-  - Patterns are word-boundary regexes searched ANYWHERE in the command, so
-    wrapper prefixes (`command sudo ls`, `env sudo ...`) cannot bypass them.
-    False positives cost one prompt; false negatives cost an auto-approval.
+Patterns are word-boundary regexes over the whole command, so wrapper prefixes
+(`command sudo ls`, `env sudo ...`) and compound forms (`cd x && git reset --hard`)
+cannot slip past the prefix-style permission rules.
 
-Output format (PermissionRequest):
-  - Exit 0 + JSON with hookSpecificOutput.decision.behavior = "allow" | "deny"
-  - Exit 0 without JSON = no decision, show normal prompt
+Keep them narrow. A pattern that fires on a common idiom is not a cheap false
+positive: the old `/dev/` write rule matched every `2>/dev/null` and caused 91% of
+all prompts, undetected for months because the audit log truncated each command
+before the point that matched.
+
+Output: exit 0 with an allow decision, or exit 0 with no JSON to fall through to
+the prompt. This hook never denies — denials belong in pre_bash_guard.py, where
+they can carry an alternative for the agent to take instead.
 """
 
 import json
@@ -91,8 +96,11 @@ def make_allow_response() -> dict:
 def is_dangerous_bash(command: str) -> bool:
     """Check if a bash command requires manual confirmation.
 
-    Word-boundary regex search over the WHOLE command string — covers chained,
-    piped, and wrapper-prefixed forms without fragile segment splitting.
+    Regex over the whole string is enough for this list, because every pattern
+    names a command that is dangerous wherever it appears. Rules that must
+    distinguish argument positions — a force flag anywhere in a push, `rm` as a
+    command versus `rm` inside a quoted string — belong in pre_bash_guard.py,
+    which tokenizes instead.
     """
     return any(re.search(pattern, command) for pattern in DANGEROUS_BASH_PATTERNS)
 
@@ -108,7 +116,7 @@ def main():
             log_decision(tool_name, "ASK", "Interactive tool - requires user input")
             sys.exit(0)
 
-        # Bash: only block dangerous commands, allow everything else
+        # Bash: prompt on the narrow dangerous list, auto-approve everything else
         if tool_name == "Bash":
             command = tool_input.get("command", "")
             if is_dangerous_bash(command):
