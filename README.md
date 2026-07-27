@@ -280,7 +280,7 @@ review flows are delivered by `mattpocock-skills:*`.
 | Script | What it does |
 |---|---|
 | `bin/update-all.sh` | Six-stage refresh: Claude CLI → plugin marketplaces → plugins → Codex CLI → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored skills like `humanizer` |
-| `bin/codex-hygiene` | **Blunt** recovery for a wedged Codex plugin: `pkill -f` every matching companion/app-server process and delete **all** job-state files. No liveness or staleness check, so a healthy job in another window dies too. Last resort only |
+| `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
 | `bin/codex-reconcile-phantoms.sh` | The selective version, and the one wired as the `UserPromptSubmit` hook: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 
 ## What CLAUDE.md enforces

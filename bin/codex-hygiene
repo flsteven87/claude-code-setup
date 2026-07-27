@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
-# codex-hygiene — blunt recovery when the Codex plugin is wedged.
-#
-# ⚠️ THIS IS NOT SELECTIVE. It pkills every matching Codex process and deletes
-# EVERY per-job state file, with no liveness or staleness check. A healthy job
-# running in another Claude Code window dies with the rest, and its state is
-# gone rather than marked failed. Run it only when Codex is already unusable and
-# you accept losing whatever is in flight.
-#
-# For the routine case — a job stuck on "running" because its process died —
-# use codex-reconcile-phantoms.sh instead. That one probes liveness, only
-# touches jobs whose pid is dead, marks them failed instead of deleting, and is
-# safe while other windows are live.
+# codex-hygiene — recover a wedged Codex plugin without killing live work.
 #
 # The symptom this exists for, observed locally: the companion exits 0 while the
 # app-server survives orphaned, leaving the state file stuck on "running".
@@ -18,20 +7,141 @@
 # though its title describes a Windows review-hang rather than this orphan case —
 # treat the link as related, not as a diagnosis.
 #
+# WHY IT REFUSES SOMETIMES
+# Killing `codex app-server` kills every job that shares it, and the job-state
+# files are the only record of what those jobs were. There is no way to kill an
+# orphaned app-server and spare a live job, so this script does not try: it
+# probes every job's pid first, and if any job is genuinely alive it reports it
+# and exits 1 without touching anything. Once nothing is alive, every matching
+# process and state file IS orphaned, and the blunt sweep is the correct move.
+#
+# For a job stuck on "running" because its process died — the routine case, and
+# the one that blocks new launches — use codex-reconcile-phantoms.sh instead. It
+# marks dead jobs failed while preserving history, kills nothing, and is safe
+# while other windows are live. Reach for codex-hygiene only when that is not
+# enough.
+#
+# MODES
+#   (default)   refuse if any job is alive; otherwise sweep processes + state
+#   --dry-run   report what would be swept, change nothing
+#   --force     skip the liveness gate and sweep regardless — this kills live
+#               jobs in other windows and deletes their state. Last resort, for
+#               a state tree too corrupt to parse.
+#
+# EXIT
+#   0  swept, or dry-run completed, or nothing to do
+#   1  refused because live jobs exist (or jq is unavailable to prove otherwise)
+#
 # Scope on macOS: the patterns match the codex CLI and companion only; the
 # unrelated "Codex Computer Use" desktop app (SkyComputerUseClient) is untouched.
+#
+# CODEX_STATE_ROOT overrides where jobs are read from. It is a test seam: the
+# liveness gate follows it, but the process sweep is machine-global either way,
+# so pointing it at a fixture proves the gate logic, not the kill scope.
 
 set -u
 
-pkill -f 'codex-companion' 2>/dev/null || true
-pkill -f 'codex/dist'      2>/dev/null || true
-pkill -f 'codex .* app-server' 2>/dev/null || true
+STATE_ROOT="${CODEX_STATE_ROOT:-$HOME/.claude/plugins/data}"
+PATTERNS=('codex-companion' 'codex/dist' 'codex .* app-server')
+DRY=0
+FORCE=0
 
-state_root="$HOME/.claude/plugins/data"
-deleted=0
-if [ -d "$state_root" ]; then
-  deleted=$(find "$state_root" -path '*/codex*/state/*/jobs/*' -type f 2>/dev/null | wc -l | tr -d ' ')
-  find "$state_root" -path '*/codex*/state/*/jobs/*' -type f -delete 2>/dev/null || true
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1 ;;
+    --force) FORCE=1 ;;
+    -h|--help) sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "codex-hygiene: unknown argument '$1'" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+is_alive() { # $1 = pid
+  case "${1:-}" in
+    ''|null|0) return 1 ;;
+    *[!0-9]*) return 1 ;;
+  esac
+  kill -0 "$1" 2>/dev/null
+}
+
+# --- Liveness gate -----------------------------------------------------------
+
+live_report=""
+if [ "$FORCE" = 0 ]; then
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "codex-hygiene: jq not found — cannot prove no job is running, so refusing." >&2
+    echo "               Install jq, or re-run with --force to sweep anyway." >&2
+    exit 1
+  fi
+
+  while IFS= read -r sf; do
+    [ -f "$sf" ] || continue
+    ws="$(basename "$(dirname "$sf")")"
+    while IFS="$(printf '\t')" read -r pid jid; do
+      [ -n "${jid:-}" ] || continue
+      if is_alive "$pid"; then
+        live_report="${live_report}  ${jid}  (pid ${pid})  in ${ws}
+"
+      fi
+    done < <(jq -r '.jobs[]? | select(.status=="running" or .status=="queued") | "\(.pid)\t\(.id)"' "$sf" 2>/dev/null)
+  done < <(find "$STATE_ROOT" -path '*/codex*/state/*/state.json' -type f 2>/dev/null)
+
+  if [ -n "$live_report" ]; then
+    echo "codex-hygiene: refusing — these Codex jobs are genuinely running:"
+    printf '%s' "$live_report"
+    echo "  Killing the shared app-server would take them down with it."
+    echo "  Wait for them, cancel them with /codex:cancel <id>, or use --force to"
+    echo "  sweep anyway (which kills them and deletes their state)."
+    # A dry run still prints the scope below — seeing what --force would take is
+    # the whole point of asking — but the exit code stays 1 either way.
+    [ "$DRY" = 1 ] || exit 1
+    echo
+  fi
 fi
 
-echo "codex-hygiene: Codex processes killed, deleted ${deleted} job state file(s) (all of them, live or not)"
+# --- Sweep -------------------------------------------------------------------
+
+pids=""
+for pat in "${PATTERNS[@]}"; do
+  found="$(pgrep -f "$pat" 2>/dev/null || true)"
+  [ -n "$found" ] && pids="$pids $found"
+done
+pids="$(printf '%s\n' $pids | sort -un | tr '\n' ' ')"
+pid_count="$(printf '%s' "$pids" | wc -w | tr -d ' ')"
+
+job_files="$(find "$STATE_ROOT" -path '*/codex*/state/*/jobs/*' -type f 2>/dev/null || true)"
+file_count="$(printf '%s' "$job_files" | grep -c . || true)"
+
+if [ "$DRY" = 1 ]; then
+  echo "codex-hygiene [DRY]: would kill ${pid_count} process(es)${pids:+ —$pids}"
+  echo "codex-hygiene [DRY]: would delete ${file_count} job state file(s)"
+  [ "$FORCE" = 1 ] && echo "codex-hygiene [DRY]: --force set — the liveness gate was skipped"
+  [ -n "$live_report" ] && exit 1
+  exit 0
+fi
+
+for pid in $pids; do
+  kill "$pid" 2>/dev/null || true
+done
+
+# Trash rather than rm: these files are the only record of what a job did, and
+# the gate above only proves nothing is *running* — a job that finished seconds
+# ago is terminal, so it sweeps, and its log goes with it. Recoverable beats
+# tidy. Falls back to rm where trash is unavailable.
+if [ -n "$job_files" ]; then
+  if command -v trash >/dev/null 2>&1; then
+    printf '%s\n' "$job_files" | while IFS= read -r f; do
+      [ -n "$f" ] && trash "$f" 2>/dev/null || true
+    done
+  else
+    printf '%s\n' "$job_files" | while IFS= read -r f; do
+      [ -n "$f" ] && rm -f "$f" 2>/dev/null || true
+    done
+  fi
+fi
+
+if [ "$FORCE" = 1 ]; then
+  echo "codex-hygiene: --force — killed ${pid_count} process(es), deleted ${file_count} job state file(s), live or not"
+else
+  echo "codex-hygiene: no live jobs; killed ${pid_count} orphaned process(es), deleted ${file_count} stale job state file(s)"
+fi

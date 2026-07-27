@@ -34,6 +34,11 @@ sandbox denies all writes and the job thrashes on `Operation not permitted`.
 elapsed > 10 min → dead: `/codex:cancel <id>`, `codex-hygiene`, retry. Always auto-poll jobs expected
 to run > 5 min with `/loop 90s /codex:status <id>`.
 
+`codex-hygiene` exits 1 and changes nothing while any job is still alive — cancel first, that is why
+the order above is what it is. If the job is only *stuck* rather than wedged (status pinned to
+"running" after its process died, blocking new launches), `codex-reconcile-phantoms.sh` clears it
+without killing anything.
+
 ## Adversarial review angles
 
 Brief read-only with the diff or plan plus one angle:
