@@ -49,7 +49,10 @@ DANGEROUS_BASH_PATTERNS = [
     r"\brm\b",
     r"\brmdir\b",
     r"\bsudo\b",
-    r">\s*/dev/",
+    # Writing to a device node can destroy a disk; writing to the pseudo-devices
+    # cannot. Without this exclusion `2>/dev/null` — the most common idiom in the
+    # shell — reads as destructive and prompts (91% of all prompts, 2026-07-27).
+    r">\s*/dev/(?!null\b|stdout\b|stderr\b|tty\b|fd/)",
     r"\bchmod\s+777\b",
     r"\bkill\s+-9\b",
     r"\bkillall\b",
@@ -111,11 +114,11 @@ def main():
         if tool_name == "Bash":
             command = tool_input.get("command", "")
             if is_dangerous_bash(command):
-                log_decision(f"Bash:{command[:40]}", "ASK", "Dangerous pattern")
+                log_decision(f"Bash:{command[:200]}", "ASK", "Dangerous pattern")
                 # Exit 0 with no JSON = normal permission flow (show prompt)
                 sys.exit(0)
             else:
-                log_decision(f"Bash:{command[:40]}", "ALLOW", "Auto-approved")
+                log_decision(f"Bash:{command[:200]}", "ALLOW", "Auto-approved")
                 print(json.dumps(make_allow_response()))
                 sys.exit(0)
 
