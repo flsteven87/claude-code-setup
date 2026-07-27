@@ -13,6 +13,7 @@ logs/
 transcripts/
 sessions/
 shell-snapshots/
+state/
 tasks/
 todos/
 plans/
