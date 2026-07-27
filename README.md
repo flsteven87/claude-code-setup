@@ -152,7 +152,6 @@ rules and hooks loaded.
 |---|---|---|
 | `pre_bash_guard.py` | PreToolUse (Bash) | The single Bash gate; tokenizes argv rather than glob-matching. **Denies with an alternative** so none of these costs a prompt: force pushes → hand to the user (`--force`, `--force-with-lease`, `--mirror`, `-uf` bundles, `+refspec`, `git -c … push --force`); `rm` / `rmdir` / `find -delete` / `xargs rm` → `trash`; `pip` → `uv`. Exempt: `git rm`, paths under `/tmp`, and heredoc bodies (a script that merely *mentions* `rm` is data, not a deletion) |
 | `pre_write_guard.py` | PreToolUse (Write/Edit/MultiEdit) | **Hard-denies** writes to `.env*`, `*.pem`, `*.key`, SSH/AWS/GnuPG private material, `secrets.*`, and `credentials` / `credentials.<ext>` (note: not suffixed variants like `credentials_backup`) |
-| `pre_push_guard.py` | PreToolUse (Bash) | Compatibility shim delegating to `pre_bash_guard.py`. A session caches `settings.json` at startup, so a session running across the 2026-07-27 rename still invokes the old path. Delete once no pre-rename session is live |
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
 | `auto_approve_safe.py` | PermissionRequest | Auto-approves everything except commands that destroy **uncommitted** work (`git reset --hard`, `git restore`, `git checkout --`) or reconfigure the machine (`sudo`, `csrutil`, `spctl`, `shutdown`, `reboot`, device writes). Logs to `logs/auto_approve.log` |
@@ -171,7 +170,7 @@ rules and hooks loaded.
 
   > Permission rules are globs with no awareness of Git's argument grammar, so they cannot express
   > "a force flag anywhere in this push" on their own — `git -c … push --force` slips past any
-  > pattern short enough to be safe. That is what `pre_push_guard.py` is for: the deny list is the
+  > pattern short enough to be safe. That is what `pre_bash_guard.py` is for: the deny list is the
   > strongest layer (a hard fail no hook can grant back), and the hook parses argv to close what
   > globs structurally cannot reach. Neither layer is load-bearing alone.
 - **ask** — `git checkout -- *`, `git checkout .`, `git restore *`. Deliberately short: these three
