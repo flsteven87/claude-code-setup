@@ -6,11 +6,14 @@
 PreToolUse hook: Block Write/Edit/MultiEdit on sensitive files.
 
 Catches what settings.json deny rules can't easily express:
-  - .env / .env.* files anywhere in the tree
-  - SSH private keys (id_rsa, id_ed25519, *.pem, *.key)
-  - AWS credentials (~/.aws/credentials, ~/.aws/config)
-  - GPG (~/.gnupg/)
-  - secrets.* basenames
+  - .env / .env.* anywhere in the tree
+  - SSH private keys by name (id_rsa, id_ed25519, id_ecdsa, id_dsa), plus any
+    *.pem / *.key
+  - EVERY file under a .ssh/, .aws/, or .gnupg/ path segment — not just the
+    private material. Writing to .ssh/config or .ssh/known_hosts reroutes or
+    silently trusts a host, which is its own compromise.
+  - secret.* / secrets.* basenames, and `credentials` or `credentials.<ext>`.
+    Note the last one is exact: `credentials_backup.json` is NOT blocked.
   - SQL files under any migrations/ directory (project convention: schema
     changes go through the Supabase MCP, never local migration files)
 

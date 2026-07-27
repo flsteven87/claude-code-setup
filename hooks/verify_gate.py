@@ -14,7 +14,7 @@ weakest tier of the verification ladder. Claude Code force-ends the turn after
 Gates are cwd-scoped (no session id is available to the Bash tool), so
 concurrent sessions in worktrees (distinct cwds) never cross-block.
 
-CLI (used by /ship, /merge-pr, or ad hoc):
+CLI (armed by /ship stage 6.5, or ad hoc):
   uv run ~/.claude/hooks/verify_gate.py arm "<task>" "<check1>" ["<check2>" ...]
   uv run ~/.claude/hooks/verify_gate.py clear     # after observing the end state
   uv run ~/.claude/hooks/verify_gate.py status

@@ -6,9 +6,10 @@
 PreToolUse hook: Block un-routed named/built-in Workflow launches.
 
 Named workflows (Workflow({name: ...})) resolve to built-in scripts that pin
-no per-stage models, so every agent bills at the session tier — the #1 cost
-blowout per CLAUDE.md Multi-Agent Model Economics. (2026-07-07: un-routed
-deep-research billed 74 agents at session tier.)
+no per-stage models, so every agent bills at the session tier — the largest
+single cost blowout in this setup. (2026-07-07: un-routed deep-research billed
+74 agents at session tier.) The routing table is CLAUDE.md Part 3; the cost
+rationale is ~/.claude/references/model-routing.md.
 
 The Workflow tool resolves scriptPath > script > name, so `name` is only
 denied when it is the effective launch source.
@@ -27,7 +28,7 @@ DENY_REASON = (
     "Named workflows are un-routed — every agent() inherits the session model "
     "and bills at top tier. Use the routed copy via scriptPath (for example, "
     "~/.claude/workflows/deep-research.js), or resolve the built-in script, "
-    "pin per-stage models per CLAUDE.md Multi-Agent Model Economics (haiku "
+    "pin per-stage models per the routing table in CLAUDE.md Part 3 (haiku "
     "scan/fetch, sonnet review/verify, session model for synthesis only), then "
     "launch via scriptPath."
 )

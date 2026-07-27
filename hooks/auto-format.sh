@@ -6,7 +6,7 @@
 #   Frontend → npx prettier --write (only if locally installed)
 #
 # Design principles:
-#   - Uses project-local tools only (respects Dippy philosophy)
+#   - Uses project-local tools only — never installs anything to format
 #   - Silent on success, fails gracefully (always exit 0)
 #   - npx --no prevents downloading prettier if not in project
 
