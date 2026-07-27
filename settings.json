@@ -98,6 +98,11 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "sandbox": {
+    "network": {
+      "allowedDomains": ["*"]
+    }
+  },
   "hooks": {
     "Notification": [
       {
