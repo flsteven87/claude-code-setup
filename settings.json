@@ -92,8 +92,6 @@
       "Bash(git clean -f*)"
     ],
     "ask": [
-      "Bash(rm -rf *)",
-      "Bash(rm -fr *)",
       "Bash(git checkout -- *)",
       "Bash(git checkout .)",
       "Bash(git restore *)"
@@ -169,17 +167,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "dippy",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_push_guard.py",
+            "command": "uv run ~/.claude/hooks/pre_bash_guard.py",
             "timeout": 5
           }
         ]
@@ -239,7 +227,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; for L in ~/.claude/hook-approvals.log ~/.claude/logs/auto_approve.log; do if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; done; true"
+            "command": "osascript -e 'display notification \"Claude Code finished\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null; L=~/.claude/logs/auto_approve.log; if [ -f $L ] && [ $(stat -f%z $L) -gt 5242880 ]; then tail -n 2000 $L > $L.tmp && mv $L.tmp $L; fi; true"
           },
           {
             "type": "command",

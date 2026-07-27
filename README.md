@@ -43,17 +43,22 @@ already do it from the repo, the filesystem, or its system prompt, it gets cut �
 ┌─────▼──────────────┐   ┌───────────▼────────────┐   ┌─────────────▼──────────┐
 │ settings.json      │   │ PreToolUse gates       │   │ Exit gates             │
 │                    │   │                        │   │                        │
-│ deny → ask → allow │   │ dippy           (Bash) │   │ auto_approve_safe.py   │
-│ first match wins.  │   │   uv over pip, rm -rf  │   │   (PermissionRequest)  │
-│                    │   │ pre_push_guard.py      │   │   auto-OKs safe ops,   │
-│ A deny is a hard   │   │   (Bash) force pushes  │   │   asks on rm / sudo    │
-│ fail — unreachable │   │ pre_write_guard.py     │   │                        │
-│ even for hooks, so │   │   (file writes) .env,  │   │ verify_gate.py (Stop)  │
-│ nothing downstream │   │   *.pem, *.key, .ssh   │   │   blocks "done" while  │
-│ can grant it back. │   │ workflow_route_guard   │   │   end-state checks are │
-│                    │   │   .py (Workflow)       │   │   still unobserved     │
+│ deny → ask → allow │   │ pre_bash_guard.py      │   │ auto_approve_safe.py   │
+│ first match wins.  │   │   (Bash) force push →  │   │   (PermissionRequest)  │
+│                    │   │   user, rm → trash,    │   │   auto-OKs everything  │
+│ A deny is a hard   │   │   pip → uv             │   │   except uncommitted-  │
+│ fail — unreachable │   │ pre_write_guard.py     │   │   work destroyers      │
+│ even for hooks, so │   │   (file writes) .env,  │   │                        │
+│ nothing downstream │   │   *.pem, *.key, .ssh   │   │ verify_gate.py (Stop)  │
+│ can grant it back. │   │ workflow_route_guard   │   │   blocks "done" while  │
+│                    │   │   .py (Workflow)       │   │   end state unobserved │
 └────────────────────┘   └────────────────────────┘   └────────────────────────┘
 ```
+
+The gates prefer **redirecting to a reversible alternative over stopping to ask**: a
+deletion is denied with "use `trash`" rather than prompted, because a recoverable
+deletion needs no confirmation. What survives as a prompt is the short list that
+destroys work nothing can restore.
 
 Anything that slips one layer is still caught by the next.
 
@@ -63,7 +68,7 @@ Anything that slips one layer is still caught by the next.
 ~/.claude/
 ├── CLAUDE.md                    # Behavioral policy — loaded every session
 ├── settings.json                # Permissions, hooks, enabled plugins, status line
-├── setup.sh                     # Idempotent bootstrap (deps, dippy, chmod, plugin checklist)
+├── setup.sh                     # Idempotent bootstrap (deps, chmod, gate check, plugin list)
 ├── statusline-command.sh        # Status bar: cwd, model, context %, rate limits
 │
 ├── rules/                       # Path-triggered standards
@@ -78,13 +83,12 @@ Anything that slips one layer is still caught by the next.
 │   ├── harness.md
 │   └── autonomous-loops.md
 │
-├── hooks/                       # 7 active hooks (see table below)
+├── hooks/                       # 7 active hooks + 1 rename shim (see table below)
 ├── agents/                      # 4 routed subagents (see table below)
 ├── bin/                         # 3 maintenance scripts (one is a live hook)
 ├── commands/ship.md             # /ship — the only local slash command
 ├── skills/                      # 12 local skills + the mattpocock self-host manifest
-├── workflows/deep-research.js   # Routed research workflow with per-stage models
-└── dippy/config                 # Dippy ruleset (copied to ~/.dippy/config by setup.sh)
+└── workflows/deep-research.js   # Routed research workflow with per-stage models
 ```
 
 > **Not tracked:** `plugins/` (auto-managed, machine-specific paths), `projects/` (per-project
@@ -107,10 +111,11 @@ git clone https://github.com/flsteven87/claude-code-setup.git ~/.claude
 cd ~/.claude && ./setup.sh
 ```
 
-Verifies prerequisites (Claude Code CLI, `uv`), installs [Dippy](https://github.com/ldayton/Dippy),
-copies `dippy/config` to `~/.dippy/config`, and makes `hooks/*.sh` + `bin/*` executable (Python hooks
-run through `uv run`, so they need no exec bit). It then **prints** the plugin and marketplace
-commands for steps 3–4 — plugin installation is interactive, so `setup.sh` never runs it for you.
+Verifies prerequisites (Claude Code CLI, `uv`, `trash`), makes `hooks/*.sh` + `bin/*` executable
+(Python hooks run through `uv run`, so they need no exec bit), and fails the run if
+`pre_bash_guard.py` does not deny a test deletion — an open Bash gate must not pass setup silently.
+It then **prints** the plugin and marketplace commands for steps 3–4; plugin installation is
+interactive, so `setup.sh` never runs it for you.
 
 ### 3. Install plugins
 
@@ -145,12 +150,12 @@ rules and hooks loaded.
 
 | Hook | Event | Purpose |
 |---|---|---|
-| `dippy` | PreToolUse (Bash) | Validates every Bash command. Enforces `uv` over `pip`, blocks `rm -rf`, protects `.env*`. Exit 0 = allow, exit 2 = deny |
+| `pre_bash_guard.py` | PreToolUse (Bash) | The single Bash gate; tokenizes argv rather than glob-matching. **Denies with an alternative** so none of these costs a prompt: force pushes → hand to the user (`--force`, `--force-with-lease`, `--mirror`, `-uf` bundles, `+refspec`, `git -c … push --force`); `rm` / `rmdir` / `find -delete` / `xargs rm` → `trash`; `pip` → `uv`. Exempt: `git rm`, paths under `/tmp`, and heredoc bodies (a script that merely *mentions* `rm` is data, not a deletion) |
 | `pre_write_guard.py` | PreToolUse (Write/Edit/MultiEdit) | **Hard-denies** writes to `.env*`, `*.pem`, `*.key`, SSH/AWS/GnuPG private material, `secrets.*`, and `credentials` / `credentials.<ext>` (note: not suffixed variants like `credentials_backup`) |
-| `pre_push_guard.py` | PreToolUse (Bash) | Tokenizes the command, skips Git's global options, and **denies** any `git push` carrying a force flag — `--force`, `--force-with-lease`, `--mirror`, short-option bundles (`-uf`, `-fu`), and `+refspec`. Catches spellings a glob cannot reach, including `git -c … push --force` and force pushes hidden after `&&` / `;` |
+| `pre_push_guard.py` | PreToolUse (Bash) | Compatibility shim delegating to `pre_bash_guard.py`. A session caches `settings.json` at startup, so a session running across the 2026-07-27 rename still invokes the old path. Delete once no pre-rename session is live |
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
-| `auto_approve_safe.py` | PermissionRequest | Auto-approves safe ops; prompts on `rm`, `git rebase`, `sudo`, `kill -9` / `killall` / `pkill`, `shutdown`. Logs to `logs/auto_approve.log` |
+| `auto_approve_safe.py` | PermissionRequest | Auto-approves everything except commands that destroy **uncommitted** work (`git reset --hard`, `git restore`, `git checkout --`) or reconfigure the machine (`sudo`, `csrutil`, `spctl`, `shutdown`, `reboot`, device writes). Logs to `logs/auto_approve.log` |
 | `pre_compact.py` | PreCompact | Snapshots the transcript before context compaction (keeps last 20) |
 | `verify_gate.py` | Stop | Blocks completion while a delivery pipeline still has unobserved end-state checks (armed by `/ship` stage 6.5) |
 | `codex-reconcile-phantoms.sh` | UserPromptSubmit | Reconciles stale/orphaned Codex jobs before each turn |
@@ -169,7 +174,10 @@ rules and hooks loaded.
   > pattern short enough to be safe. That is what `pre_push_guard.py` is for: the deny list is the
   > strongest layer (a hard fail no hook can grant back), and the hook parses argv to close what
   > globs structurally cannot reach. Neither layer is load-bearing alone.
-- **ask** — `rm -rf *`, `rm -fr *`, `git checkout -- *`, `git checkout .`, `git restore *`.
+- **ask** — `git checkout -- *`, `git checkout .`, `git restore *`. Deliberately short: these three
+  discard **uncommitted** changes, the one thing the reflog cannot bring back. Everything reversible
+  was removed from the prompt path in 2026-07 (`git rebase`, `kill -9`, `chmod`, `launchctl`, …), and
+  deletions moved to `pre_bash_guard.py`, which redirects them to `trash` instead of asking.
 - **allow** — read/write/search tools, the safe `git` verbs, `uv` / `pnpm` / `npm` / `gh` / `cargo` /
   `go`, and the MCP servers this setup relies on.
 
@@ -304,7 +312,7 @@ enforced by a hook rather than by a linter.)
 1. **CLAUDE.md** — replace with your own policy (heavily preference-specific)
 2. **rules/** — swap for your stack
 3. **references/** — your own on-demand deep dives; point at them from `CLAUDE.md`
-4. **dippy/config** — adjust the Bash allow/deny ruleset
+4. **hooks/pre_bash_guard.py** — adjust what the Bash gate redirects or denies
 5. **settings.json** — permission rules, hooks, plugins; drop the TempoTerm entries if unused
 6. **agents/** + **skills/** + **commands/** — your own workers and pipelines
 

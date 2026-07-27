@@ -38,30 +38,28 @@ INTERACTIVE_TOOLS = [
     "ExitPlanMode",  # User must review and approve plan
 ]
 
-# Commands that REQUIRE manual confirmation (match = show prompt)
-# NOTE: git add/commit/push removed to enable /autopilot auto-commit
+# Commands that REQUIRE manual confirmation (match = show prompt).
+#
+# The bar (2026-07-27): a prompt is worth an interruption only when the command
+# destroys something no layer can give back. Everything reversible was dropped —
+# `git rebase` (reflog), `kill -9` / `killall` / `pkill` (restart it), `chmod 777`,
+# `launchctl` / `defaults write` / `networksetup` (change it back). Deletions and
+# force pushes moved to pre_bash_guard.py, which denies them with a recoverable
+# alternative (`trash`, hand-to-user) instead of costing a prompt.
+#
+# What is left destroys UNCOMMITTED work — the one thing the reflog cannot
+# restore — or reconfigures the machine itself.
 DANGEROUS_BASH_PATTERNS = [
-    r"\bgit\s+rebase\b",
     r"\bgit\s+reset\s+--hard\b",
-    r"\bgit\s+push\s+(--force|-f)\b",
     r"\bgit\s+checkout\s+(--\s|\.(\s|$))",  # discard-changes forms (Scope Discipline)
     r"\bgit\s+restore\b",
-    r"\brm\b",
-    r"\brmdir\b",
-    r"\bsudo\b",
+    r"\bsudo\b",  # NOPASSWD sudoers entries would otherwise run unprompted
     # Writing to a device node can destroy a disk; writing to the pseudo-devices
     # cannot. Without this exclusion `2>/dev/null` — the most common idiom in the
     # shell — reads as destructive and prompts (91% of all prompts, 2026-07-27).
     r">\s*/dev/(?!null\b|stdout\b|stderr\b|tty\b|fd/)",
-    r"\bchmod\s+777\b",
-    r"\bkill\s+-9\b",
-    r"\bkillall\b",
-    r"\bpkill\b",
     r"\bshutdown\b",
     r"\breboot\b",
-    r"\blaunchctl\b",
-    r"\bdefaults\s+write\b",
-    r"\bnetworksetup\b",
     r"\bcsrutil\b",
     r"\bspctl\b",
 ]

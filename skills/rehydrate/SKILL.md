@@ -1,120 +1,99 @@
 ---
 name: rehydrate
-description: Use right after `/compact`, or when situational awareness is suspect (resuming after a long pause, returning from a long-running subagent, user says 「進入狀況」 / "rehydrate" / "再走一遍"). Forces a deep ultrathink-grade re-read of MEMORY.md, the active plan doc, and the codebase files the next step will touch — then runs an endgame best-practice check against the project's stated principle (Contextra: Single Elegant Endgame) before handing off to `/mattpocock-skills:to-spec` or `/mattpocock-skills:implement`. If any check fails, stops and surfaces the tension with file:line evidence rather than silently proceeding. NOT a memory-rewrite tool (use `/latest`), NOT a fresh-start summarizer (use `/catchup`).
+description: "Reload codebase texture after context loss, then verify the queued step still aims at the project's endgame before dispatching it. Use right after `/compact`, when resuming a session left idle, when returning from a long-running subagent or Codex delegation, or when the user says 「進入狀況」 / \"rehydrate\" / \"再走一遍\"."
+argument-hint: "[active plan doc or task surface]"
 ---
 
-# /rehydrate — Post-compact context reload + endgame check
+# Rehydrate
 
-`/compact` keeps the *narrative* of what happened but lossily compresses the *texture* of the codebase. Function signatures get smoothed, locked invariants get paraphrased, "I was about to do X" survives without the surrounding evidence that made X right. This skill forces a deliberate re-read before any further writing, then confirms the next step still aims at the endgame before dispatching it.
+`/compact` keeps the *narrative* and loses the **texture** — exact signatures, the wording of a
+locked invariant, the import shape of the neighbouring file, the evidence that made the queued step
+right. Texture is what makes the next file you write read as native rather than grafted on. This
+skill rebuilds it, confirms the step still aims at the endgame, and hands off.
 
-**Announce at start:** "I'm using the rehydrate skill to reload context and verify endgame alignment before continuing."
+Ultrathink throughout: a detail missed here propagates into every task after it.
 
-**Reasoning mode:** ultrathink throughout. The cost of a missed detail at this stage propagates through every subsequent task.
+## 1. Re-read the checkpoint
 
-## When this is the right tool
+Read `<repo-root>/MEMORY.md` as a file. The auto-injected copy and the post-compact summary are both
+lossy projections; the file is the source of truth and wins any disagreement. Recover the exact
+wording of:
 
-Default trigger: immediately after `/compact`. Also valid when:
-- Resuming a session after >1 hour idle
-- Returning from a long-running subagent / Codex delegation
-- The user says 「進入狀況」/ "reorient" / "rehydrate" / "再走一遍"
+- the project's stated **endgame principle** and any locked architecture decisions;
+- current phase and next action;
+- the invariants governing the active surface, cited by their own identifiers (`V-3`, `L-2`);
+- the topic files whose index lines touch the active surface — read those files, not the index.
 
-**Not** the right tool for:
-- Fresh-session startup with no prior context → `/catchup` or `/latest`
-- Trivial follow-ups in the same context window where memory is fresh
-- Memory needs full sync + restructure → `/latest`
-- Git state cleanup → `/git-converge-main`
+**Complete when** every claim you will rely on has been read from a file this turn, and each point
+where the summary and `MEMORY.md` diverged is resolved in the file's favour.
 
-## Workflow
+## 2. Name the task surface
 
-### 1. Re-read MEMORY.md fresh
+State without paraphrase:
 
-The system auto-injects MEMORY.md, but the post-compact *summary* may have lossily restated it. Read the actual file. Recover precise wording of:
+- the plan doc being executed (absolute path);
+- the queued next step — `/mattpocock-skills:to-spec` while still designing,
+  `/mattpocock-skills:implement <plan>` once the plan is approved, `/ship` once implementation is
+  done;
+- the files that step will touch (absolute paths, from the plan's own task list, not the summary's
+  paraphrase);
+- the invariants and locked decisions governing those files, cited by identifier.
 
-- **Highest Priority Principle** + **Locked Architecture Decision**
-- **Current Phase** + **Next** — these change session-to-session
-- **Explicit DO-NOTs** (V-X invariants, locked decisions L-N)
-- The **Memory Files** entries relevant to the active task surface (read the topic files themselves, not just the index line)
+Any of these ambiguous → ask one focused question and wait. A wrong-surface ultrathink pass costs
+far more than the question.
 
-When the compacted summary and MEMORY.md diverge, MEMORY.md wins.
+**Complete when** all four are named concretely and the file paths exist.
 
-### 2. Identify the active task surface
+## 3. Rebuild texture
 
-Name precisely, no paraphrase:
+Read **whole files**. A grep confirms a hypothesis; only whole-file reading surfaces the texture —
+import shape, neighbouring test fixtures, naming convention, base-class behaviour — that decides
+whether the next file looks native. Read in parallel, in this order:
 
-- **The plan doc being executed** (absolute path under `docs/plans/...` or equivalent)
-- **The slash command queued next** — `/mattpocock-skills:to-spec` if still designing, `/mattpocock-skills:implement <plan>` if plan is approved and ready to execute, `/ship` if implementation is already done and we're heading to merge
-- **The files the next step will touch** (absolute paths; do not trust the summary's paraphrase)
-- **The invariants and locked decisions that govern those files** — cite by section / anchor / V-X / L-N
+1. the exact files in the plan's task list (Create / Modify / Test);
+2. their directory siblings, for local pattern absorption;
+3. the base class or shared utility the new code will subclass or call;
+4. the plan or ADR section for the queued step specifically — skim what already shipped;
+5. the most recent ship summary in `MEMORY.md`, which carries the invariants that locked in last.
 
-If any of these is ambiguous, **stop and ask one clarifying question before reading further**. Wasting an ultrathink pass on the wrong surface is more expensive than one clarifying question.
+**Complete when** you could write the next file from the surrounding code's muscle memory without
+consulting the plan again.
 
-### 3. Ultrathink the codebase
+## 4. Endgame check
 
-Read **whole files**, not greps. Greps confirm a hypothesis; whole-file reading reveals the pattern texture — import shape, neighbouring test fixtures, function-naming conventions, repository base-class behaviour — that determines whether the next file you write looks native or grafted on.
+Resolve the project's endgame principle from its own `CLAUDE.md` / `AGENTS.md` / `docs/principles.md`
+(step 1 already recovered it). Absent an explicit principle, use best practice for the domain and
+say that the framing is implicit.
 
-Prioritize, in order:
+Hold each meaningful decision in the queued step against it:
 
-1. The exact files listed in the active plan's task list (Tasks → Files → Create / Modify / Test)
-2. Sibling files in the same directory (local pattern absorption)
-3. The repository base class / shared utility the new code will subclass or call
-4. The plan / ADR section for **the next step specifically** (skim past sections already shipped; deep-read what's queued)
-5. The most recent ship summary in MEMORY.md's `Recent Ships` — load-bearing for invariants that just locked in
+- Is this the single best-practice version, or a transitional shim?
+- Does it add back-compat scaffolding, parallel `v2` / `enhanced_*` / `_old_*` naming, deprecated
+  re-exports, or speculative-future hooks?
+- Is it consistent with the cited invariants and the project's architectural layering?
+- Does it stay clear of the anti-patterns this project has explicitly banned?
 
-Parallelize the reads where possible. The goal is to come out of this step able to write the next file from muscle memory of the surrounding code, not by referring back to a plan.
+Uncertain counts as a fail. A fail means **surface the tension** in plain language with file:line
+evidence, framed as the user's decision: "the plan defers X to phase N because R — still acceptable,
+or should this phase widen to make it endgame-correct now?" Then wait. Amending the plan, accepting
+the deviation with a recorded reason, and aborting are all the user's calls.
 
-### 4. Endgame best-practice check
+**Complete when** every decision in the queued step has an explicit pass, or the tension is on the
+table with evidence and the user has answered.
 
-Verify the plan / next implementation step against the project's stated **endgame principle**.
+## 5. Hand off
 
-- **Contextra**: "Single Elegant Endgame — One version. Always current. No legacy. No compromises." (CLAUDE.md Part 1)
-- **Other projects**: their CLAUDE.md / AGENTS.md / `docs/principles.md`. If no explicit principle exists, fall back to "best practice for this domain" and note the implicit framing.
+Confirm in ≤5 sentences of zh-tw: the plan doc, the queued step, the single most load-bearing
+invariant it preserves, and any tension the user accepted. The user already read the plan — they
+invoked rehydrate so the next step starts from live context, not so the plan gets re-pitched.
 
-For each meaningful decision in the next step, ask:
+Then dispatch `/mattpocock-skills:to-spec` or `/mattpocock-skills:implement` directly. `/ship` is
+user-invoked — name it as the next step and stop there.
 
-- Does it represent the **single best-practice version**, or is it a transitional shim?
-- Does it introduce backward-compat scaffolding, parallel `v2` / `enhanced_*` / `_old_*` naming, deprecated re-exports, or speculative-future hooks?
-- Is it consistent with the locked V-X invariants and the project's architectural layering (e.g. 4-layer API → Service → Repository → DB)?
-- Does it avoid pipeline-design / data-access / API-design anti-patterns the project has explicitly banned?
+**Complete when** the confirmation is printed and either the design/implement step is running or the
+`/ship` handoff was stated.
 
-Every answer "yes" → proceed to step 5.
+## Language
 
-Any answer "no" or "not sure" → **stop and surface the tension in plain language with file:line evidence**. Frame as a user-owned decision: "the plan defers X to phase N for reason R; still acceptable, or should this phase widen to make it endgame-correct now?"
-
-**Never silently downgrade scope to make a deferred concern go away.** Surfacing tension is the whole point of this step.
-
-### 5. Handoff
-
-If checks 1-4 all passed:
-
-- Print a **≤ 5-sentence** confirmation in zh-tw naming: the plan doc + the queued slash command + the single most-load-bearing invariant the next step preserves + any deferred-but-acknowledged tension.
-- Then invoke the queued slash command (`/mattpocock-skills:to-spec` for design, `/mattpocock-skills:implement` for execution, `/ship` for merge). Do **not** re-narrate the plan — the user already read it; they invoked rehydrate so the next step doesn't start from a stale snapshot, not so it gets re-pitched.
-
-If any check failed:
-
-- Stop. Surface the specific tension in 1-3 sentences with file:line evidence.
-- Offer the user the explicit choice: amend the plan, accept the deviation with documented reason, or abort.
-- Do NOT dispatch the next slash command until the tension is resolved.
-
-## Communication
-
-All user-facing output in zh-tw. English reserved for technical tokens only — file paths, function names, slash command names, ticket IDs, commit SHAs, library names. Don't translate technical tokens into Chinese.
-
-## Anti-patterns
-
-| Don't | Why |
-|---|---|
-| Trust the post-compact summary verbatim | It's a lossy projection; the source files are the SSOT |
-| Use greps as a substitute for whole-file reading | Greps confirm a hypothesis but won't reveal pattern texture |
-| Skip step 4 because "the plan is already written" | Endgame check IS the point — if the plan were already endgame-correct, the user wouldn't be asking for an explicit recheck |
-| Re-narrate the plan back to the user before dispatching | They already read it; confirm + go |
-| Do the next step's actual work inside this skill | Rehydrate ends with handoff, not implementation |
-| Skip clarifying questions to "save time" | Wrong-surface ultrathink is more expensive than one question |
-| Silently downgrade plan scope to bypass an endgame-check fail | The point is to surface tension, not absorb it |
-
-## Relationship to adjacent skills
-
-- **`/catchup`** — fresh-session orientation from `git` + memory + minimal file reads. Lighter than rehydrate; no endgame check, no plan-doc deep-read, no auto-dispatch. Use when context is genuinely empty.
-- **`/latest`** — full memory rewrite + sibling consolidation. Much heavier than rehydrate; runs in zh-tw and rewrites MEMORY.md against ground truth. Use when memory has drifted, not just because of compact.
-- **`/handoff`** — end-of-session surgical memory update. Opposite end of the session: rehydrate runs at the start, handoff runs at the close.
-- **`/mattpocock-skills:to-spec`** — the dispatch target when we're still in design phase.
-- **`/mattpocock-skills:implement`** — the dispatch target when the plan is approved.
+zh-tw prose. Technical tokens stay English — file paths, function names, slash commands, ticket IDs,
+SHAs, library names.

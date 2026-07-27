@@ -34,24 +34,16 @@ else
   exit 1
 fi
 
-# --- Dippy ---
+# --- Bash gate ---
 echo ""
-echo -e "${BOLD}Setting up Dippy (Bash command gatekeeper)...${RESET}"
+echo -e "${BOLD}Checking the Bash gate...${RESET}"
 
-if command -v dippy &>/dev/null; then
-  pass "Dippy already installed"
+# Deletions are redirected to `trash` rather than gated behind a prompt, so the
+# binary has to exist. macOS 14+ ships it at /usr/bin/trash.
+if command -v trash &>/dev/null; then
+  pass "trash found — hooks/pre_bash_guard.py can redirect rm to it"
 else
-  echo "  Installing dippy via uv..."
-  uv tool install dippy
-  pass "Dippy installed"
-fi
-
-if [ -f ~/.dippy/config ]; then
-  warn "~/.dippy/config already exists — skipping (compare with dippy/config if needed)"
-else
-  mkdir -p ~/.dippy
-  cp ~/.claude/dippy/config ~/.dippy/config
-  pass "Dippy config copied to ~/.dippy/config"
+  warn "trash not found — pre_bash_guard.py will still deny rm, but with no working alternative"
 fi
 
 # --- Hooks ---
@@ -113,17 +105,19 @@ else
   pass "settings.json paths are portable"
 fi
 
-if [ -f ~/.dippy/config ]; then
-  pass "Dippy config present"
-else
-  fail "Dippy config missing at ~/.dippy/config"
-  errors=$((errors + 1))
-fi
-
 if [ -f ~/.claude/hooks/auto-format.sh ] && [ -x ~/.claude/hooks/auto-format.sh ]; then
   pass "Hooks are in place"
 else
   fail "Hook scripts missing or not executable"
+  errors=$((errors + 1))
+fi
+
+# The Bash gate is the only thing standing between the agent and an unrecoverable
+# deletion, so a syntax error in it must fail setup rather than fail open.
+if uv run ~/.claude/hooks/pre_bash_guard.py <<<'{"tool_name":"Bash","tool_input":{"command":"rm -rf /Users/x/work"}}' | grep -q '"deny"'; then
+  pass "pre_bash_guard.py is denying deletions"
+else
+  fail "pre_bash_guard.py did not deny a test rm — the Bash gate is open"
   errors=$((errors + 1))
 fi
 

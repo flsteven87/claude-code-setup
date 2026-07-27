@@ -1,244 +1,266 @@
 ---
 description: Solo / main-based ship pipeline — simplify (Codex) → review (Codex) → commit & push to origin/main. Express lane for small + clear diffs.
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git stash:*), Bash(git worktree:*), Bash(git branch:*), Bash(git rev-parse:*), Bash(git rev-list:*), Bash(uv run:*), Bash(pnpm:*), Bash(npm run:*), Bash(npm test:*), Bash(cargo:*), Bash(go vet:*), Bash(go test:*), Bash(test -f:*), Bash(ls:*), Task
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
-# /ship — End-to-end ship pipeline (main branch, no PR)
+# /ship — working tree → `origin/main`
 
-Drive a finalized change from working tree → committed → pushed to `origin/main`. Implementation review work is delegated to Codex per CLAUDE.md "Delegation to Codex" policy. This command is a thin orchestrator — each stage uses an existing skill or subagent.
+Drive a finalized change to `origin/main`. Normal entry is after `/mattpocock-skills:implement`
+finishes a batch, which leaves the repo **pre-committed** (clean tree, N commits ahead of
+`origin/main`); an uncommitted working tree is the other accepted shape.
 
-Two lanes exist; the lane is chosen during pre-flight based on what the diff looks like.
+This command orchestrates; implementation and review work go to Codex per CLAUDE.md Part 3.
+
+`/ship` is user-invoked only. The invocation is the push authorization, so the pipeline can reach
+`git push` without a second prompt — that only holds while a human is the one typing it.
 
 | Lane | Stages | When |
 |---|---|---|
-| **Express** | 1 → 5 (light) → 6 → 6.5 → 7 | Small, clear diff with no load-bearing code semantics. Skips simplify + Codex review. |
-| **Full** | 1 → 2 → 3 → 4 → 4.5 → 5 → 6 → 6.5 → 7 | Default. Any non-trivial code change, or anything the user wants gated through Codex. |
-
-Lane selection is **auto-routed when every express criterion passes cleanly, surfaced for confirmation only when any criterion is borderline**. Pure docs / config / `.gitignore` / styling-token swaps auto-route to express without a prompt; cases where one criterion needs a judgment call get a prompt; everything else goes through full lane. The goal is to spend Codex tokens where they actually catch bugs and spend the user's time only on decisions that aren't obvious.
+| **Express** | 1 → 1.5 → 5 → 6 → 6.5 → 7 | Small, clear diff with no load-bearing code semantics |
+| **Full** | + 2 → 3 → 4 → 4.5 | Default for everything else |
 
 ---
 
-## Stages
+## 1. Pre-flight
 
-### 1. Pre-flight
-
-Detect what's actually being shipped. Don't assume a dirty working tree — multi-batch `/mattpocock-skills:implement` runs and previously-confirmed commits both leave the repo in **pre-committed state** (clean tree, N commits ahead of `origin/main`).
+Compute the **ship surface** — the aggregate change going to `origin/main`:
 
 ```bash
 git status --short
 git rev-list --left-right --count origin/main...HEAD
 ```
 
-Compute the **ship surface** = the aggregate change going to `origin/main`:
+| Observed | Baseline | Diff |
+|---|---|---|
+| `git status --short` non-empty | `HEAD` | `git diff HEAD` |
+| Clean tree, `origin/main..HEAD` non-empty | `origin/main` | `git diff origin/main..HEAD` |
+| Both empty | — | abort: `Nothing to ship.` |
 
-- If `git status --short` has entries → uncommitted changes are part of the ship surface; baseline is `HEAD`, diff is `git diff HEAD`.
-- If working tree is clean AND `origin/main..HEAD` has commits → pre-committed state; baseline is `origin/main`, diff is `git diff origin/main..HEAD`.
-- If both are empty → abort with `Nothing to ship.`
+Show one screen: branch + ahead/behind, `git diff --stat <baseline>`, and commit subjects when
+pre-committed. Unrelated staged changes mixed in → ask whether to ship together or split.
 
-Run `git diff --stat <baseline>` to summarize. Show the user a one-screen summary including:
-- Branch + ahead/behind state
-- Files changed, lines +/-
-- Commit list (if pre-committed) with one-line subjects
+**Complete when** the baseline, the diff command, and the file list are fixed and echoed to the
+user, and every entry in `git status --short` is accounted for as either in-surface or unrelated.
 
-If unrelated staged changes appear mixed in, stop and ask whether to ship together or split.
+## 1.5. Lane decision
 
-### 1.5. Lane decision
+Express requires **all six** to hold:
 
-Inspect the ship surface and **propose** a lane. Express qualifies when **all** of the following hold:
+- **No load-bearing code.** Impact is local and textual: prose, `.gitignore`, `.editorconfig`,
+  `.env.example`, comments, docstrings, pure renames — plus styling-layer swaps (Tailwind class
+  strings, `oklch(...)` values, colour/spacing tokens) where the function-level contract is
+  unchanged and the diff is a runtime no-op except for appearance.
+- **No security-sensitive surface.** Auth, authorization, RLS, payments, webhook receivers, secrets,
+  CORS/CSP — blast radius outranks diff size here.
+- **No schema.** `migrations/*.sql`, Pydantic field changes, GraphQL schema, OpenAPI spec.
+- **Small in meaningful terms.** ≤ ~200 net lines and ≤ ~10 files of *meaningful* change.
+  Mechanical mass edits don't count against this — a 600k-line `git rm --cached` for a `.gitignore`
+  policy fix is still express-eligible.
+- **Single coherent concept.** One commit, or N commits already chained deliberately.
+- **Designed in this session**, so the user holds full context. A worktree reopened from last week
+  goes full lane.
 
-- **No load-bearing code**. Diff touches only files whose impact is local/textual: `.md`, `.txt`, `.rst`, `.gitignore`, `.editorconfig`, comments inside code files, `.env.example` (not real `.env`), top-level config docs. Anything under `src/`, `backend/`, `frontend/src/`, `migrations/`, `tests/` that contains real code logic disqualifies — **unless the change is purely textual / visual with the function-level contract unchanged**: pure renames, comments, docstrings, or styling-layer swaps (Tailwind class strings, design-token values like `oklch(...)`, colour / spacing constants in a `_helpers` / `tokens` file) where a code reader would treat the diff as a runtime no-op except for appearance.
-- **No security-sensitive surface**. Authentication, authorization, RLS policies, payment flows, webhook receivers, secrets handling, CORS / CSP — even small changes here go through full lane. The blast radius of a wrong call is too high.
-- **No schema or migration changes**. Any `migrations/*.sql`, Pydantic model field changes, GraphQL schema, OpenAPI spec → full lane.
-- **Small in absolute terms**. ≤ ~200 net lines of meaningful change (auto-generated mass deletions like untracking a directory don't count; a 600k-line `git rm --cached` for a gitignore policy fix is still express-eligible). ≤ ~10 files of meaningful change.
-- **Single coherent concept**. One commit (or N commits already explicitly discussed and chained). Not a grab-bag of unrelated fixes.
-- **Already understood in this session**. The change was designed or reviewed in the current conversation, so the user has full context. If the user just opened a stale worktree from a week ago, default to full lane.
+Classify:
 
-Classify the run:
+| Class | Condition | Action |
+|---|---|---|
+| **clean-express** | every criterion a clear pass | announce lane + per-criterion reasoning, proceed; stage 5 also auto-passes |
+| **borderline-express** | qualifies, but ≥1 criterion needed a judgment call | present the brief, ask `express` / `full` / `abort` |
+| **full** | any disqualifier | say which one, proceed to stage 2 |
 
-- **clean-express** — every express criterion passes with a clear ✅, including the load-bearing-code exemption (pure docs / config / styling / token swaps). Announce the lane + per-diff reasoning in one screen and **proceed immediately** — no prompt at 1.5, and stage 5 will also auto-pass for this classification (see stage 5). User can Ctrl-C any time before the push lands.
-- **borderline-express** — express qualifies but at least one criterion needed a judgment call (e.g., touches code under `frontend/src/` and you're not 100% sure it's a pure styling / no-op swap; or one constant in a payments-adjacent path you can't fully exclude). Present the brief and ask for `express` / `full` / `abort`.
-- **full** — at least one disqualifier hit (security, schema, real code-logic change, multi-concept diff, stale-context, oversized). Say so in one line and proceed to stage 2 — no decision prompt.
+Borderline is where the prompt earns its keep: a frontend edit that's mostly styling but also
+touches one prop or one effect dependency; a lone constant you can't fully exclude from a
+payments-adjacent path; a diff only partly designed in this session.
 
-Rationale: the user can interrupt before commit. A clean-express diff doesn't earn its prompt — typing `express` adds friction without changing the outcome. Borderline cases are exactly where the prompt earns its keep; that's when we ask. The previous default of "always ask when express qualifies" optimized for the high-stakes minority (auth / payment 5-line tweaks) at the cost of the low-stakes majority (docs, gitignore, styling). Those high-stakes cases are already caught by stricter criteria (security / schema / real-logic disqualifiers), not by gating every express run.
-
----
-
-## Express lane (stages 5 → 6 → 6.5 → 7)
-
-Skip stages 2 (simplify), 3 (verify), 4 (Codex review), 4.5 (verify-then-patch). The diff has been judged too small or too low-blast-radius for them to earn their keep.
-
-One safety net stays on: if the diff contains **any** code file (even a config like `pyproject.toml`, `tsconfig.json`, `package.json`), run the smallest detectable lint check from stage 3's manifest table — but only `lint`, never tests. Skip even that if the diff is pure prose/markdown.
-
-Then go to **stage 5 (decision gate)** with a one-screen express summary:
-- Lane chosen and why (one line)
-- `git diff --stat`
-- Commit list (if pre-committed)
-- Lint result if applicable, else `verify: skipped (docs/config only)`
-
-Wait for `ship` / `abort`. No `fix-first` option in express lane — if the user wants changes, they say `abort` and edit, then re-run /ship.
-
-Then proceed to stage 6 (push), 6.5 (observe), and stage 7 (worktree cleanup).
+**Complete when** each of the six criteria has an explicit pass / fail / judgment-call verdict
+against the actual file list, and the resulting class is stated.
 
 ---
 
-## Full lane (stages 2 → 3 → 4 → 4.5 → 5 → 6 → 6.5 → 7)
+## Express lane
+
+Skip stages 2–4.5. One safety net stays on: if the diff touches any code or manifest file
+(`pyproject.toml`, `tsconfig.json`, `package.json`), run the smallest `lint` from stage 3's table —
+lint only, never tests. Pure prose skips even that.
+
+Go to stage 5 with lane + reason, `git diff --stat`, commit list, and lint result (or
+`verify: skipped (docs/config only)`).
+
+Express has no `fix-first`: to change something, `abort`, edit, re-run.
+
+---
+
+## Full lane
 
 ### 2. Simplify (Codex)
 
-> ⚠️ Distinct from Claude Code's built-in `/code-review` (formerly `/simplify`, made review-only in 2.1.147). This stage is **write-capable** — codex-rescue applies edits in place. Naming kept because the goal (drop duplication, improve naming, preserve behavior) is the original `/simplify` shape, not the new `/code-review` shape.
+Write-capable pass — Codex applies edits in place. (Distinct from the built-in `/code-review`,
+which is review-only.)
 
-Spawn `codex:codex-rescue` subagent with this brief:
+Spawn `codex:codex-rescue`:
 
-> Run a simplify pass on the ship surface (the diff identified in pre-flight; use `git diff <baseline>..HEAD` if pre-committed, else `git diff HEAD`).
-> Goals: drop duplication, improve naming, remove unused imports/branches, replace heavy patterns with simple ones, preserve behavior.
+> Run a simplify pass on the ship surface (`git diff <baseline>`).
+> Goals: drop duplication, improve naming, remove unused imports/branches, replace heavy patterns
+> with simple ones, preserve behavior.
 > Apply edits in place. Keep the public/behavioral surface unchanged.
-> Report a one-line summary per file touched and any items where you intentionally did NOT simplify (with reason).
+> Report a one-line summary per file touched, and any item you deliberately left alone, with reason.
 
-Wait for completion. If the original ship surface was pre-committed, Codex's edits will land in a new uncommitted layer — that's fine, they'll be folded in at stage 6 either by amending or with a follow-up commit (Claude's call based on whether the user wants a clean single commit or a "+ simplify pass" trailer).
+On a pre-committed surface these edits land as a new uncommitted layer; stage 6 folds them in.
 
-### 3. Verify (auto, behavior-preserving gate)
+**Complete when** Codex has returned and every file it touched is named in the summary.
 
-Detect the repo's gate scripts from manifest presence and run the smallest relevant set. Stop on first failure.
+### 3. Verify (behavior-preserving gate)
 
-- **Python (`uv.lock`)**: `uv run ruff check .` → `uv run pytest -x` (skip pytest if no `tests/` or `test_*.py`)
-- **pnpm (`pnpm-lock.yaml`)**: existing `lint`, `typecheck`, `test` scripts (skip ones not defined)
-- **npm (`package-lock.json`)**: existing `lint`, `typecheck`, `test` scripts
-- **Cargo (`Cargo.toml`)**: `cargo clippy -- -D warnings` → `cargo test`
-- **Go (`go.mod`)**: `go vet ./...` → `go test ./...`
-- **No manifest match**: log `verify: no gate detected, skipping` and continue.
+Detect the repo's gate from manifest presence, run the smallest relevant set, stop on first failure:
 
-**On failure:**
-- Spawn `codex:codex-rescue` with brief: failing command + last ~100 lines of stderr + "fix without changing public API surface or tests; preserve behavior."
-- After Codex finishes, re-run the failing command **once**.
-- Pass on retry → continue to stage 4.
-- Fail on retry → STOP. Surface error + Codex diff to user. Do NOT auto-retry further.
+| Manifest | Gate |
+|---|---|
+| `uv.lock` | `uv run ruff check .` → `uv run pytest -x` (skip pytest with no `tests/` or `test_*.py`) |
+| `pnpm-lock.yaml` / `package-lock.json` | defined `lint`, `typecheck`, `test` scripts |
+| `Cargo.toml` | `cargo clippy -- -D warnings` → `cargo test` |
+| `go.mod` | `go vet ./...` → `go test ./...` |
+| none | log `verify: no gate detected` and continue |
+
+On failure: spawn `codex:codex-rescue` with the failing command, last ~100 lines of stderr, and
+"fix without changing public API surface or tests; preserve behavior." Re-run the failing command
+**once**. Green → stage 4. Red → stop and hand the error plus Codex's diff back to the user.
+
+**Complete when** the gate is green, was absent, or has failed twice and been handed back.
 
 ### 4. Review (Codex)
 
-Spawn a second `codex:codex-rescue` subagent with this brief:
+Spawn a second `codex:codex-rescue`:
 
-> Independent code-quality review of the ship surface (`git diff <baseline>..HEAD` if pre-committed, else `git diff HEAD`).
-> Read CLAUDE.md, ~/.claude/rules/*.md, and any nearest project AGENTS.md.
-> Surface findings as Important / Nit / Pre-existing with file:line.
-> Comment-only — do NOT edit code. Cap Nits at 5; for more, say "plus N similar items" in summary.
+> Independent code-quality review of the ship surface (`git diff <baseline>`).
+> Read CLAUDE.md, ~/.claude/rules/*.md, and the nearest project AGENTS.md.
+> Surface findings as Important / Nit with file:line; mark pre-existing issues as such.
+> Comment-only — do not edit code. Cap Nits at 5; beyond that, say "plus N similar items".
 
-### 4.5. Verify-then-patch findings (inline by default)
+**Complete when** the findings list is in hand, each carrying a file:line.
 
-Codex findings are **hypotheses**, not conclusions. Codex sometimes under-specifies a real issue (gesturing at "TZ correctness" when the actual bug is a 5-line DST `Duration(days: N)` arithmetic problem) or flags speculative concerns that don't survive a code read. So for each Important / Nit:
+### 4.5. Verify-then-patch
 
-1. **Read the flagged file:line yourself.** Decide independently whether the finding is real.
-2. **If real, decide inline-fix vs defer using these criteria:**
+Codex findings are **hypotheses**. It under-specifies real bugs (gesturing at "TZ correctness" when
+the actual defect is a 5-line DST `Duration(days: N)` arithmetic error) and raises speculative ones
+that don't survive a code read. For each Important and Nit:
 
-| Inline-fix in this commit | Defer to follow-up ticket |
+1. **Read the flagged file:line yourself** and judge independently whether it is real.
+2. Real findings default to **inline fix in this commit**. Defer only for a stated reason:
+
+| Fix inline | Defer |
 |---|---|
-| Surgical: ≤ ~20 lines, no public-API change | Needs cross-repo investigation you can't complete now |
-| Mechanical (helper rename, missing test fixture, calendar arithmetic swap) | Non-trivial blast radius (signature change, dependent caller updates) |
-| Test gap that's a few lines of fixture | Real but lower priority than other queued work, user wants to bundle later |
-| Latent bug in the same surface area as the current change | Architecturally adjacent but outside the diff's intent |
+| Surgical: ≤ ~20 lines, no public-API change | Needs cross-repo investigation you can't finish now |
+| Mechanical (rename, missing fixture, calendar-arithmetic swap) | Signature change with dependent callers |
+| Test gap that's a few lines of fixture | Architecturally adjacent but outside the diff's intent |
+| Latent bug in the same surface as the current change | Lower priority than queued work, user wants it bundled |
 
-3. **Apply the inline patches yourself.** Re-run the stage 3 verify gate after patching — if it stays green, the patch joins the same commit. If it goes red, revert the patch, treat it as defer, and tell the user why.
+3. Apply the patches, then re-run the stage 3 gate. Green → the patch joins the commit. Red →
+   revert the patch, reclassify as deferred, and say why.
 
-The default is **inline**. Deferring should be a deliberate call with a stated reason, not a reflex. The previous "merge with caveats + follow-up ticket" pattern accumulated debt — follow-up tickets often never get prioritized. The original change is the cheapest place to fix something the review just surfaced, and the user already has context for that surface area.
+Inline is the default because the originating change is the cheapest place to fix what the review
+just surfaced, and follow-up tickets accumulate as debt.
+
+**Complete when** every finding carries a verdict — `[patched inline]` with the fix, `[deferred]`
+with the reason, or `[not real]` with what the code actually showed.
 
 ---
 
-## Stages shared by both lanes
+## Shared stages
 
-### 5. Decision gate (user)
+### 5. Decision gate
 
-**Clean-express runs** (auto-routed at stage 1.5 with no borderline criteria, lint passed cleanly or skipped): print a one-screen summary — lane + per-diff reasoning + `git diff --stat` + lint result (or "skipped") — and **proceed straight to stage 6**. No prompt. User can Ctrl-C any time before the push.
+**clean-express** (auto-routed at 1.5, lint green or skipped): print the one-screen summary and go
+to stage 6. The user can interrupt before the push lands.
 
-**Borderline-express and full runs**: show the brief and wait.
+**borderline-express and full**: show the brief and wait for `ship` / `abort` / `fix-first`
+(full only).
 
-Show:
-- Lane (express / full)
-- Final `git diff --stat` (reflects original + simplify + inline patches, whichever applied)
-- Simplify summary (full lane only)
-- Verify result (full lane only) — passed cleanly / passed after Codex fix / re-passed after inline patches
-- Review findings (full lane only), each tagged **[patched inline]** with one-line fix description OR **[deferred]** with the reason (criteria from 4.5)
+The brief carries: lane; final `git diff --stat`; simplify summary; verify result (clean / green
+after Codex fix / green after inline patches); every finding with its 4.5 verdict.
 
-Wait for user reply: `ship` / `abort` / `fix-first` (full lane only).
-- `fix-first` — user wants more changes before merging; loop back to stage 2 with the new diff. Express lane has no `fix-first` — the user aborts, edits, re-runs.
-- `abort` — exit, working tree intact (in pre-committed state, the existing commits also remain — abort means "don't push", not "undo commits").
-- `ship` — continue to stage 6.
+- `fix-first` — loop back to stage 2 with the new diff.
+- `abort` — exit with the working tree intact. In pre-committed state the commits also stay: abort
+  means "don't push", not "undo".
+- `ship` — stage 6.
 
-If every Important finding was patched inline and the user only sees deferred Nits with reasons, you should still pause for the explicit `ship` — never auto-proceed.
+Full and borderline runs wait for the explicit `ship` even when every Important finding was patched
+and only deferred Nits remain.
+
+**Complete when** the class-appropriate path resolved: summary printed for clean-express, or an
+explicit user word received.
 
 ### 6. Commit & push
 
-**Residue sweep (before staging):** run `git status --short` and cross-check every entry against the ship surface from pre-flight. Anything that isn't part of the intended change — temp/debug scripts, abandoned-approach leftovers, stray logs, one-off test files, editor droppings — gets deleted or `.gitignore`d BEFORE `git add -A`, never shipped. If unsure whether a file is residue, ask; never silently include it.
+**Residue sweep first.** Cross-check every `git status --short` entry against the pre-flight ship
+surface. Temp scripts, abandoned-approach leftovers, stray logs, one-off test files, and editor
+droppings get deleted or `.gitignore`d before `git add -A`. Anything you can't classify, ask about.
 
-Branch on the ship-surface shape:
+- **Uncommitted**: draft a Conventional Commit — `feat|fix|chore|docs|refactor|test|perf`, colon,
+  space, imperative subject under 70 chars, no period. Body optional and about *why*. Apply the
+  `Co-Authored-By` trailer per CLAUDE.md Git Automation. Then
+  `git add -A && git commit -m "<message>" && git push origin main`.
+- **Pre-committed**: `git push origin main` (or `git push origin HEAD:main` from a worktree branch).
+  When stage 2 or 4.5 added edits on top, agree with the user on amend vs. append first.
 
-- **Uncommitted state**: draft a **Conventional Commit** message (prefix one of `feat|fix|chore|docs|refactor|test|perf`, colon, space, imperative subject under 70 chars, no period; body optional, focus on *why* not *what*; no `Co-Authored-By` unless project CLAUDE.md specifies). `git add -A && git commit -m "<message>" && git push origin main`.
-- **Pre-committed state**: commits already exist. Just `git push origin main` (or `git push origin HEAD:main` if shipping from a non-main branch like a worktree). If stage 2 / 4.5 added uncommitted edits on top, decide with the user whether to amend the last commit or append a new one before pushing.
+**Complete when** the push is confirmed and the new HEAD SHA is reported.
 
-Confirm push succeeded and report the new HEAD SHA.
+### 6.5. Observe
 
-### 6.5. Observe (done = observed)
+"Pushed" is not "done" — this is the deterministic form of CLAUDE.md's *done = observed*.
 
-"Pushed" is not "done" — merged ≠ deployed. This stage is the deterministic version of CLAUDE.md's "Done = observed at the end state".
+Repos with no downstream (docs-only, no push-to-main workflow in `.github/workflows/`) skip this
+stage entirely; do not arm the gate.
 
-- **Detect the downstream.** Does this repo run CI/deploy off `main` (`.github/workflows/` with a push-to-main trigger)? If nothing observable happens downstream (docs-only repo, no CI), skip this stage entirely — do not arm the gate.
-- **Arm the gate** immediately after the push lands:
-  ```bash
-  uv run ~/.claude/hooks/verify_gate.py arm "<one-line task>" "CI/deploy run for <SHA> green" "changed surface observed (page renders / endpoint responds)"
-  ```
-  Checks are phrased as *observable end states*, never intentions. The Stop hook now blocks the turn from ending until the gate is cleared.
-- **Observe.** `gh run list --commit <SHA>` → follow to green (`gh run watch <run-id>` or poll). For UI changes, load the affected page (screenshot when the diff is visual); for API changes, hit the endpoint.
-- **Clear and report.** `uv run ~/.claude/hooks/verify_gate.py clear`, then include the evidence (run URL, observed page/endpoint state) in the final report.
-- **Red run** → treat like a stage-3 verify failure: surface immediately with the failing job's output. Never clear the gate to make a red run look done; clearing after a deliberate abort requires saying so to the user.
+Otherwise, immediately after the push:
 
-### 7. Worktree cleanup (post-push)
+```bash
+uv run ~/.claude/hooks/verify_gate.py arm "<one-line task>" "CI/deploy run for <SHA> green" "changed surface observed (page renders / endpoint responds)"
+```
 
-Stale worktrees under `.claude/worktrees/` break tooling that walks the repo (e.g. `shopify app dev` aborts on duplicate `shopify.web.toml`; same shape for any CLI that scans `**/package.json`, `**/*.toml`, etc.). Clean them as part of ship so they don't accumulate.
+Checks are phrased as observable end states. The Stop hook then blocks the turn from ending until
+the gate clears.
 
-- Run `git worktree list`. For each worktree under `.claude/worktrees/`, check whether its branch is fully merged into `origin/main`: `git log origin/main..<branch>` is empty AND `git -C <path> status --short` is clean.
-- Surface candidates to the user (path + branch + last-commit SHA) and ask before removing. Include the **current** worktree if /ship ran from one and it now qualifies.
-- On confirm, for each:
-  - `git worktree remove <path>` (run from the main repo, not from inside the worktree being removed)
-  - `git branch -d <branch>` — `-d` is safe; it refuses unmerged branches. Never use `-D`.
-- Skip (do not prompt) any worktree that is dirty, has unpushed commits, or whose branch has commits not in `origin/main`.
+Observe: `gh run list --commit <SHA>` → follow to green (`gh run watch <run-id>`). UI changes get
+the affected page loaded, with a screenshot when the diff is visual; API changes get the endpoint
+hit. Then `uv run ~/.claude/hooks/verify_gate.py clear` and put the evidence — run URL, observed
+page or endpoint state — in the final report.
 
-If /ship ran from inside the current worktree and that worktree is now being removed, also `cd` to the main repo and `git pull --ff-only` so the local `main` matches what was just pushed.
+A red run is handled like a stage 3 failure: surface it with the failing job's output. Clearing the
+gate is a claim that the end state was observed; after a deliberate abort, clear it and say so in
+the same breath.
+
+**Complete when** the gate is cleared with evidence in the report, or the stage was skipped for a
+repo with no downstream.
+
+### 7. Worktree cleanup
+
+Stale worktrees under `.claude/worktrees/` break tooling that walks the repo — `shopify app dev`
+aborts on a duplicate `shopify.web.toml`, and the same shape hits any CLI scanning `**/package.json`
+or `**/*.toml`.
+
+Run `git worktree list`. A worktree is a removal candidate when `git log origin/main..<branch>` is
+empty **and** `git -C <path> status --short` is clean. Dirty worktrees, unpushed commits, and
+branches with commits not in `origin/main` are left alone without a prompt.
+
+Surface candidates (path + branch + last SHA), including the current one if `/ship` ran from it, and
+ask before removing. On confirm, from the main repo: `git worktree remove <path>` then
+`git branch -d <branch>` — `-d` refuses unmerged branches, which is the safety property being
+relied on here.
+
+If the removed worktree was the one `/ship` ran from, `cd` to the main repo and `git pull --ff-only`
+so local `main` matches what was just pushed.
+
+**Complete when** every candidate is removed or explicitly skipped, and local `main` matches
+`origin/main`.
 
 ---
 
-## When NOT to use this command
+## Out of scope
 
-- Implementation isn't done — use `/mattpocock-skills:grill-me` → `to-spec` / `to-tickets` → `implement` first; `/ship` starts after code is written or after a deliberate commit.
-- PR-based work — use a feature branch + the `/code-review` plugin after pushing.
-- Mixed worktree with unrelated uncommitted changes from other tasks — split first.
+- **Code not finished** → `/mattpocock-skills:grill-me` → `to-spec` / `to-tickets` → `implement`.
+  `/ship` starts once the code exists.
+- **PR-based work** → feature branch plus the `/code-review` plugin after pushing.
+- **A worktree carrying unrelated uncommitted work from another task** → split it first.
 
-## Failure modes
-
-- Codex errors in stage 2/4 — stop, surface to user, do NOT auto-retry.
-- Verify failure (stage 3) — one Codex rescue attempt; if retry still fails, stop and hand back to user.
-- Push rejected (race) — stop, ask whether to `git pull --rebase` and retry.
-
-## Express lane — examples vs counterexamples
-
-To calibrate the lane decision, here are concrete cases that pattern-match each direction.
-
-**Clean-express (auto-route, no prompt):**
-- A `.gitignore` policy change + 4 docs files explaining the policy (this very skill's first user case).
-- Fixing a typo in a `README.md` or a `CLAUDE.md` instruction.
-- Adding a missing file to `.gitignore` after observing it accidentally tracked.
-- Tightening a sentence in an existing `docs/architecture/<topic>.md`.
-- Adding a new entry to a `references/` glossary.
-- **Pure styling / design-token swap** — tightening a Tailwind class palette in a frontend `_helpers` / `tokens` file (e.g. swapping `text-success` / `text-warning` to `text-foreground` for type tags that shouldn't borrow alert tokens), changing `oklch(...)` values, dropping a hard-coded colour for a theme token. Contract unchanged, runtime behaviour identical, only visual output changes.
-
-**Borderline-express (express qualifies, but ask before going):**
-- A single-line constant change in a file you can't fully confirm is outside a payments / auth / RLS adjacency.
-- A frontend code edit that's mostly styling but also touches one prop or one effect dependency — you're 90% sure it's no-op but not 100%.
-- A diff that was *partially* designed in this session but partially predates it.
-
-**Express lane does NOT fit (even if small):**
-- A 3-line change to a webhook handler's signature validation.
-- A 1-line change to a Supabase RLS policy.
-- Adding a new `@field_validator` to a Pydantic model — touches schema semantics.
-- A 5-line constant change in a payment / pricing path.
-- A "just one line" diff in `auth.py` or anything under a `security/` directory.
-
-When in doubt, ask the user. The cost of one extra Codex review pass is a few minutes and some tokens; the cost of shipping a broken auth path is much higher.
+Codex errors in stage 2 or 4 stop the pipeline and go back to the user; there is no auto-retry.
+A rejected push (race) stops and asks whether to `git pull --rebase` and retry.
