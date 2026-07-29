@@ -96,12 +96,7 @@
       "Bash(git checkout .)",
       "Bash(git restore *)"
     ],
-    "defaultMode": "acceptEdits"
-  },
-  "sandbox": {
-    "network": {
-      "allowedDomains": ["*"]
-    }
+    "defaultMode": "auto"
   },
   "hooks": {
     "Notification": [
@@ -280,7 +275,7 @@
     "code-review@claude-plugins-official": true,
     "codex@openai-codex": true,
     "pyright-lsp@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
@@ -303,6 +298,14 @@
       }
     }
   },
+  "sandbox": {
+    "network": {
+      "allowedDomains": [
+        "*"
+      ]
+    }
+  },
+  "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "theme": "dark-daltonized",
