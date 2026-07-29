@@ -195,8 +195,6 @@ install required.
 | `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps (`--full` for the deep walkthrough) |
 | `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
-| `nexrex-weekly-engineering-report` | Factual multi-day contributor report from Linear + git evidence, script-backed |
-| `daily-standup` | Ultra-short morning team update (zh-tw, 3 sections × ≤3 bullets) from yesterday's git + Linear |
 | `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
 | `humanizer` | Strip signs of AI-generated writing from text |
 
@@ -208,22 +206,28 @@ install required.
 Four skills are mirrored from `~/.codex/skills/` so both agents do the job identically. **Codex is
 the source of truth** — author there, then mirror here. Each Codex copy carries an extra
 `agents/openai.yaml` (platform metadata, no Claude Code equivalent); the Claude Code copies convert
-Codex's `$skill` invocation syntax to `/skill` and resolve `$skill_dir` to
-`$HOME/.claude/skills/<name>`.
+Codex's `$skill` invocation syntax to `/skill` and resolve `$skill_dir` to the skill's own directory.
 
-| Shared skill | Why it must not drift |
-|---|---|
-| `handoff` | Both agents checkpoint into the same repo-root `MEMORY.md`; either resumes the other's work. `SKILL.md` is byte-identical |
-| `next-move` | One portfolio decision model across both agents |
-| `git-converge-main` | Script-backed (`scripts/git_converge.py` + tests); divergent copies would apply different mutation rules to the same repo |
-| `nexrex-weekly-engineering-report` | Script-backed (`scripts/collect_git_activity.py` + tests); the report contract *is* the deliverable |
+| Shared skill | Claude Code copy lives in | Why it must not drift |
+|---|---|---|
+| `handoff` | `skills/` | Both agents checkpoint into the same repo-root `MEMORY.md`; either resumes the other's work. `SKILL.md` is byte-identical |
+| `next-move` | `skills/` | One portfolio decision model across both agents |
+| `git-converge-main` | `skills/` | Script-backed (`scripts/git_converge.py` + tests); divergent copies would apply different mutation rules to the same repo |
+| `nexrex-weekly-engineering-report` | `nr-platform/.claude/skills/` | Script-backed (`scripts/collect_git_activity.py` + tests); the report contract *is* the deliverable |
+
+`nexrex-weekly-engineering-report` reads that repo's `AGENTS.md` and NEX Linear team, so its Claude
+Code copy is checked into `nr-platform` rather than held here — it is still Codex-mirrored, just
+from a different directory. Its scripts also carry that repo's `black`/`isort` formatting, so only
+`SKILL.md` is claimed byte-identical.
 
 Check parity with:
 
 ```bash
-for s in handoff next-move git-converge-main nexrex-weekly-engineering-report; do
+for s in handoff next-move git-converge-main; do
   diff -q ~/.codex/skills/$s/SKILL.md ~/.claude/skills/$s/SKILL.md
 done
+diff -q ~/.codex/skills/nexrex-weekly-engineering-report/SKILL.md \
+        ~/Desktop/NexRex/nr-platform/.claude/skills/nexrex-weekly-engineering-report/SKILL.md
 ```
 
 `handoff`, `next-move`, and `nexrex-weekly-engineering-report` are byte-identical and should be
