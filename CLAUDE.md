@@ -133,11 +133,35 @@ workflow stage:
 | --- | --- |
 | Orchestrate / plan / synthesis | session model |
 | Implement | Codex |
+| **Code review — quality, standards, spec, security** | **Codex; `opus` only as fallback** |
 | Read / scan / search / explore | `haiku` |
-| Review / verify / test | `sonnet` |
+| Run gates / execute tests / mechanical checks | `sonnet` |
+
+**Code review goes to Codex — the reason is independence, not capability.**
+`/mattpocock-skills:implement` writes with Opus 5, so an Opus reviewer is the same mind re-reading
+its own diff and inheriting its own blind spots. Codex is a different model family with different
+failure modes, which is exactly what makes its findings worth adjudicating. Its model and effort are
+owned by `~/.codex/config.toml` — call sites pass neither.
+
+Fall back to `opus` only when the review needs something Codex cannot reach — Linear tickets, live
+session context, an in-session subagent. **Never `sonnet` or lower**, on either path: judging whether
+a diff is correct is as hard as writing it, and a cheap reviewer returns confident wrong findings
+that still cost the expensive tier a full read to dismiss. This outranks the cost rationale in
+`model-routing.md` — worker-tier savings come from the `haiku` and mechanical rows, never this one.
 
 `Workflow({name: ...})` is hook-denied — use the routed copies in `~/.claude/workflows/` via
 `scriptPath`. Details and cost rationale: `~/.claude/references/model-routing.md`.
+
+**Cap every Codex call at 8 minutes of wall clock.** The MCP default is 1800s, which in practice
+burns half an hour and returns nothing. No auto-retry — report the failure and let the user choose.
+
+**Vendored skills route here too**, since `~/.claude/skills/mattpocock-skills/skills` symlinks the
+upstream clone and any edit there dies on the next update. `/mattpocock-skills:code-review` runs its
+**Standards** axis through `codex:codex-rescue` and its **Spec** axis at `opus` — Spec stays
+Claude-side because it reads Linear, which Codex cannot. That single review is what `/ship` stage 4
+inherits, so a diff gets reviewed once, by the right reviewer, while the context is still fresh. A
+bare `/code-review` — which is how `mattpocock-skills:implement` names it — always means the
+mattpocock two-axis skill, never the `code-review` plugin's PR reviewer.
 
 ---
 

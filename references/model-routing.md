@@ -10,6 +10,17 @@ Claude-native workers **inherit the session model unless routed down**. Worker-t
 orchestrator. Multi-agent is not inherently cheaper; the savings come only from routing cheap roles
 to cheap models.
 
+**Code review is the one role this argument does not reach**, and it is routed *sideways*, not down.
+The implementer is Opus 5, so any Opus reviewer is the same mind re-reading its own diff — the tier
+is right but the independence is missing. Send it to Codex, whose different training gives it
+different blind spots; fall back to `opus` only when the review needs data Codex cannot reach.
+
+Never below that. Judging whether a diff is correct is as hard as writing it, so a cheap reviewer
+returns confident wrong findings, and every one still has to be read and dismissed by the expensive
+tier. Take the savings from the `haiku` scan/search rows and the mechanical gate rows, which is where
+they actually were. This binds a workflow's adversarial-verify stage whenever the claims under test
+are about code; verifying research claims against sources is a different job and stays on `sonnet`.
+
 ## Rules
 
 - **Pin every workflow stage's `model`.** A workflow's `agent()` calls inherit the session model; an

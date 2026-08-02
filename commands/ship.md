@@ -1,5 +1,5 @@
 ---
-description: Ship pipeline — simplify (Codex) → review (Codex) → adjudicate → commit → deliver (direct to the default branch, or branch + PR) → observe → finalize. Express lane for small + clear diffs.
+description: Ship pipeline — verify → review (Codex) → adjudicate → commit → deliver (direct to the default branch, or branch + PR) → observe → finalize. Express lane for contained diffs.
 disable-model-invocation: true
 ---
 
@@ -10,9 +10,10 @@ Drive a finalized change to its terminal delivered state. Normal entry is after
 tree, N commits ahead of the default branch); an uncommitted working tree is the other accepted
 shape.
 
-This command orchestrates. Simplify and review go to Codex per CLAUDE.md Part 3 — Codex reviewing
-Claude's surface is the point, since a reviewer that also wrote the code is not a second opinion.
-Adjudicating what Codex found (stage 4.5) stays here.
+This command orchestrates. Review goes to Codex per CLAUDE.md Part 3 — Codex reviewing Claude's
+surface is the point, since a reviewer that also wrote the code is not a second opinion. Nothing
+here rewrites code on its own: the review is comment-only, and adjudicating what it found (stage
+4.5) stays with this command.
 
 `/ship` is user-invoked only. The invocation authorizes the whole delivery path — push, PR updates,
 merge, the repo's established deployment, bounded fixes those gates demand, and terminal cleanup of
@@ -23,7 +24,7 @@ Two independent routing axes, both decided in pre-flight:
 
 | Axis | Values | Decided at |
 |---|---|---|
-| **Lane** | express (1 → 1.5 → 1.6 → 5 → 6 → 6.5 → 7) · full (+ 2 → 3 → 4 → 4.5) | 1.5 |
+| **Lane** | express (1 → 1.5 → 1.6 → 5 → 6 → 6.5 → 7) · full (+ 3 → 4 → 4.5) | 1.5 |
 | **Path** | direct · branch + PR · inherit | 1.6 |
 
 Never force-push, bypass branch protection or a required review, admin-merge, absorb unrelated
@@ -91,10 +92,12 @@ unrelated; and the repo-identity receipt is recorded.
 
 Express requires **all six** to hold:
 
-- **No load-bearing code.** Impact is local and textual: prose, `.gitignore`, `.editorconfig`,
-  `.env.example`, comments, docstrings, pure renames — plus styling-layer swaps (Tailwind class
-  strings, `oklch(...)` values, colour/spacing tokens) where the function-level contract is
-  unchanged and the diff is a runtime no-op except for appearance.
+- **Contained blast radius.** Everything the change can break sits inside the modules it already
+  touches. Nothing crosses a contract another module depends on: exported signature, event or job
+  payload, shared type, API response shape, or config a second service reads. No new
+  dependency. Ordinary in-module code passes — a bug fix, a handler tweak, a branch added to an
+  existing function, a styling-layer swap. What disqualifies is *reach*, not the fact that it is
+  code.
 - **No security-sensitive surface.** Auth, authorization, RLS, payments, webhook receivers, secrets,
   CORS/CSP — blast radius outranks diff size here.
 - **No schema.** `migrations/*.sql`, Pydantic field changes, GraphQL schema, OpenAPI spec.
@@ -111,11 +114,11 @@ Classify:
 |---|---|---|
 | **clean-express** | every criterion a clear pass | announce lane + per-criterion reasoning, proceed; stage 5 also auto-passes |
 | **borderline-express** | qualifies, but ≥1 criterion needed a judgment call | present the brief, ask `express` / `full` / `abort` |
-| **full** | any disqualifier | say which one, proceed to stage 2 |
+| **full** | any disqualifier | say which one, proceed to stage 3 |
 
-Borderline is where the prompt earns its keep: a frontend edit that's mostly styling but also
-touches one prop or one effect dependency; a lone constant you can't fully exclude from a
-payments-adjacent path; a diff only partly designed in this session.
+Borderline is where the prompt earns its keep: an in-module fix that also widens one exported type;
+a lone constant you can't fully exclude from a payments-adjacent path; a handler change whose
+callers you haven't enumerated; a diff only partly designed in this session.
 
 **Complete when** each of the six criteria has an explicit pass / fail / judgment-call verdict
 against the actual file list, and the resulting class is stated.
@@ -151,11 +154,15 @@ base branch and merge method are read from repo evidence rather than assumed.
 
 ## Express lane
 
-Skip stages 2–4.5. One safety net stays on: if the diff touches any code or manifest file
-(`pyproject.toml`, `tsconfig.json`, `package.json`), run the smallest `lint` from stage 3's table —
-lint only, never tests. Pure prose skips even that.
+Skip stages 3–4.5 — no Codex round-trip, no adjudication.
 
-Go to stage 5 with lane + path + reason, `git diff --stat`, commit list, and lint result (or
+The safety net scales with what the diff contains. Code or a manifest (`pyproject.toml`,
+`tsconfig.json`, `package.json`) gets stage 3's **fast gate**, plus the tests covering the touched
+surface where the repo makes them cheap to select (`uv run pytest <paths>`,
+`pnpm vitest related <paths>`). Never the full suite — that is what the full lane's patch cycle is
+for. Pure prose or config skips verification entirely.
+
+Go to stage 5 with lane + path + reason, `git diff --stat`, commit list, and the verify result (or
 `verify: skipped (docs/config only)`).
 
 Express has no `fix-first`: to change something, `abort`, edit, re-run.
@@ -164,51 +171,63 @@ Express has no `fix-first`: to change something, `abort`, edit, re-run.
 
 ## Full lane
 
-### 2. Simplify (Codex)
-
-Write-capable pass — Codex applies edits in place. (Distinct from the built-in `/code-review`,
-which is review-only.)
-
-Spawn `codex:codex-rescue`:
-
-> Run a simplify pass on the ship surface (`git diff <baseline>`).
-> Goals: drop duplication, improve naming, remove unused imports/branches, replace heavy patterns
-> with simple ones, preserve behavior.
-> Apply edits in place. Keep the public/behavioral surface unchanged.
-> Report a one-line summary per file touched, and any item you deliberately left alone, with reason.
-
-On a pre-committed surface these edits land as a new uncommitted layer; stage 6 folds them in.
-
-**Complete when** Codex has returned and every file it touched is named in the summary.
-
 ### 3. Verify (behavior-preserving gate)
+
+Two tiers. The **fast gate** — lint and typecheck — always runs. The **full suite** runs only when
+something makes an upstream green untrustworthy: `/ship` was entered from a tree that never finished
+a green `/mattpocock-skills:implement`, or stage 4.5 applied patches. Re-running a suite that passed
+minutes earlier at the end of `implement` proves nothing and is the largest fixed cost in this lane.
 
 Detect the repo's gate from manifest presence, run the smallest relevant set, stop on first failure:
 
-| Manifest | Gate |
-|---|---|
-| `uv.lock` | `uv run ruff check .` → `uv run pytest -x` (skip pytest with no `tests/` or `test_*.py`) |
-| `pnpm-lock.yaml` / `package-lock.json` | defined `lint`, `typecheck`, `test` scripts |
-| `Cargo.toml` | `cargo clippy -- -D warnings` → `cargo test` |
-| `go.mod` | `go vet ./...` → `go test ./...` |
-| none | log `verify: no gate detected` and continue |
+| Manifest | Fast gate | Full suite |
+|---|---|---|
+| `uv.lock` | `uv run ruff check .` | `uv run pytest -x` (skip with no `tests/` or `test_*.py`) |
+| `pnpm-lock.yaml` / `package-lock.json` | defined `lint`, `typecheck` scripts | defined `test` script |
+| `Cargo.toml` | `cargo clippy -- -D warnings` | `cargo test` |
+| `go.mod` | `go vet ./...` | `go test ./...` |
+| none | log `verify: no gate detected` and continue | — |
+
+State the tier and its reason: `verify: fast gate green (full suite inherited from implement)`, or
+`verify: full green (entered from an uncommitted tree)`.
 
 On failure: spawn `codex:codex-rescue` with the failing command, last ~100 lines of stderr, and
-"fix without changing public API surface or tests; preserve behavior." Re-run the failing command
-**once**. Green → stage 4. Red → stop and hand the error plus Codex's diff back to the user.
+"fix without changing public API surface or tests; preserve behavior." Same wall-clock cap as stage
+4. Re-run the failing command **once**. Green → stage 4. Red → stop and hand the error plus Codex's
+diff back to the user.
 
-**Complete when** the gate is green, was absent, or has failed twice and been handed back.
+**Complete when** the tier that ran is green and named with its reason, was absent, or has failed
+twice and been handed back.
 
 ### 4. Review (Codex)
 
-Spawn a second `codex:codex-rescue`:
+**Inherit rather than repeat.** `/mattpocock-skills:implement` ends by running
+`/mattpocock-skills:code-review`, whose Standards axis is already routed to Codex per CLAUDE.md
+Part 3 — this stage, run earlier with fresher context. It counts when *all* hold: same session, same
+baseline, nothing committed or edited since. Say `review: inherited from /code-review (<n>
+findings)`, carry them into 4.5 unchanged, go there. Anything less — reopened worktree, moved
+surface, a tree that never went through `implement` — runs the pass below.
+
+Spawn `codex:codex-rescue`:
 
 > Independent code-quality review of the ship surface (`git diff <baseline>`).
 > Read CLAUDE.md, ~/.claude/rules/*.md, and the nearest project AGENTS.md.
+> Cover both defects/standards violations and simplification opportunities — duplication, naming,
+> unused imports or branches, heavy patterns with simple equivalents.
 > Surface findings as Important / Nit with file:line; mark pre-existing issues as such.
 > Comment-only — do not edit code. Cap Nits at 5; beyond that, say "plus N similar items".
 
-**Complete when** the findings list is in hand, each carrying a file:line.
+Simplification arrives as findings, never edits. A reviewer that rewrites the code makes stage 3
+stale and hands 4.5 a moving target — and under Single Elegant Version the code reaching `/ship` is
+already the single latest version, so a simplify pass here is redundant or a sign `implement`
+stopped early.
+
+**8-minute wall-clock cap** per CLAUDE.md Part 3. On timeout, auth failure, or error there is no
+retry: report what happened and offer `skip` (proceed on the stage 3 gate alone, recorded as
+`review: skipped — Codex unavailable`), `retry`, or `abort`.
+
+**Complete when** the findings list is in hand with a file:line each, or the review was inherited
+and named, or the call failed and the user chose one of the three.
 
 ### 4.5. Verify-then-patch
 
@@ -229,7 +248,8 @@ place; it does not get delegated back. For each Important and Nit:
 | Test gap that's a few lines of fixture | Architecturally adjacent but outside the diff's intent |
 | Latent bug in the same surface as the current change | Lower priority than queued work, user wants it bundled |
 
-3. Apply the patches, then re-run the stage 3 gate. Green → the patch joins the commit. Red →
+3. Apply the patches, then re-run the stage 3 gate at **full-suite** tier — an applied patch is
+   exactly the condition that voids an inherited green. Green → the patch joins the commit. Red →
    revert the patch, reclassify as deferred, and say why.
 
 Inline is the default because the originating change is the cheapest place to fix what the review
@@ -244,16 +264,17 @@ with the reason, or `[not real]` with what the code actually showed.
 
 ### 5. Decision gate
 
-**clean-express** (auto-routed at 1.5, lint green or skipped): print the one-screen summary and go
+**clean-express** (auto-routed at 1.5, verify green or skipped): print the one-screen summary and go
 to stage 6. The user can interrupt before the push lands.
 
 **borderline-express and full**: show the brief and wait for `ship` / `abort` / `fix-first`
 (full only).
 
-The brief carries: lane; path; final `git diff --stat`; simplify summary; verify result (clean /
-green after Codex fix / green after inline patches); every finding with its 4.5 verdict.
+The brief carries: lane; path; final `git diff --stat`; verify result with its tier (fast gate /
+full suite, and why that tier); review provenance (inherited / ran here / skipped); every finding
+with its 4.5 verdict.
 
-- `fix-first` — loop back to stage 2 with the new diff.
+- `fix-first` — loop back to stage 3 with the new diff.
 - `abort` — exit with the working tree intact. In pre-committed state the commits also stay: abort
   means "don't push", not "undo".
 - `ship` — stage 6.
@@ -287,7 +308,7 @@ git diff --cached --name-only     # must equal the surface list exactly
 
 Draft a Conventional Commit — `feat|fix|chore|docs|refactor|test|perf`, colon, space, imperative
 subject under 70 chars, no period. Body optional and about *why*. Apply the `Co-Authored-By` trailer
-per CLAUDE.md Git Automation. Pre-committed surfaces have nothing to commit; when stage 2 or 4.5
+per CLAUDE.md Git Automation. Pre-committed surfaces have nothing to commit; when stage 4.5
 added edits on top, agree with the user on amend vs. append first.
 
 #### Direct
@@ -474,4 +495,5 @@ with cleanup deferred, naming the failed predicate and the single next action.
   touches what this run delivered.
 - **A worktree carrying unrelated uncommitted work from another task** → split it first.
 
-Codex errors in stage 2 or 4 stop the pipeline and go back to the user; there is no auto-retry.
+Codex errors in stage 3 or 4 stop the pipeline and go back to the user; there is no auto-retry, and
+no call waits longer than its 8-minute cap.

@@ -266,9 +266,9 @@ accident.
 | Agent | Model | Use when |
 |---|---|---|
 | `researcher` | `haiku` | Explore the codebase and external docs for context without polluting the main window |
-| `code-reviewer` | `sonnet` | Quality / security / best-practice review after a change |
-| `security-reviewer` | `sonnet` | Auth, authorization, RLS policies, API surface, sensitive-data handling |
-| `test-writer` | `sonnet` | Generate tests following existing project conventions |
+| `code-reviewer` | `opus` | Quality / security / best-practice review after a change |
+| `security-reviewer` | `opus` | Auth, authorization, RLS policies, API surface, sensitive-data handling |
+| `test-writer` | `opus` | Generate tests following existing project conventions |
 
 ## Slash commands
 
