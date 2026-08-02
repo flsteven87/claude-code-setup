@@ -162,7 +162,7 @@ rules and hooks loaded.
 
 ## Permissions
 
-`settings.json` runs `defaultMode: acceptEdits` with three explicit lists:
+`settings.json` runs `defaultMode: auto` with three explicit lists:
 
 - **deny** (22 rules) — `rm -rf /`, `mkfs`, `dd if=`, `git reset --hard`, `git commit --amend`, and
   every force-push spelling a glob can express: `--force` / `-f` in any position, bare `git push -f`,
@@ -333,6 +333,15 @@ Zero credentials live in this repo.
 
 All hook commands use `~` for `$HOME` expansion, so tracked `settings.json` stays portable across
 machines. `setup.sh` fails the run if a hardcoded `/Users/` path appears.
+
+That guard is why `settings.json` reads as modified on a machine running the Orca desktop app. Orca
+injects ten hook blocks carrying absolute `/Users/<you>/.orca/agent-hooks/` paths, and those are
+**deliberately never committed** — seeing that delta in `git status` is the expected steady state,
+not something to clean up. They are an install artifact under the same rule as `plugins/`:
+auto-generated plus machine-specific stays out of the repo. Committing them would buy nothing on
+either side — Orca re-injects them wherever it is installed, and everywhere else each block no-ops,
+since every one is gated on `ORCA_AGENT_HOOK_*` variables that exist only inside an Orca pane. Stage
+by explicit pathspec, never `git add -A`.
 
 ## License
 

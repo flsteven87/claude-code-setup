@@ -69,5 +69,6 @@ commands.bak-*/
 # Machine/account-managed state (Claude Code internal, not user config)
 policy-limits.json
 
-# Backup files
+# Backup files (incl. settings.json.bak, written by the Orca app on install)
 *.bak-*
+*.bak
