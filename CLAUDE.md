@@ -152,8 +152,14 @@ that still cost the expensive tier a full read to dismiss. This outranks the cos
 `Workflow({name: ...})` is hook-denied — use the routed copies in `~/.claude/workflows/` via
 `scriptPath`. Details and cost rationale: `~/.claude/references/model-routing.md`.
 
-**Cap every Codex call at 8 minutes of wall clock.** The MCP default is 1800s, which in practice
+**Cap every Codex call at 15 minutes of wall clock.** The MCP default is 1800s, which in practice
 burns half an hour and returns nothing. No auto-retry — report the failure and let the user choose.
+
+**A Codex call over ~2 minutes must be observable while it runs.** Silence for fifteen minutes is
+its own failure mode: the user cannot tell a working review from a hung one, and by the time the cap
+expires the window to redirect has closed. Report elapsed time and what the call is still doing at
+least every ~3 minutes — a `Monitor` over the agent's transcript, or an explicit status line between
+other work. Never go quiet and wait.
 
 **Vendored skills route here too**, since `~/.claude/skills/mattpocock-skills/skills` symlinks the
 upstream clone and any edit there dies on the next update. `/mattpocock-skills:code-review` runs its
@@ -162,6 +168,15 @@ Claude-side because it reads Linear, which Codex cannot. That single review is w
 inherits, so a diff gets reviewed once, by the right reviewer, while the context is still fresh. A
 bare `/code-review` — which is how `mattpocock-skills:implement` names it — always means the
 mattpocock two-axis skill, never the `code-review` plugin's PR reviewer.
+
+**User-only commands are invisible to Claude, not missing.** `disable-model-invocation: true` strips
+an entry from the skill listing Claude receives, so Claude cannot see it, invoke it, or confirm it
+exists — the user types it and it runs normally. This covers `/ship` and, under
+`/mattpocock-skills:`, `ask-matt`, `grill-me`, `grill-with-docs`, `implement`,
+`improve-codebase-architecture`, `setup-matt-pocock-skills`, `teach`, `to-spec`, `to-tickets`,
+`triage`, `wayfinder`, `writing-great-skills` — i.e. the whole spec → tickets → implement →
+ship pipeline. When one of them is the right next step, name it and ask the user to type it; never
+report it as missing, unloaded, or non-existent.
 
 ---
 
