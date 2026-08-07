@@ -80,6 +80,10 @@ is_alive() { # $1 = pid
 
 for sf in "$STATE_ROOT"/*/state.json; do
   [ -f "$sf" ] || continue
+  # A file with no active status string cannot produce a candidate below, so skip it
+  # before paying for a jq process. Conservative: grep can over-match (the word may sit
+  # in an errorMessage), never under-match, so jq still decides.
+  grep -qE '"(running|queued)"' "$sf" 2>/dev/null || continue
   ws_dir="$(dirname "$sf")"
   ws_name="$(basename "$ws_dir")"
 
@@ -151,6 +155,7 @@ fi
 if [ -n "$WARN_CWD" ]; then
   for sf in "$STATE_ROOT"/*/state.json; do
     [ -f "$sf" ] || continue
+    grep -qE '"(running|queued)"' "$sf" 2>/dev/null || continue
     live="$(jq -r --arg cwd "$WARN_CWD" '.jobs[]? | select((.status=="running" or .status=="queued") and .workspaceRoot==$cwd) | "\(.id)\t\(.pid)\t\(.updatedAt // .startedAt)"' "$sf" 2>/dev/null || true)"
     [ -z "$live" ] && continue
     while IFS="$(printf '\t')" read -r jid pid upd; do

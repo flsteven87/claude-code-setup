@@ -14,8 +14,11 @@ Catches what settings.json deny rules can't easily express:
     silently trusts a host, which is its own compromise.
   - secret.* / secrets.* basenames, and `credentials` or `credentials.<ext>`.
     Note the last one is exact: `credentials_backup.json` is NOT blocked.
-  - SQL files under any migrations/ directory (project convention: schema
-    changes go through the Supabase MCP, never local migration files)
+
+SQL migration files are NOT blocked. Repos differ: some route schema changes
+through a managed MCP, others keep numbered migration files under version
+control. That is a per-repo convention for AGENTS.md/CLAUDE.md to state, not
+something this hook can decide from a path alone.
 
 Wire-up: register at PreToolUse with matcher "Write|Edit|MultiEdit".
 
@@ -74,12 +77,6 @@ def is_sensitive(file_path: str) -> tuple[bool, str]:
     for pattern in SENSITIVE_BASENAME_PATTERNS:
         if pattern.match(basename):
             return True, f"basename matches /{pattern.pattern}/"
-
-    if basename.endswith(".sql") and "migrations" in parts:
-        return (
-            True,
-            "SQL migration file — apply schema changes via Supabase MCP instead",
-        )
 
     return False, ""
 

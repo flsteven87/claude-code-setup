@@ -98,13 +98,14 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "hooks": {
     "Notification": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook notification"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude notification"
           }
         ]
       }
@@ -124,7 +125,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook waiting-approval"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude waiting-approval"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -144,7 +155,29 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook active"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -196,7 +229,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook active"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -206,7 +249,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook end"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude end"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/awake-gate.sh release",
+            "timeout": 5
           }
         ]
       }
@@ -216,7 +268,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook idle"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude idle"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -240,7 +301,78 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook idle"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude idle"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/awake-gate.sh release",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/awake-gate.sh release",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -260,7 +392,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook thinking"
+            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude thinking"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/bin/awake-gate.sh acquire",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
+            "timeout": 10
           }
         ]
       }
@@ -272,7 +422,7 @@
   },
   "enabledPlugins": {
     "andrej-karpathy-skills@karpathy-skills": true,
-    "code-review@claude-plugins-official": true,
+    "code-review@claude-plugins-official": false,
     "codex@openai-codex": true,
     "pyright-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": false,
@@ -285,16 +435,16 @@
         "repo": "forrestchang/andrej-karpathy-skills"
       }
     },
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
     "mattpocock": {
       "source": {
         "source": "github",
         "repo": "mattpocock/skills"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
       }
     }
   },
@@ -309,6 +459,7 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark-daltonized",
   "agentPushNotifEnabled": true
 }

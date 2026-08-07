@@ -72,3 +72,19 @@ policy-limits.json
 # Backup files (incl. settings.json.bak, written by the Orca app on install)
 *.bak-*
 *.bak
+
+# Awake-gate lock tokens (one file per live session, meaningless off this machine)
+run/
+
+# Automation run artifacts — regenerable output, not config.
+# PROMPT.md, run.sh and memory.md ARE tracked; only the per-run products are not.
+automations/*/results/
+automations/*/logs/
+automations/*/.run.lock/
+
+# Skills owned by the Orca / skills CLI install at ~/.agents/skills.
+# These are symlinks: committing them stores a path that dangles on any other machine.
+skills/computer-use
+skills/orca-emulator
+skills/orca-linear
+skills/orchestration

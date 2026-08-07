@@ -152,12 +152,26 @@ that still cost the expensive tier a full read to dismiss. This outranks the cos
 `Workflow({name: ...})` is hook-denied — use the routed copies in `~/.claude/workflows/` via
 `scriptPath`. Details and cost rationale: `~/.claude/references/model-routing.md`.
 
-**Cap every Codex call at 15 minutes of wall clock.** The MCP default is 1800s, which in practice
-burns half an hour and returns nothing. No auto-retry — report the failure and let the user choose.
+**Supervise Codex and Fugu delegations by liveness, not by wall clock.** Long-running delegations
+go through the observable CLI path — `codex exec --json` in a background shell — never through
+`mcp__codex__codex` for sandboxed work: its `mcp-server` mode deadlocks under any sandbox
+(codex-cli 0.146.0), and the blocking MCP call cannot be supervised anyway. No new stream events
+for 10 minutes = dead: kill it immediately, even minutes after launch — healthy Sakana thinks
+measure up to ~6 minutes of silence, so only hangs cross that line. A run that keeps streaming
+may take up to 60 minutes. No auto-retry — report the failure and let the user choose.
 
-**A Codex call over ~2 minutes must be observable while it runs.** Silence for fifteen minutes is
-its own failure mode: the user cannot tell a working review from a hung one, and by the time the cap
-expires the window to redirect has closed. Report elapsed time and what the call is still doing at
+**`sandbox: read-only` means read-only for the toolchain too.** Nothing is writable under it — not
+`/tmp`, not `$TMPDIR` — so `uv run`, `uvx`, `pytest`, and `npx` all die on their own cache before
+they reach your task, and `writable_roots` is ignored in that mode. A reviewer that must *run*
+anything gets `workspace-write`; keep "review only, do not edit" in the prompt, where it belongs.
+`workspace-write` still holds `.git` and everything outside the workspace read-only, so the diff
+stays yours to commit. Reserve `read-only` for delegations that genuinely only read.
+`approval-policy` stays `never` on every call: `on-request` over MCP waits on an elicitation handler
+Claude Code does not implement, and the call hangs until the timeout kills it.
+
+**A Codex call over ~2 minutes must be observable while it runs.** Silence is its own failure
+mode: the user cannot tell a working review from a hung one, and an unwatched stream is what turns
+a 10-minute stall into a half-hour bleed. Report elapsed time and what the call is still doing at
 least every ~3 minutes — a `Monitor` over the agent's transcript, or an explicit status line between
 other work. Never go quiet and wait.
 
