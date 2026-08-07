@@ -15,7 +15,7 @@
 
 ## 2026-08-03T15:36:59+0800 daily development-tool update
 
-- Completed the unattended user-level update from `/Users/po-chi` without entering a project, changing project dependencies, starting MCP servers, or touching any repository graph, hook, `.mcp.json`, lockfile, or uncommitted work.
+- Completed the unattended user-level update from `$HOME` without entering a project, changing project dependencies, starting MCP servers, or touching any repository graph, hook, `.mcp.json`, lockfile, or uncommitted work.
 - Claude Code remained current at 2.1.220. `claude doctor` confirms a healthy native install, bundled search, and enabled latest-channel auto-updates. Refreshed all five configured marketplaces with official commands. The mattpocock marketplace moved `ed37663 -> 2ab9580` with only `README.md` changed; no upstream skill was added, so the self-held manifest and symlink were preserved unchanged.
 - Updated the Claude `code-review` plugin `75ee6cb1523b -> 627c680174dd`; all other installed plugins retained their versions and enabled/disabled state. Claude Code must restart to load this plugin update.
 - Codex remained current at 0.146.0 through its official updater, which requested a restart. `codex plugin marketplace upgrade` found no configured Git marketplace. Bundled, primary-runtime, and App-managed marketplaces were left unchanged.
@@ -30,7 +30,7 @@
 
 ## 2026-08-05T09:07:36+0800 daily development-tool update
 
-- Completed the unattended user-level update from `/Users/po-chi`. No project dependency command ran, no repository was entered for maintenance, and no project `.mcp.json`, graph database, hook, lockfile, repository file, or uncommitted work was changed.
+- Completed the unattended user-level update from `$HOME`. No project dependency command ran, no repository was entered for maintenance, and no project `.mcp.json`, graph database, hook, lockfile, repository file, or uncommitted work was changed.
 - Updated Claude Code through `claude update` from 2.1.221 to 2.1.222. `claude doctor` confirms a healthy native install, bundled search, enabled latest-channel auto-updates, and no installation issues.
 - Refreshed all five configured Claude marketplaces with official commands: claude-plugins-official, anthropic-agent-skills, openai-codex, karpathy-skills, and mattpocock. The four Git-backed marketplace heads inspected before and after were unchanged; all six installed marketplace plugins were explicitly checked with `claude plugin update` and remained current, including the disabled state of ralph-loop. `codex plugin marketplace upgrade` correctly reported no configured Git marketplaces; bundled, primary-runtime, and App-managed marketplaces were left unchanged.
 - Preserved the self-held `~/.claude/skills/mattpocock-skills` manifest byte-for-byte (SHA-256 `924a2d86a3221f4df7f2931b7b610b3fc35e46049948aa74c72238bf9b1b9984`) and retained its marketplace symlink. The mattpocock Git head did not change, so no upstream skill was added. All local/custom Claude and shared Codex-source skills were left untouched.
@@ -45,7 +45,7 @@
 
 ## 2026-08-06T10:17:14+0800 daily development-tool update
 
-- Completed the unattended user-level update from `/Users/po-chi`. No project dependency operation ran, no repository was entered for maintenance, and no project `.mcp.json`, graph database, hook, lockfile, repository file, secret, or uncommitted work was changed.
+- Completed the unattended user-level update from `$HOME`. No project dependency operation ran, no repository was entered for maintenance, and no project `.mcp.json`, graph database, hook, lockfile, repository file, secret, or uncommitted work was changed.
 - Claude Code stayed current at 2.1.223. `claude doctor` confirms a healthy native install, bundled search, enabled latest-channel auto-updates, and no installation issues. All five configured Claude marketplaces refreshed successfully; installed plugin versions and enabled/disabled states remained unchanged.
 - The mattpocock marketplace advanced `2ab958093e83 -> 8b36d4fb2635`. Upstream promoted/added `wizard`, `to-questionnaire`, `wait-what`, and `writing-for-agents`, and removed `writing-great-skills`. The self-held manifest was preserved byte-for-byte at SHA-256 `924a2d86a3221f4df7f2931b7b610b3fc35e46049948aa74c72238bf9b1b9984`; as a result, Claude now reports the expected manifest error for the removed `writing-great-skills` path. This requires manual manifest review and was intentionally not repaired automatically. All other local/custom/shared skills were untouched.
 - Updated Codex standalone `0.146.0 -> 0.146.1`. `codex plugin marketplace upgrade` reported no configured Git marketplaces; bundled, primary-runtime, curated, and App-managed marketplaces remained runtime/App managed. Codex Doctor confirms installation, config, auth, network, databases, update status, and nine MCP configurations are healthy; overall status remains failed only because unattended `TERM=dumb`, with the existing warning for 417 stale rollout rows.
@@ -59,7 +59,7 @@
 
 ## 2026-08-07T09:09:33+0800 daily development-tool update
 
-- Completed the unattended user-level update from `/Users/po-chi`. No repository was entered for maintenance; no project dependency, `.mcp.json`, graph database, hook, lockfile, repository file, secret, or uncommitted work was changed, and no MCP server was started.
+- Completed the unattended user-level update from `$HOME`. No repository was entered for maintenance; no project dependency, `.mcp.json`, graph database, hook, lockfile, repository file, secret, or uncommitted work was changed, and no MCP server was started.
 - Claude Code stayed current at 2.1.223. `claude doctor` confirms a healthy native install, bundled search, enabled latest-channel auto-updates, and no installation issues. All five configured Claude marketplaces refreshed successfully, and all six installed marketplace plugins remained current with their enabled/disabled states preserved.
 - The mattpocock marketplace advanced `8b36d4fb2635 -> 84fdeffd12f2`; this release modified existing skills/docs and added no new skill. The self-held manifest remained byte-for-byte unchanged at SHA-256 `924a2d86a3221f4df7f2931b7b610b3fc35e46049948aa74c72238bf9b1b9984`. Its known stale `writing-great-skills` entry still causes the expected load error and remains an intentional manual-review item. All local/custom/shared skills were untouched.
 - Codex stayed current at 0.146.1 through its official updater, which requested a restart. `codex plugin marketplace upgrade` found no configured Git marketplace; bundled, primary-runtime, curated, and App-managed marketplaces were left unchanged. Codex Doctor reports healthy install/config/auth/network/databases/update status and nine locally consistent MCP configurations; overall status is warning only because of the existing 417 stale rollout rows.

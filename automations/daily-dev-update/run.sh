@@ -4,12 +4,12 @@ set -u
 setopt pipefail
 umask 077
 
-readonly BASE_DIR="/Users/po-chi/.claude/automations/daily-dev-update"
+readonly BASE_DIR="$HOME/.claude/automations/daily-dev-update"
 readonly PROMPT_FILE="$BASE_DIR/PROMPT.md"
 readonly RESULT_DIR="$BASE_DIR/results"
 readonly LOG_DIR="$BASE_DIR/logs"
 readonly LOCK_DIR="$BASE_DIR/.run.lock"
-readonly CODEX_BIN="/Users/po-chi/.local/bin/codex"
+readonly CODEX_BIN="$HOME/.local/bin/codex"
 readonly RUN_STAMP="$(date '+%Y%m%dT%H%M%S%z')"
 readonly STARTED_AT="$(date -Iseconds)"
 readonly RUN_LOG="$LOG_DIR/run-$RUN_STAMP.log"
@@ -42,14 +42,16 @@ if [[ ! -r "$PROMPT_FILE" ]]; then
   exit 66
 fi
 
-export CODEX_HOME="/Users/po-chi/.codex"
-export HOME="/Users/po-chi"
+# launchd invokes this as "$HOME/.claude/.../run.sh", so HOME is already set;
+# fail loudly rather than silently resolving paths against the wrong home.
+export HOME="${HOME:?HOME must be set}"
+export CODEX_HOME="$HOME/.codex"
 export CI=1
 export NONINTERACTIVE=1
 export HOMEBREW_NO_ENV_HINTS=1
-export PNPM_HOME="/Users/po-chi/Library/pnpm"
-NVM_NODE_BIN="$(find /Users/po-chi/.nvm/versions/node -mindepth 2 -maxdepth 2 -type d -name bin 2>/dev/null | sort -V | tail -n 1)"
-export PATH="${NVM_NODE_BIN:+$NVM_NODE_BIN:}$PNPM_HOME/bin:/Users/po-chi/.local/bin:/Users/po-chi/.cargo/bin:/Users/po-chi/.bun/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+export PNPM_HOME="$HOME/Library/pnpm"
+NVM_NODE_BIN="$(find "$HOME/.nvm/versions/node" -mindepth 2 -maxdepth 2 -type d -name bin 2>/dev/null | sort -V | tail -n 1)"
+export PATH="${NVM_NODE_BIN:+$NVM_NODE_BIN:}$PNPM_HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.bun/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
 
 {
   print -r -- "[$STARTED_AT] Starting unattended daily development-tool update."
@@ -67,7 +69,7 @@ export PATH="${NVM_NODE_BIN:+$NVM_NODE_BIN:}$PNPM_HOME/bin:/Users/po-chi/.local/
   --color never \
   --model gpt-5.6-sol \
   --config 'model_reasoning_effort="medium"' \
-  --cd "/Users/po-chi" \
+  --cd "$HOME" \
   --output-last-message "$TEMP_RESULT" \
   - < "$PROMPT_FILE" >> "$RUN_LOG" 2>&1 &
 

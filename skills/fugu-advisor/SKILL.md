@@ -64,7 +64,7 @@ done < <(codex mcp list --json | jq -r '.[].name')
 echo $$ > "$SCRATCH/fugu-advisor.pid" && exec codex exec \
   -c model=fugu-ultra \
   -c model_provider=sakana \
-  -c model_catalog_json=/Users/po-chi/.codex/fugu.json \
+  -c model_catalog_json=$HOME/.codex/fugu.json \
   -c model_reasoning_effort=high \
   -c model_reasoning_summary=auto \
   -c approval_policy=never \

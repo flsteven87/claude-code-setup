@@ -27,6 +27,8 @@
 
 10. **驗證與收尾**：更新後重新記錄版本並做基本可用性檢查（各 CLI 的 `--version` 或官方 health/list 指令）。接著把本次結果**附加**到 `~/.claude/automations/daily-dev-update/memory.md` 與 `~/.codex/automations/automation/memory.md`（以執行時間開頭的一節，不要覆蓋既有內容），保存版本前後、跳過原因、失敗項目與下次應避免重複處理的資訊。
 
+    **寫 memory 時一律用 `$HOME` 或 `~`，不要寫出絕對家目錄路徑。** `~/.claude` 是公開 repo，`memory.md` 有進版控，絕對路徑會把本機帳號名推上 GitHub。這條只約束寫進 memory 的文字，不影響你實際執行指令時怎麼解析路徑。
+
 ## 回報格式
 
 用繁體中文，簡潔，不要贅述過程：
