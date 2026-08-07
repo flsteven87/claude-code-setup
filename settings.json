@@ -128,16 +128,6 @@
             "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude waiting-approval"
           }
         ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -156,28 +146,6 @@
           {
             "type": "command",
             "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
           }
         ]
       }
@@ -232,16 +200,6 @@
             "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
           }
         ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "SessionEnd": [
@@ -269,15 +227,6 @@
           {
             "type": "command",
             "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude idle"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
           }
         ]
       }
@@ -313,15 +262,6 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "StopFailure": [
@@ -331,48 +271,6 @@
             "type": "command",
             "command": "~/.claude/bin/awake-gate.sh release",
             "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
           }
         ]
       }
@@ -402,15 +300,6 @@
             "type": "command",
             "command": "~/.claude/bin/awake-gate.sh acquire",
             "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -r '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ] && [ -x '/Users/po-chi/.orca/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/po-chi/.orca/agent-hooks/claude-hook.sh'; else { command -p cat 2>/dev/null || cat; } >/dev/null 2>&1 || :; fi",
-            "timeout": 10
           }
         ]
       }

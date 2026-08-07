@@ -340,8 +340,37 @@ injects ten hook blocks carrying absolute `/Users/<you>/.orca/agent-hooks/` path
 not something to clean up. They are an install artifact under the same rule as `plugins/`:
 auto-generated plus machine-specific stays out of the repo. Committing them would buy nothing on
 either side — Orca re-injects them wherever it is installed, and everywhere else each block no-ops,
-since every one is gated on `ORCA_AGENT_HOOK_*` variables that exist only inside an Orca pane. Stage
-by explicit pathspec, never `git add -A`.
+since every one is gated on `ORCA_AGENT_HOOK_*` variables that exist only inside an Orca pane.
+
+This used to rest on remembering to stage by explicit pathspec, and a single `git add -A` was enough
+to sweep the blocks in — which is how they reached the public repo twice on 2026-08-07. The rule is
+now enforced instead of documented:
+
+```bash
+git update-index --skip-worktree settings.json    # set once; survives in .git/index
+```
+
+With that bit set, Git ignores worktree edits to `settings.json`, so `git add -A` cannot stage the
+Orca blocks and `git status` stops reporting the file as modified. To change the *tracked* settings
+deliberately:
+
+```bash
+git update-index --no-skip-worktree settings.json   # unlock
+# edit, stage the portable content, commit
+git update-index --skip-worktree settings.json      # re-lock
+```
+
+To stage a portable version without touching the live file — the usual case, since the worktree copy
+must keep the Orca blocks for Orca to work:
+
+```bash
+jq '.hooks |= (with_entries(.value |= map(select(
+     ([.hooks[]?.command // ""] | map(test("orca/agent-hooks")) | any) | not)))
+   | with_entries(select(.value | length > 0)))' settings.json > /tmp/portable.json
+git update-index --no-skip-worktree settings.json
+git update-index --cacheinfo 100644,"$(git hash-object -w --stdin < /tmp/portable.json)",settings.json
+git commit -m '...' && git update-index --skip-worktree settings.json
+```
 
 ## License
 
