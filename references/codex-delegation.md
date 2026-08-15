@@ -17,9 +17,9 @@
 - Write-capable rescue → `Agent(subagent_type: "codex:codex-rescue", prompt: "...")` with
   `run_in_background=true` **on the Agent tool itself**. Never pass `--background` inside the prompt
   and never pair it with `isolation: "worktree"` — both kill Codex early.
-- **Model is config-owned.** `~/.codex/config.toml` pins `gpt-5.6-sol` + `model_reasoning_effort =
-  "xhigh"`; every surface (review / adversarial-review / rescue / `codex` MCP) inherits it. Never
-  pass `--model` / `--effort` at a call site — `review/start` has no effort param, so it drifts.
+- **Runtime configuration is authoritative.** Read `~/.codex/config.toml` when the current model or
+  effort matters; do not cache their values in agent documents. Use the configured defaults unless
+  the user explicitly requests a one-off override supported by the selected surface.
 - ⚠️ Do NOT run `/codex:setup --enable-review-gate`.
 
 ## Briefing
@@ -30,9 +30,10 @@ sandbox denies all writes and the job thrashes on `Operation not permitted`.
 
 ## Observability
 
-`status: running` ≠ progress — check `/codex:status <id>`. Frozen `progressPreview` ~5 min AND
-elapsed > 10 min → dead: `/codex:cancel <id>`, `codex-hygiene`, retry. Always auto-poll jobs expected
-to run > 5 min with `/loop 90s /codex:status <id>`.
+`status: running` is not evidence of progress. Check `/codex:status <id>` and make a job expected to
+run longer than two minutes visible to the user at least every three minutes. More than ten
+consecutive minutes without new output or another progress signal means the job is dead: cancel it,
+run `codex-hygiene` if needed, and report the failure. Do not retry automatically.
 
 `codex-hygiene` exits 1 and changes nothing while any job is still alive — cancel first, that is why
 the order above is what it is. If the job is only *stuck* rather than wedged (status pinned to

@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Reviews code for quality, security, and best practices; outputs structured review reports. Fallback reviewer only — code review goes to Codex per CLAUDE.md Part 3. Use when Codex is unavailable, or when the review needs live session context Codex cannot reach.
+description: Reviews code for quality, security, and best practices when Codex cannot reach required evidence. Keep the reviewer separate from the implementer and disclose the loss of provider independence.
 tools: Read, Grep, Glob
 model: opus
 ---

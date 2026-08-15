@@ -1,24 +1,28 @@
 # Autonomous Loops Reference
 
-> Moved out of CLAUDE.md 2026-07-25. Read this before starting any unattended / batch agent run.
-> Evidence and dates: `~/Desktop/loop-engineering-research-2026-07-07.md`.
+Read this before starting unattended or repeated agent work. Inspect the current plugin state and
+command help first; an installed but disabled loop is unavailable.
 
-## Which tool
+## Admission gate
 
-- **Batch grind work → `/ralph-loop`** (official plugin, installed 2026-07-07). Fits tasks with clear
-  success criteria + automatic verification (tests / lint / typecheck): coverage backfill, mechanical
-  migrations, lint sweeps. **NOT** for judgment or design work, vague specs, or production debugging.
-- **Machine-off recurring work → `/schedule`** (cloud routine). `/loop` dies with the machine —
-  it is in-session polling only.
+Use a loop only when the task is mechanical, its success criterion is machine-checkable, each
+iteration can leave recoverable state, and a finite bound exists. Keep design, product judgment,
+production debugging, and ambiguous work attended.
 
-## Operating rules
+## Operating contract
 
-- **`--max-iterations` is mandatory.** The default is unlimited, and `--completion-promise` is
-  exact-string matching, so it cannot express SUCCESS vs BLOCKED. Typical range 25–100.
-- **Park, don't spin.** Three failed attempts on the same item → log it to a pending-for-human file
-  and move on. Agent self-reports of "fixed" are not evidence (documented case: 20 consecutive false
-  "fixed" claims on one error).
-- **Externalize state.** Progress/status file + one commit per iteration. Files and git history are
-  the loop's memory; context is disposable.
-- **Staged adoption.** Run attended (human-in-the-loop) until the prompt is trusted, only then AFK.
-  Overnight runs must fit inside the Max-plan session-limit window.
+1. Verify the selected runtime is enabled and supports both an iteration bound and an observable
+   completion condition. Do not start an unbounded loop.
+2. Externalize the objective, current item, last verification result, and blockers in a compact state
+   file. Git and durable artifacts remain authoritative.
+3. Run attended until the same prompt and verifier complete representative work reliably.
+4. After three failed attempts on the same item, mark it pending for a human and continue only with
+   independent items.
+5. Stop at the configured bound. Report completed items, unresolved items, final verification, and
+   the single next human decision.
+
+For recurring work that must run while the machine or session is unavailable, use only a currently
+supported scheduler whose persistence and authority boundary have been verified.
+
+The loop is complete when it reaches the machine-checkable success condition or the finite bound and
+leaves a recoverable state plus an explicit unresolved list.

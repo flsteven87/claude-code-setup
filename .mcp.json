@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "type": "stdio",
+      "command": "/Users/po-chi/.local/bin/code-review-graph-readonly",
+      "args": [
+        "serve",
+        "--tools",
+        "get_minimal_context_tool,query_graph_tool,get_impact_radius_tool,get_review_context_tool,detect_changes_tool,get_architecture_overview_tool,list_graph_stats_tool"
+      ]
+    }
+  }
+}

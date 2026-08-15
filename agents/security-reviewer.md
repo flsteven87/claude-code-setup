@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: Security-focused code auditor for authentication, authorization, RLS policies, API security, and sensitive data handling. Fallback reviewer only — code review goes to Codex per CLAUDE.md Part 3. Use when Codex is unavailable, or when the audit needs live session context Codex cannot reach.
+description: Security-focused auditor for authentication, authorization, data access, API security, and sensitive information when Codex cannot reach required evidence. Apply stack-specific checks only when that stack is present.
 tools: Read, Grep, Glob
 model: opus
 ---
@@ -28,7 +28,7 @@ You are a security specialist. When invoked, perform a thorough security audit o
 - [ ] Database credential security
 - [ ] PII handling compliance
 
-### Supabase/RLS Specific
+### Supabase/RLS Specific — only when the repository uses Supabase
 - [ ] RLS policies use `(select auth.uid())` not `auth.uid()`
 - [ ] No `FOR ALL TO public USING (true)` policies
 - [ ] `SECURITY DEFINER` functions have `SET search_path = 'public'`

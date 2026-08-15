@@ -13,10 +13,11 @@ describing only current-latest truth and genuinely-coming-next work.
 
 ## Governing principle
 
-**Git history is the safety net, so dead scaffolding gets deleted on sight.**
+**Git history is the safety net, but dead scaffolding is deleted only after its death condition and
+the user's cleanup scope are both verified.**
 
-- A shipped plan or spec is past, not an asset. `git show <sha>:path` revives anything you ever
-  actually need — which is what makes deletion the cheap move and「留著當 scratch？」the sediment.
+- A shipped plan or spec is past, not an asset. Once Git evidence and scope confirm deletion,
+  `git show <sha>:path` can recover tracked history without keeping stale prose in the live tree.
 - Architecture docs describe current reality, standing on their own without legacy caveats layered
   on top.
 - Deferred with no committed timeline ≈ delete candidate. Genuinely on the roadmap → keep the design
@@ -96,25 +97,24 @@ Every candidate lands in exactly one bucket:
 - **LEAVE** — append-only (ADR / audit), or write-protected historical artifacts such as applied
   `migrations/*.sql`.
 
-Report the triage table so the user sees the shape, then execute. The PURGE bucket is already
-authorized by the governing principle; a genuine tension (a deferred design with no timeline) gets
-surfaced once, briefly, and then decided.
+Report the triage table so the user sees the shape, then execute only the purge scope the user
+requested. Surface uncertain ownership or a genuine roadmap decision before deleting that item.
 
 **Complete when** every inventory item sits in exactly one bucket and the table has been shown.
 
 ## Phase 5 — Purge
 
-Tracked → `git rm <files>`, staging the deletion for one housekeeping commit. Untracked scratch →
-`rm <files>`. An empty `plans/` afterward is the correct and honest outcome when nothing is in
-flight.
+Tracked → remove the confirmed files with the repository's normal tracked-file workflow. Untracked
+scratch → move it to trash. An empty `plans/` afterward is the correct and honest outcome when
+nothing is in flight.
 
 **Complete when** the PURGE bucket is empty and `git status` shows exactly those deletions.
 
 ## Phase 6 — Current-ize and clean dangling refs
 
 Fix drifted docs **from code**, which is the current truth; the dead specs were only rationale. For a
-broad drift set, fan out read-only verifiers (one per doc cluster) to pin each drift at `file:line`,
-hand the edits to the implementation specialist per CLAUDE.md Part 3, and verify the result yourself.
+broad drift set, read the current delegation reference before using independent read-only verifiers,
+pin each drift at `file:line`, and keep every edit inside the active ownership boundary.
 Common drift classes: a predicate or formula the code changed; a table missing a newly-shipped row;
 framing a flag-flip inverted (shadow→active); renamed paths; a changed section count.
 
@@ -129,14 +129,14 @@ removed:
 **Complete when** every deleted basename returns zero live references, and every CURRENT-IZE doc's
 changed claims are each backed by a `file:line` in current code.
 
-## Phase 7 — Report and commit
+## Phase 7 — Report
 
 Report the delta in the fixed micro-block form（**淨變化 / 在哪看 / 沒包含**）, leading with what is
-now true. Land purge and current-ization as **one** housekeeping commit — they are one unit —
-mirroring any precedent commit's message shape. Push per CLAUDE.md Git Automation.
+now true. Leave the verified local diff ready for an explicitly authorized commit or delivery
+workflow; this model-invoked skill does not expand Git or external-write authority.
 
-**Complete when** the commit exists, the push resolved per policy, and the micro-block names both
-what changed and what was deliberately left.
+**Complete when** the local diff contains only the approved documentation changes and the micro-block
+names both what changed and what was deliberately left.
 
 ## Communication
 
