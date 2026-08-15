@@ -95,6 +95,42 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("Withhold the commit list", spec)
         self.assertNotIn("and commit list", spec)
 
+    def test_review_axes_own_their_reviewer_lifecycle(self) -> None:
+        review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        report = (HOME / ".agents/GRAPH-ENGINEERING.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("owns its reviewer from launch to teardown", review)
+        self.assertIn("Block on one bounded wait", review)
+        self.assertIn("checkpoint, not a state transition", review)
+        self.assertIn("Drain its output by cursor", review)
+        self.assertIn("Release the handle last", review)
+        self.assertIn("dies before its verdict, exits non-zero, or loses its handle", review)
+        self.assertIn("no reviewer outlives the axis that launched it", run)
+        self.assertIn("no reviewer outlives its axis", report)
+
+    def test_dispatch_completes_on_observed_owner_start(self) -> None:
+        dispatch = (HOME / ".agents/skills/graph-dispatch/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        report = (HOME / ".agents/GRAPH-ENGINEERING.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(
+            "owner that started, not on keystrokes that were sent", dispatch
+        )
+        self.assertIn("resubmit once", dispatch)
+        self.assertIn("no `dispatched` value", dispatch)
+        self.assertIn("observes that the owner's first turn started", report)
+        self.assertIn("placement gate, not supervision", report)
+
     def test_delivery_gate_and_yolo_contracts_are_explicit(self) -> None:
         execute = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
