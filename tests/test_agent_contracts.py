@@ -106,6 +106,11 @@ class AgentContractTests(unittest.TestCase):
             encoding="utf-8"
         )
 
+        self.assertIn("Pin `HEAD` before launching and hold it frozen", review)
+        self.assertIn("voids that axis", review)
+        self.assertIn("still equals its pinned head", review)
+        self.assertIn("the Spec axis receives the sealed acceptance itself", review)
+        self.assertIn("told the reviewer to treat as complete is writer rationale", review)
         self.assertIn("owns its reviewer from launch to teardown", review)
         self.assertIn("Block on the runtime's own wait", review)
         self.assertIn("rather than to an interval you choose", review)
@@ -116,6 +121,17 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("dies before its verdict, exits non-zero, or loses its handle", review)
         self.assertIn("no reviewer outlives the axis that launched it", run)
         self.assertIn("no reviewer outlives its axis", report)
+
+        ticket = (HOME / ".agents/skills/graph-ticket/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Fix commits land after both axes have reported", ticket)
+        self.assertIn(
+            "`HEAD` did not move between an axis launching and that axis reporting", report
+        )
+        self.assertIn(
+            "received the sealed acceptance itself, not a writer-composed retelling", report
+        )
 
         integrate = (HOME / ".agents/skills/graph-integrate/SKILL.md").read_text(
             encoding="utf-8"
