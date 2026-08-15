@@ -76,6 +76,25 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("same immutable head", integrate)
         self.assertIn("Do not edit, commit, run the full gate", integrate)
 
+    def test_graph_reviewers_receive_a_holdout_input_set(self) -> None:
+        review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("Give each reviewer only its axis prompt", review)
+        self.assertIn("Never pass writer rationale", review)
+        self.assertIn("fresh Claude Code `opus`", review)
+        self.assertIn("fresh Grok `grok-4.6`", review)
+
+        standards = review.split("**Standards reviewer prompt**")[1].split(
+            "**Spec reviewer prompt**"
+        )[0]
+        spec = review.split("**Spec reviewer prompt**")[1].split("### 5")[0]
+
+        self.assertIn("commit list", standards)
+        self.assertIn("Withhold the commit list", spec)
+        self.assertNotIn("and commit list", spec)
+
     def test_delivery_gate_and_yolo_contracts_are_explicit(self) -> None:
         execute = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
