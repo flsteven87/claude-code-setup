@@ -107,13 +107,21 @@ class AgentContractTests(unittest.TestCase):
         )
 
         self.assertIn("owns its reviewer from launch to teardown", review)
-        self.assertIn("Block on one bounded wait", review)
+        self.assertIn("Block on the runtime's own wait", review)
+        self.assertIn("rather than to an interval you choose", review)
         self.assertIn("checkpoint, not a state transition", review)
-        self.assertIn("Drain its output by cursor", review)
+        self.assertIn("answers liveness and\n   nothing else", review)
+        self.assertIn("Once it has exited, drain its output by cursor", review)
         self.assertIn("Release the handle last", review)
         self.assertIn("dies before its verdict, exits non-zero, or loses its handle", review)
         self.assertIn("no reviewer outlives the axis that launched it", run)
         self.assertIn("no reviewer outlives its axis", report)
+
+        integrate = (HOME / ".agents/skills/graph-integrate/SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("each axis under `$code-review`'s reviewer lifecycle", integrate)
+        self.assertIn("fails anywhere in\nthat lifecycle is `blocked-external`", integrate)
 
     def test_dispatch_completes_on_observed_owner_start(self) -> None:
         dispatch = (HOME / ".agents/skills/graph-dispatch/SKILL.md").read_text(
