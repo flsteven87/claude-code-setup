@@ -68,6 +68,7 @@ done
 # --- Plugins ---
 echo ""
 echo -e "${BOLD}Plugins to install:${RESET}"
+errors=0
 echo "  Run these inside Claude Code or via CLI:"
 echo ""
 echo "    claude plugin install codex@openai-codex"
@@ -88,22 +89,51 @@ echo ""
 fail_hint="run: claude plugin marketplace add mattpocock/skills"
 if [ -d ~/.claude/plugins/marketplaces/mattpocock/skills ]; then
   pass "mattpocock marketplace clone present (symlink target resolves)"
+  if uv run python ~/.claude/scripts/reconcile_matt_manifest.py --check --runtime; then
+    pass "mattpocock manifest and Claude runtime inventory agree"
+  else
+    fail "mattpocock manifest or runtime inventory is inconsistent"
+    errors=$((errors + 1))
+  fi
 else
-  warn "mattpocock marketplace clone missing — $fail_hint"
+  fail "mattpocock marketplace clone missing — $fail_hint"
+  errors=$((errors + 1))
 fi
 
 # --- Verify ---
 echo ""
 echo -e "${BOLD}Verification...${RESET}"
 
-errors=0
-
-if grep -q '/Users/' ~/.claude/settings.json 2>/dev/null; then
-  fail "settings.json contains hardcoded /Users/ paths"
+if ! git -C ~/.claude cat-file -e :settings.json 2>/dev/null; then
+  fail "tracked settings.json is unavailable from the Git index"
+  errors=$((errors + 1))
+elif git -C ~/.claude show :settings.json | grep -q '/Users/'; then
+  fail "tracked settings.json contains hardcoded /Users/ paths"
   errors=$((errors + 1))
 else
-  pass "settings.json paths are portable"
+  pass "tracked settings.json paths are portable"
 fi
+
+shared_skill_targets=(
+  "$HOME/.agents/skills/ship/SKILL.md"
+  "$HOME/.agents/skills/graph-decide/SKILL.md"
+  "$HOME/.agents/skills/graph-deliver/SKILL.md"
+  "$HOME/.agents/skills/graph-dispatch/SKILL.md"
+  "$HOME/.agents/skills/graph-integrate/SKILL.md"
+  "$HOME/.agents/skills/graph-portfolio/SKILL.md"
+  "$HOME/.agents/skills/graph-refresh/SKILL.md"
+  "$HOME/.agents/skills/graph-run/SKILL.md"
+  "$HOME/.agents/skills/graph-ticket/SKILL.md"
+  "$HOME/.agents/skills/use-code-review-graph/SKILL.md"
+)
+for target in "${shared_skill_targets[@]}"; do
+  if [ -f "$target" ]; then
+    pass "shared skill target present: ${target#"$HOME/"}"
+  else
+    fail "shared skill target missing: ${target#"$HOME/"} — setup verifies but does not restore shared skills"
+    errors=$((errors + 1))
+  fi
+done
 
 if [ -f ~/.claude/hooks/auto-format.sh ] && [ -x ~/.claude/hooks/auto-format.sh ]; then
   pass "Hooks are in place"
