@@ -85,6 +85,7 @@ automations/*/.run.lock/
 # Skills owned by the Orca / skills CLI install at ~/.agents/skills.
 # These are symlinks: committing them stores a path that dangles on any other machine.
 # setup.sh checks that the link targets exist.
+skills/catchup
 skills/computer-use
 skills/graph-decide
 skills/graph-deliver
@@ -94,6 +95,7 @@ skills/graph-portfolio
 skills/graph-refresh
 skills/graph-run
 skills/graph-ticket
+skills/handoff
 skills/orca-cli
 skills/orca-emulator
 skills/orca-linear
