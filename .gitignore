@@ -87,6 +87,7 @@ automations/*/.run.lock/
 # setup.sh checks that the link targets exist.
 skills/catchup
 skills/computer-use
+skills/git-converge-main
 skills/graph-decide
 skills/graph-deliver
 skills/graph-dispatch
@@ -100,10 +101,10 @@ skills/orca-cli
 skills/orca-emulator
 skills/orca-linear
 skills/orchestration
+skills/web-design-guidelines
 
 # Skills installed from vercel-labs/agent-skills by the skills CLI. Vendoring
 # another project's content into a public repository is redistribution.
 skills/vercel-composition-patterns/
 skills/vercel-react-best-practices/
-skills/web-design-guidelines/
 skills/writing-guidelines/

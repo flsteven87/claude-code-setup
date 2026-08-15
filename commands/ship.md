@@ -13,7 +13,9 @@ Claude command mappings:
 
 - `$ship` → `/ship`
 - `$implement` → `/mattpocock-skills:implement`
-- `$code-review` → `/mattpocock-skills:code-review`
+- `$code-review` → read `/Users/po-chi/.agents/skills/code-review/SKILL.md`; the
+  `/mattpocock-skills:code-review` plugin copy omits the Graph reviewer routes and the holdout input
+  set
 - `$git-converge-main` → `/git-converge-main`
 
 This adapter contains no delivery policy. When it conflicts with the canonical contract, the

@@ -118,6 +118,7 @@ shared_skill_targets=(
   "$HOME/.agents/skills/ship/SKILL.md"
   "$HOME/.agents/skills/catchup/SKILL.md"
   "$HOME/.agents/skills/handoff/SKILL.md"
+  "$HOME/.agents/skills/git-converge-main/SKILL.md"
   "$HOME/.agents/skills/graph-decide/SKILL.md"
   "$HOME/.agents/skills/graph-deliver/SKILL.md"
   "$HOME/.agents/skills/graph-dispatch/SKILL.md"
