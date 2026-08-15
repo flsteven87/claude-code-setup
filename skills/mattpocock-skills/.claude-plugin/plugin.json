@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "mattpocock-skills",
-  "version": "1.2.0",
+  "version": "1.2.3",
   "description": "Matt Pocock's agent skills, loaded from the mattpocock marketplace clone with handoff excluded — /handoff belongs to the local MEMORY.md skill.",
   "author": {
     "name": "Matt Pocock",
@@ -37,9 +37,12 @@
     "./skills/engineering/codebase-design",
     "./skills/engineering/code-review",
     "./skills/engineering/resolving-merge-conflicts",
+    "./skills/engineering/wizard",
     "./skills/productivity/grill-me",
     "./skills/productivity/grilling",
     "./skills/productivity/teach",
-    "./skills/productivity/writing-great-skills"
+    "./skills/productivity/to-questionnaire",
+    "./skills/productivity/wait-what",
+    "./skills/productivity/writing-for-agents"
   ]
 }
