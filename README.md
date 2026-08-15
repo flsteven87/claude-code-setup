@@ -193,7 +193,7 @@ from the marketplace clone.
 | `catchup` | Fast evidence-based context rebuild after a reset |
 | `handoff` | End-of-session continuity capture into `MEMORY.md` |
 | `rehydrate` | Forced deep re-read after `/compact` or a long pause, with an endgame best-practice check |
-| `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps (`--full` for the deep walkthrough) |
+| `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps |
 | `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
 | `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
