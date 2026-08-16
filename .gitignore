@@ -85,6 +85,7 @@ automations/*/.run.lock/
 # Skills owned by the Orca / skills CLI install at ~/.agents/skills.
 # These are symlinks: committing them stores a path that dangles on any other machine.
 # setup.sh checks that the link targets exist.
+skills/asd-ste100
 skills/catchup
 skills/computer-use
 skills/git-converge-main
