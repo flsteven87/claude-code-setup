@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.py"
+---
+
 # Naming Conventions
 
 > Extracted from CLAUDE.md. These conventions apply across all projects.
