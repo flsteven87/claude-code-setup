@@ -122,7 +122,6 @@ shared_skill_targets=(
   "$HOME/.agents/skills/graph-decide/SKILL.md"
   "$HOME/.agents/skills/graph-deliver/SKILL.md"
   "$HOME/.agents/skills/graph-dispatch/SKILL.md"
-  "$HOME/.agents/skills/graph-integrate/SKILL.md"
   "$HOME/.agents/skills/graph-portfolio/SKILL.md"
   "$HOME/.agents/skills/graph-refresh/SKILL.md"
   "$HOME/.agents/skills/graph-run/SKILL.md"

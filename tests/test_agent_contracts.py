@@ -67,35 +67,30 @@ class AgentContractTests(unittest.TestCase):
         run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
-        integrate = (HOME / ".agents/skills/graph-integrate/SKILL.md").read_text(
-            encoding="utf-8"
-        )
-
         self.assertIn("Pin a clean `integration_head`", run)
-        self.assertIn("fresh read-only routes", integrate)
-        self.assertIn("same immutable head", integrate)
-        self.assertIn("Do not edit, commit, run the full gate", integrate)
+        self.assertIn("finalizer envelope's", run)
+        self.assertIn("`review_command` synchronously", run)
+        self.assertIn("full sealed delivery range", run)
+        self.assertIn("bind the same delivery ID and manifest digest", run)
+        self.assertIn("`coverage-invalid`", run)
 
     def test_graph_reviewers_receive_a_holdout_input_set(self) -> None:
         review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
             encoding="utf-8"
         )
+        helper = (
+            HOME
+            / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("Give each reviewer only its axis prompt", review)
-        self.assertIn("Never pass writer rationale", review)
-        self.assertIn("fresh Claude Code `opus`", review)
-        self.assertIn("fresh Grok `grok-4.6`", review)
+        self.assertIn("builds both inputs from the sealed manifest and Git", review)
+        self.assertIn("withhold commit subjects and writer\nrationale", review)
+        self.assertIn('f"## Commit list', helper)
+        self.assertIn("These criteria are the complete approved set", helper)
+        self.assertIn("commit messages and ", helper)
+        self.assertIn("writer rationale are withheld", helper)
 
-        standards = review.split("**Standards reviewer prompt**")[1].split(
-            "**Spec reviewer prompt**"
-        )[0]
-        spec = review.split("**Spec reviewer prompt**")[1].split("### 5")[0]
-
-        self.assertIn("commit list", standards)
-        self.assertIn("Withhold the commit list", spec)
-        self.assertNotIn("and commit list", spec)
-
-    def test_review_axes_own_their_reviewer_lifecycle(self) -> None:
+    def test_graph_reviews_use_one_evidence_lock(self) -> None:
         review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
             encoding="utf-8"
         )
@@ -105,39 +100,42 @@ class AgentContractTests(unittest.TestCase):
         report = (HOME / ".agents/GRAPH-ENGINEERING.md").read_text(
             encoding="utf-8"
         )
+        helper = (
+            HOME
+            / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("Pin `HEAD` before launching and hold it frozen", review)
-        self.assertIn("voids that axis", review)
-        self.assertIn("still equals its pinned head", review)
-        self.assertIn("the Spec axis receives the sealed acceptance itself", review)
-        self.assertIn("told the reviewer to treat as complete is writer rationale", review)
-        self.assertIn("owns its reviewer from launch to teardown", review)
-        self.assertIn("Block on the runtime's own wait", review)
-        self.assertIn("rather than to an interval you choose", review)
-        self.assertIn("checkpoint, not a state transition", review)
-        self.assertIn("answers liveness and\n   nothing else", review)
-        self.assertIn("Once it has exited, drain its output by cursor", review)
-        self.assertIn("Release the handle last", review)
-        self.assertIn("dies before its verdict, exits non-zero, or loses its handle", review)
-        self.assertIn("no reviewer outlives the axis that launched it", run)
-        self.assertIn("no reviewer outlives its axis", report)
+        self.assertIn("Execute the envelope's `review_command` synchronously", review)
+        self.assertIn("This single call is the **review lock**", review)
+        self.assertIn("supplied only by the writer is not review evidence", review)
+        self.assertIn("def run_review_gate", helper)
+        self.assertIn("ThreadPoolExecutor(max_workers=2)", helper)
+        # Claude honors `--tools ""`; Grok's allow-list form leaks, so only the
+        # Standards axis may record that intention.
+        self.assertIn('"--tools",\n            ""', helper)
+        self.assertIn("Grok's `--tools` is an allow-list of built-ins", helper)
+        self.assertIn('REVIEW_GATE_SCHEMA = "graph-review-gate/v3"', helper)
+        self.assertIn('REVIEW_RECEIPT_SCHEMA = "graph-ticket-review/v4"', helper)
+        # A reviewer that never saw the evidence has not judged it, and one verdict per
+        # exact range is what keeps a rerun from buying a second opinion.
+        self.assertIn('"insufficient-input"', helper)
+        self.assertIn("another review gate already holds this Run", helper)
+        self.assertIn("every review lock is terminal with durable evidence", run)
+        self.assertIn("One blocking helper call launches both", report)
 
         ticket = (HOME / ".agents/skills/graph-ticket/SKILL.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("Fix commits land after both axes have reported", ticket)
-        self.assertIn(
-            "`HEAD` did not move between an axis launching and that axis reporting", report
-        )
-        self.assertIn(
-            "received the sealed acceptance itself, not a writer-composed retelling", report
-        )
+        self.assertIn("execute the envelope's `review_command` synchronously", ticket)
+        self.assertIn("rejects writer-authored review claims", ticket)
+        self.assertIn("The helper built the Spec input directly", report)
 
-        integrate = (HOME / ".agents/skills/graph-integrate/SKILL.md").read_text(
+        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("each axis under `$code-review`'s reviewer lifecycle", integrate)
-        self.assertIn("fails anywhere in\nthat lifecycle is `blocked-external`", integrate)
+        self.assertIn("Preserve both axes' finding sets", run)
+        self.assertIn("re-hashable evidence at the current head", run)
+        self.assertIn("is `blocked-external`", run)
 
     def test_dispatch_completes_on_observed_owner_start(self) -> None:
         dispatch = (HOME / ".agents/skills/graph-dispatch/SKILL.md").read_text(
@@ -171,7 +169,10 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("full relevant gate once on the final reviewed head", execute)
         self.assertIn("`full_gate=deferred-to-delivery`", implement)
         self.assertIn("Under `$graph-run`", ship)
-        self.assertIn('CURRENT_PERMISSION_MODE = "yolo"', helper)
+        self.assertIn('YOLO_PERMISSION_MODE = "yolo"', helper)
+        self.assertIn('GATED_PERMISSION_MODE = "approval-required"', helper)
+        self.assertIn("def permission_mode_for", helper)
+        self.assertIn("def satisfiability_report", helper)
         self.assertIn('YOLO_FLAG = "--dangerously-bypass-approvals-and-sandbox"', helper)
         self.assertIn("def approval_brief", helper)
         self.assertIn("def compare_substrate", helper)
@@ -183,7 +184,7 @@ class AgentContractTests(unittest.TestCase):
         dispatch = (
             HOME / ".agents/skills/graph-dispatch/SKILL.md"
         ).read_text(encoding="utf-8")
-        self.assertIn("four-point `approval` card", dispatch)
+        self.assertIn("`approval` card verbatim", dispatch)
         self.assertIn("one delivery ID may claim exactly one Run", dispatch)
         self.assertIn("business approval content must use Traditional Chinese", helper)
 
@@ -219,7 +220,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("Follow sealed `delivery_mode`", run)
         self.assertNotIn("Without a delivery flag", run)
         self.assertIn("render the finalizer envelope", run)
-        self.assertIn("No separate\nfinalizer worker or ticket receipt is created", run)
+        self.assertIn("No separate finalizer worker or ticket receipt is created", run)
         self.assertIn("return the `dispatched` handoff confirmation once", deliver)
         self.assertIn("intermediate human pause inside this one delivery cycle", deliver)
         self.assertIn("human-requested `$git-converge-main` pass", ship)
