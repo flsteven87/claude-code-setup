@@ -17,6 +17,10 @@ Claude command mappings:
   `/mattpocock-skills:code-review` plugin copy omits the Graph reviewer routes and the holdout input
   set
 - `$git-converge-main` → `/git-converge-main`
+- `$setup-matt-pocock-skills` → `/mattpocock-skills:setup-matt-pocock-skills`
+
+`$ship`, `$implement`, and `$setup-matt-pocock-skills` are user-only. Name the standalone command
+for the human to invoke; reading its `SKILL.md` to imitate it is not a substitute.
 
 This adapter contains no delivery policy. When it conflicts with the canonical contract, the
 canonical contract wins. Completion is exactly the canonical contract's completion criterion.

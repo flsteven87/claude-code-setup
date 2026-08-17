@@ -1,6 +1,6 @@
 ---
 name: rehydrate
-description: "Reload codebase texture after context loss, then verify the queued step still aims at the project's endgame before dispatching it. Use right after `/compact`, when resuming a session left idle, when returning from a long-running subagent or Codex delegation, or when the user says 「進入狀況」 / \"rehydrate\" / \"再走一遍\"."
+description: "Reload codebase texture after context loss, then verify the queued step still aims at the project's endgame before it runs. Use right after `/compact`, when resuming a session left idle, when returning from a long-running subagent or Codex delegation, or when the user says 「進入狀況」 / \"rehydrate\" / \"再走一遍\"."
 argument-hint: "[active plan doc or task surface]"
 ---
 
@@ -15,17 +15,24 @@ Ultrathink throughout: a detail missed here propagates into every task after it.
 
 ## 1. Re-read the checkpoint
 
-Read `<repo-root>/MEMORY.md` as a file. The auto-injected copy and the post-compact summary are both
-lossy projections; the file is the source of truth and wins any disagreement. Recover the exact
-wording of:
+Resolve the active worktree with `git rev-parse --show-toplevel`, then resolve the primary checkout
+from the first `worktree` record in `git worktree list --porcelain`. Read
+`<primary-checkout>/MEMORY.md` as a file: the auto-injected copy and the post-compact summary are
+both lossy projections, and the file wins any disagreement. Recover the exact wording of:
 
-- the project's stated **endgame principle** and any locked architecture decisions;
-- current phase and next action;
-- the invariants governing the active surface, cited by their own identifiers (`V-3`, `L-2`);
-- the topic files whose index lines touch the active surface — read those files, not the index.
+- the keyed entry under `## Active Workstreams` that owns the active surface — its objective, state,
+  next action, blocker, and Git anchor;
+- the `## Current State` facts that constrain that entry;
+- the `## Durable Pointers` whose targets touch the active surface — read those targets, not the
+  pointer line.
 
-**Complete when** every claim you will rely on has been read from a file this turn, and each point
-where the summary and `MEMORY.md` diverged is resolved in the file's favour.
+`MEMORY.md` is an operational cache, not authority. Take the endgame principle, locked architecture
+decisions, and named invariants from their owners — the repository's `CLAUDE.md`, `AGENTS.md`,
+`CONTEXT.md`, its ADRs, or the plan doc — and treat memory's version as a lead to verify.
+
+**Complete when** every claim you will rely on has been read from a file this turn, each point where
+the summary and `MEMORY.md` diverged is resolved in the file's favour, and every architecture claim
+is attributed to its owning file rather than to memory.
 
 ## 2. Name the task surface
 
@@ -37,27 +44,32 @@ State without paraphrase:
   done;
 - the files that step will touch (absolute paths, from the plan's own task list, not the summary's
   paraphrase);
-- the invariants and locked decisions governing those files, cited by identifier.
+- the invariants and locked decisions governing those files, each attributed to the file that owns it.
 
 Any of these ambiguous → ask one focused question and wait. A wrong-surface ultrathink pass costs
 far more than the question.
 
-**Complete when** all four are named concretely and the file paths exist.
+**Complete when** all four are named concretely, every Modify and Test path resolves on disk, and
+every Create path names a directory that exists.
 
 ## 3. Rebuild texture
 
 Read **whole files**. A grep confirms a hypothesis; only whole-file reading surfaces the texture —
 import shape, neighbouring test fixtures, naming convention, base-class behaviour — that decides
-whether the next file looks native. Read in parallel, in this order:
+whether the next file looks native. Issue the reads within one tier together, then move to the next:
 
 1. the exact files in the plan's task list (Create / Modify / Test);
-2. their directory siblings, for local pattern absorption;
+2. for each Create target, the two closest neighbours in its directory — the nearest existing file
+   of the same kind and that file's test — for local pattern absorption;
 3. the base class or shared utility the new code will subclass or call;
 4. the plan or ADR section for the queued step specifically — skim what already shipped;
-5. the most recent ship summary in `MEMORY.md`, which carries the invariants that locked in last.
+5. the selected workstream's own pointers in `MEMORY.md`, which name the constraints that locked in
+   last.
 
-**Complete when** you could write the next file from the surrounding code's muscle memory without
-consulting the plan again.
+**Complete when** every file in the plan's task list has been read whole this turn, along with the
+base class or shared utility each new file will subclass or call, and you can state the local
+convention the next file must follow — its import shape, its test fixture, its naming pattern —
+without reopening them.
 
 ## 4. Endgame check
 
@@ -87,11 +99,12 @@ Confirm in ≤5 sentences of zh-tw: the plan doc, the queued step, the single mo
 invariant it preserves, and any tension the user accepted. The user already read the plan — they
 invoked rehydrate so the next step starts from live context, not so the plan gets re-pitched.
 
-Then dispatch `/mattpocock-skills:to-spec` or `/mattpocock-skills:implement` directly. `/ship` is
-user-invoked — name it as the next step and stop there.
+Then name the queued step as the standalone command the human types — `/mattpocock-skills:to-spec`,
+`/mattpocock-skills:implement <plan>`, or `/ship` — and stop there. All three are user-only: the
+runtime expands the standalone command before its workflow is authorized, so reading a `SKILL.md`
+to imitate one is not a substitute for the human invoking it.
 
-**Complete when** the confirmation is printed and either the design/implement step is running or the
-`/ship` handoff was stated.
+**Complete when** the confirmation is printed and the next standalone command is named.
 
 ## Language
 
