@@ -1,19 +1,62 @@
 from __future__ import annotations
 
+import os
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 CLAUDE_HOME = Path(__file__).parents[1]
 HOME = CLAUDE_HOME.parent
 
 
+def _agents_root() -> Path:
+    """Return the .agents checkout under test, failing closed on a bad override."""
+    configured = os.environ.get("AGENTS_ROOT")
+    if not configured:
+        return HOME / ".agents"
+    root = Path(configured).expanduser()
+    if not root.is_absolute():
+        raise RuntimeError("AGENTS_ROOT must be an absolute path")
+    if not (root / "GRAPH-ENGINEERING.md").is_file():
+        raise RuntimeError(f"AGENTS_ROOT is not an .agents checkout: {root}")
+    return root
+
+
+AGENTS = _agents_root()
+
+
 class AgentContractTests(unittest.TestCase):
+    def test_agents_checkout_override_is_absolute_and_explicit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / ".agents-worktree"
+            root.mkdir()
+            (root / "GRAPH-ENGINEERING.md").write_text(
+                "# Maintainer reference\n", encoding="utf-8"
+            )
+            with mock.patch.dict(os.environ, {"AGENTS_ROOT": str(root)}):
+                self.assertEqual(_agents_root(), root)
+
+        with mock.patch.dict(os.environ, {"AGENTS_ROOT": "relative/.agents"}):
+            with self.assertRaisesRegex(RuntimeError, "absolute"):
+                _agents_root()
+
+    def test_agents_checkout_override_never_falls_back_silently(self) -> None:
+        missing = Path("/tmp/definitely-not-an-agents-checkout")
+        with mock.patch.dict(os.environ, {"AGENTS_ROOT": str(missing)}):
+            with self.assertRaisesRegex(RuntimeError, str(missing)):
+                _agents_root()
+
+    def test_agents_checkout_defaults_to_the_home_checkout(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(_agents_root(), HOME / ".agents")
+
     def test_graph_maintainers_share_one_canonical_reference(self) -> None:
-        report = HOME / ".agents/GRAPH-ENGINEERING.md"
+        report = AGENTS / "GRAPH-ENGINEERING.md"
         codex = (HOME / ".codex/AGENTS.md").read_text(encoding="utf-8")
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
-        skill_workspace = (HOME / ".agents/AGENTS.md").read_text(encoding="utf-8")
+        skill_workspace = (AGENTS / "AGENTS.md").read_text(encoding="utf-8")
 
         self.assertTrue(report.is_file())
         report_text = report.read_text(encoding="utf-8")
@@ -54,7 +97,7 @@ class AgentContractTests(unittest.TestCase):
     def test_explicit_fugu_invocation_policy_matches_each_runtime(self) -> None:
         for name in ("fugu-advisor", "fugu-worker"):
             canonical_policy = (
-                HOME / f".agents/skills/{name}/agents/openai.yaml"
+                AGENTS / f"skills/{name}/agents/openai.yaml"
             ).read_text(encoding="utf-8")
             self.assertIn("allow_implicit_invocation: false", canonical_policy)
 
@@ -64,7 +107,7 @@ class AgentContractTests(unittest.TestCase):
             self.assertIn("disable-model-invocation: true", skill)
 
     def test_ticket_reviewers_are_leaf_tasks_with_an_immutable_head(self) -> None:
-        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+        run = (AGENTS / "skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("Pin a clean `integration_head`", run)
@@ -75,12 +118,12 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("`coverage-invalid`", run)
 
     def test_graph_reviewers_receive_a_holdout_input_set(self) -> None:
-        review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
+        review = (AGENTS / "skills/code-review/SKILL.md").read_text(
             encoding="utf-8"
         )
         helper = (
-            HOME
-            / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+            AGENTS
+            / "skills/graph-dispatch/scripts/delivery_manifest.py"
         ).read_text(encoding="utf-8")
 
         self.assertIn("builds both inputs from the sealed manifest and Git", review)
@@ -91,31 +134,40 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("writer rationale are withheld", helper)
 
     def test_graph_reviews_use_one_evidence_lock(self) -> None:
-        review = (HOME / ".agents/skills/code-review/SKILL.md").read_text(
+        review = (AGENTS / "skills/code-review/SKILL.md").read_text(
             encoding="utf-8"
         )
-        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+        run = (AGENTS / "skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
-        report = (HOME / ".agents/GRAPH-ENGINEERING.md").read_text(
+        report = (AGENTS / "GRAPH-ENGINEERING.md").read_text(
             encoding="utf-8"
         )
         helper = (
-            HOME
-            / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+            AGENTS
+            / "skills/graph-dispatch/scripts/delivery_manifest.py"
         ).read_text(encoding="utf-8")
 
         self.assertIn("Execute the envelope's `review_command` synchronously", review)
         self.assertIn("This single call is the **review lock**", review)
-        self.assertIn("supplied only by the writer is not review evidence", review)
+        self.assertIn("writer is not review evidence", review)
         self.assertIn("def run_review_gate", helper)
         self.assertIn("ThreadPoolExecutor(max_workers=2)", helper)
         # Claude honors `--tools ""`; Grok's allow-list form leaks, so only the
         # Standards axis may record that intention.
         self.assertIn('"--tools",\n            ""', helper)
         self.assertIn("Grok's `--tools` is an allow-list of built-ins", helper)
-        self.assertIn('REVIEW_GATE_SCHEMA = "graph-review-gate/v3"', helper)
-        self.assertIn('REVIEW_RECEIPT_SCHEMA = "graph-ticket-review/v4"', helper)
+        self.assertIn('REVIEW_GATE_SCHEMA = "graph-review-gate/v5"', helper)
+        # v5 exists because the Spec axis may now be judged by its sealed fallback when
+        # the primary reports an exhausted account. Both sealed routes have to stay
+        # nameable, and a fallback verdict has to stay distinguishable from a primary one.
+        self.assertIn("V3_REVIEWER_FALLBACK_ROUTES", helper)
+        self.assertIn('"fallback_from"', helper)
+        self.assertIn("def _is_provider_account_exhausted", helper)
+        self.assertIn('REVIEW_RECEIPT_SCHEMA = "graph-ticket-review/v5"', helper)
+        self.assertIn('REVIEW_RESOLUTION_SCHEMA = "graph-review-resolution/v1"', helper)
+        self.assertIn("def _finding_id", helper)
+        self.assertIn("def store_review_resolution", helper)
         # A reviewer that never saw the evidence has not judged it, and one verdict per
         # exact range is what keeps a rerun from buying a second opinion.
         self.assertIn('"insufficient-input"', helper)
@@ -123,25 +175,30 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("every review lock is terminal with durable evidence", run)
         self.assertIn("One blocking helper call launches both", report)
 
-        ticket = (HOME / ".agents/skills/graph-ticket/SKILL.md").read_text(
+        ticket = (AGENTS / "skills/graph-ticket/SKILL.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("execute the envelope's `review_command` synchronously", ticket)
-        self.assertIn("rejects writer-authored review claims", ticket)
+        self.assertIn("rejects incomplete, forged, or Spec-side deferrals", ticket)
         self.assertIn("The helper built the Spec input directly", report)
 
-        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+        run = (AGENTS / "skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("Preserve both axes' finding sets", run)
         self.assertIn("re-hashable evidence at the current head", run)
         self.assertIn("is `blocked-external`", run)
+        self.assertIn("`resolution_template_command`", run)
+        self.assertIn("`resolution_load_command`", run)
+        self.assertIn("`defer` reasons", run)
+        self.assertIn("ticket-level `deferred_findings`", run)
+        self.assertIn("A non-empty\nledger under `ship` is `blocked-needs-approval`", run)
 
     def test_dispatch_completes_on_observed_owner_start(self) -> None:
-        dispatch = (HOME / ".agents/skills/graph-dispatch/SKILL.md").read_text(
+        dispatch = (AGENTS / "skills/graph-dispatch/SKILL.md").read_text(
             encoding="utf-8"
         )
-        report = (HOME / ".agents/GRAPH-ENGINEERING.md").read_text(
+        report = (AGENTS / "GRAPH-ENGINEERING.md").read_text(
             encoding="utf-8"
         )
 
@@ -154,16 +211,16 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("placement gate, not supervision", report)
 
     def test_delivery_gate_and_yolo_contracts_are_explicit(self) -> None:
-        execute = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+        execute = (AGENTS / "skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
-        implement = (HOME / ".agents/skills/graph-ticket/SKILL.md").read_text(
+        implement = (AGENTS / "skills/graph-ticket/SKILL.md").read_text(
             encoding="utf-8"
         )
-        ship = (HOME / ".agents/skills/ship/SKILL.md").read_text(encoding="utf-8")
+        ship = (AGENTS / "skills/ship/SKILL.md").read_text(encoding="utf-8")
         helper = (
-            HOME
-            / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+            AGENTS
+            / "skills/graph-dispatch/scripts/delivery_manifest.py"
         ).read_text(encoding="utf-8")
 
         self.assertIn("full relevant gate once on the final reviewed head", execute)
@@ -182,26 +239,26 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn('DELIVERY_CLAIM_SCHEMA = "graph-delivery-claim"', helper)
         self.assertIn("# 核准交付", helper)
         dispatch = (
-            HOME / ".agents/skills/graph-dispatch/SKILL.md"
+            AGENTS / "skills/graph-dispatch/SKILL.md"
         ).read_text(encoding="utf-8")
         self.assertIn("`approval` card verbatim", dispatch)
         self.assertIn("one delivery ID may claim exactly one Run", dispatch)
         self.assertIn("business approval content must use Traditional Chinese", helper)
 
     def test_graph_dispatch_hands_ownership_to_a_direct_capable_resident(self) -> None:
-        dispatch = (HOME / ".agents/skills/graph-dispatch/SKILL.md").read_text(
+        dispatch = (AGENTS / "skills/graph-dispatch/SKILL.md").read_text(
             encoding="utf-8"
         )
-        run = (HOME / ".agents/skills/graph-run/SKILL.md").read_text(
+        run = (AGENTS / "skills/graph-run/SKILL.md").read_text(
             encoding="utf-8"
         )
         helper = (
-            HOME / ".agents/skills/graph-dispatch/scripts/delivery_manifest.py"
+            AGENTS / "skills/graph-dispatch/scripts/delivery_manifest.py"
         ).read_text(encoding="utf-8")
-        deliver = (HOME / ".agents/skills/graph-deliver/SKILL.md").read_text(
+        deliver = (AGENTS / "skills/graph-deliver/SKILL.md").read_text(
             encoding="utf-8"
         )
-        ship = (HOME / ".agents/skills/ship/SKILL.md").read_text(encoding="utf-8")
+        ship = (AGENTS / "skills/ship/SKILL.md").read_text(encoding="utf-8")
 
         self.assertIn("## Full handoff", dispatch)
         self.assertIn("Do not create its Run, Task, or Dispatch", dispatch)
@@ -227,7 +284,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("schema `ship-local-finalization`", ship)
         self.assertIn("does not rewrite the already-terminal Graph outcome", ship)
 
-        ticket = (HOME / ".agents/skills/graph-ticket/SKILL.md").read_text(
+        ticket = (AGENTS / "skills/graph-ticket/SKILL.md").read_text(
             encoding="utf-8"
         )
         self.assertIn("this ticket clearly owns it", ticket)
@@ -251,6 +308,16 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn(".agents/skills/graph-run/SKILL.md", setup)
         self.assertIn("Seven-stage refresh", readme)
         self.assertIn("does not install or restore them", readme)
+
+    def test_graph_gate_targets_the_current_agents_checkout(self) -> None:
+        report = (AGENTS / "GRAPH-ENGINEERING.md").read_text(encoding="utf-8")
+
+        self.assertIn('AGENTS_ROOT="$(git rev-parse --show-toplevel)"', report)
+        self.assertIn('AGENTS_ROOT="$AGENTS_ROOT" python3 ~/.claude/tests/', report)
+        self.assertNotIn(
+            "python3 ~/.agents/skills/graph-dispatch/scripts/test_delivery_manifest.py",
+            report,
+        )
 
 
 if __name__ == "__main__":
