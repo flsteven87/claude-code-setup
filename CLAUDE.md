@@ -126,9 +126,11 @@ routing references before dispatch or fan-out.
 ## Tooling
 
 - In Python projects, use the repository's `uv` environment: `uv run`, `uv add`, and `uv run pytest`.
-- Before any Code Review Graph operation, read
-  `~/.agents/skills/use-code-review-graph/SKILL.md`. Graph consumers are read-only; only
-  `crg-lifecycle` and `crg-safe-refresh` may write graph state.
+- When a code question spans many files rather than one — architecture, dependency, impact, ownership,
+  cross-file flow, or broad review — answer it through `use-code-review-graph` before reading files.
+  That skill owns when the graph wins, the freshness gate, and the call budget. Skip it for one file,
+  one symbol, or anything a targeted grep already answers.
+- Graph consumers are read-only; only `crg-lifecycle` and `crg-safe-refresh` may write graph state.
 - After the root agent completes one tracked-file change batch, enqueue one `agent:change-batch`
   event. Subagents do not enqueue or write graph state.
 - Run the smallest relevant check early and the full relevant gate before handoff when feasible.

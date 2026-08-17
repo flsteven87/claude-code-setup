@@ -102,6 +102,7 @@ skills/orca-cli
 skills/orca-emulator
 skills/orca-linear
 skills/orchestration
+skills/use-code-review-graph
 skills/web-design-guidelines
 
 # Skills installed from vercel-labs/agent-skills by the skills CLI. Vendoring
