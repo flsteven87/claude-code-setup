@@ -62,7 +62,9 @@ Read these references only when their branch applies:
 - Use short direct sentences, one term per concept, and define non-obvious terms on first use.
   Reuse repository `CONTEXT.md` vocabulary when present. When a repository uses `MEMORY.md`, its
   primary checkout root file is session truth; Claude auto-memory is contextual cache and must be
-  verified before use. Keep durable decisions in their owning issue, spec, ADR, or source file.
+  verified before use. `Active Workstreams` contains only authorized, owned work with a currently
+  executable next step; park every other state under a non-active heading. Keep durable decisions in
+  their owning issue, spec, ADR, or source file.
 - **Recommendation-first:** lead with the best supported call. Present options only when the user
   must own a genuine value tradeoff.
 - **Consequence-first:** state what changes for the user, product, money, or schedule before the
@@ -85,7 +87,9 @@ Read these references only when their branch applies:
   resolved default branch, with no Git operation in progress, one writer, and task-owned paths clean
   at entry unless the user explicitly includes their existing edits. The change must be small and
   bounded, with no material architecture or authorization change, production-data mutation, or
-  irreversible migration.
+  irreversible migration. When repository instructions require a dedicated worktree, a clean
+  task-local worktree based on the resolved default branch satisfies this placement condition; all
+  other entry conditions remain.
 - In this lane, stage exact task-owned paths and create one local task-scoped commit after relevant
   checks pass. Preserve every unrelated dirty path. If any entry condition or file ownership is
   ambiguous, leave the work uncommitted and report the boundary.
