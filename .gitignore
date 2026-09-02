@@ -101,7 +101,7 @@ skills/web-design-guidelines
 # Skills installed from vercel-labs/agent-skills by the skills CLI. Vendoring
 # another project's content into a public repository is redistribution.
 skills/vercel-composition-patterns/
-skills/vercel-react-best-practices/
+skills/vercel-react-best-practices
 skills/writing-guidelines/
 
 # Generated from the Matt marketplace clone by reconcile_matt_manifest.py.
