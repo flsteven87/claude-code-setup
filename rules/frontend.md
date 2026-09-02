@@ -5,54 +5,37 @@ paths:
   - "**/*.jsx"
 ---
 
-# Frontend Development Rules
+# Frontend Rules
 
-> Project-specific patterns that differ from standard React conventions.
+Project patterns that differ from stock React conventions. The repository's own instructions add
+specifics.
 
-## Absolute Prohibitions 🔴
+## Code
 
-- ❌ `any` type in critical paths (query hooks, error handling, API responses)
-- ❌ `React.createElement` — always use JSX
-- ❌ `React.FC` — use function declarations with typed props
-- ❌ `require()` imports — ES modules only
-- ❌ Barrel imports from icon/component libraries (`import { X } from 'lucide-react'` → use deep imports)
-- ❌ Sequential `await` for independent operations — use `Promise.all()`
+- Type critical paths explicitly (query hooks, error handling, API responses). Components are
+  function declarations with a typed props interface, written in JSX with ES module imports.
+- Import icons and components by deep path rather than from a library barrel.
+- Run independent awaits together with `Promise.all`.
+- TanStack Query: key factories (project `hooks/factories/` when present), granular invalidation
+  such as `userKeys.detail(id)`, `onSettled` on every mutation, and `enabled: !!param` plus a
+  `staleTime` so a query never fires with undefined params.
+- React Compiler is on with `eslint-plugin-react-compiler` and owns memoization. Reach for
+  `"use no memo"` only after finding the root cause, typically TanStack Table or Query interior
+  mutability.
+- SSE: backend `EventSourceResponse` with `X-Accel-Buffering: no`; frontend `EventSource` cleaned
+  up in the effect return and closed on terminal events.
+- State lives at the highest fitting level: URL, then server state (TanStack Query), then local,
+  then global (Zustand).
 
-## Mandatory Practices 🔴
+## UI
 
-- ✅ Use Query Key Factories for TanStack Query (live in project-level `hooks/factories/` when present)
-- ✅ Enable React Compiler + `eslint-plugin-react-compiler` in all frontend projects
-- ✅ Define explicit TypeScript interfaces for component props
-
-## Core Principles 🔴
-
-- **Hyper-Minimalist UI** — Less, but better. Every element must earn its place.
-- **Use Project Systems First** — Discover before creating. Search `components/`, `hooks/`, `lib/` first. New pages must be visually indistinguishable from existing ones — same theme/layout provider, design tokens, spacing. Never introduce a parallel visual style.
-- **State Hierarchy** — URL State > Server State (TanStack Query) > Local State > Global State (Zustand)
-
-## UI Design Language 🔴
-
-Mined from repeated user corrections (2026-06/07 session audit). Repo `AGENTS.md` adds project specifics.
-
-- **UX copy is for non-technical users** — zero technical or pipeline vocabulary in user-facing strings (no "identity match tier"-style wording); the fewest words that work.
-- **Show the value, not its existence** — render the actual data (dates, numbers, names) inline; never "有/沒有" boolean indicators the user must click through to inspect.
-- **Calm, not flashy** — no 浮誇 styling or decoration; no alarmist warnings for normal states (a first-time record is "new", not a caution).
-- **Mock fidelity** — shipped UI must match the approved design; verify with a screenshot before reporting done, not by code review alone.
-
-## TanStack Query Patterns 🟡
-
-- **Invalidation**: granular (`userKeys.detail(id)`) over nuclear (`userKeys.all`)
-- **Mutations**: always include `onSettled` for cache consistency
-- **Race Conditions**: `enabled: !!param`, set `staleTime`, never fire with undefined params
-
-## SSE (Server-Sent Events) 🟡
-
-- Backend: `EventSourceResponse` with `X-Accel-Buffering: no` header
-- Frontend: `EventSource` + cleanup in `useEffect` return
-- Close on terminal events (`completed`, `failed`, `cancelled`)
-
-## React Compiler 🔴
-
-- ❌ No manual `useMemo`/`useCallback`/`memo()` — Compiler handles automatically
-- Escape hatch: `"use no memo"` directive — use sparingly, investigate root cause
-- ⚠️ TanStack Table/Query interior mutability may cause stale UI — add `"use no memo"` if needed
+- Less, but better: every element earns its place. Discover the project's `components/`, `hooks/`,
+  and `lib/` before creating; a new page is visually indistinguishable from existing ones (same
+  theme provider, tokens, spacing).
+- UX copy is for non-technical users: the fewest words that work, with no pipeline or system
+  vocabulary, parser state, coverage figures, or capability disclaimers.
+- Show the value inline (dates, numbers, names) rather than a boolean indicator the user must click
+  through.
+- Calm, not flashy: normal states get no alarmist styling; a first record is "new", not a caution.
+- Shipped UI matches the approved design; confirm with a screenshot at the real viewport before
+  reporting done.

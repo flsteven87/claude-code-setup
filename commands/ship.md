@@ -1,6 +1,5 @@
 ---
-description: Deliver a reviewed local commit through the shared ship contract.
-disable-model-invocation: true
+description: Deliver a reviewed local commit through the shared ship contract when the user asks to ship, deliver, or merge.
 ---
 
 # /ship
@@ -17,8 +16,9 @@ Claude command mappings:
 - `$git-converge-main` → `/git-converge-main`
 - `$setup-matt-pocock-skills` → `/mattpocock-skills:setup-matt-pocock-skills`
 
-`$ship`, `$implement`, and `$setup-matt-pocock-skills` are user-only. Name the standalone command
-for the human to invoke; reading its `SKILL.md` to imitate it is not a substitute.
+`$implement` and `$setup-matt-pocock-skills` are user-only: name the standalone command for the
+human to invoke. `/ship` runs on the user's request to ship, deliver, or merge, whether typed as a
+command or written in prose; it never starts without that request.
 
 This adapter contains no delivery policy. When it conflicts with the canonical contract, the
 canonical contract wins. Completion is exactly the canonical contract's completion criterion.

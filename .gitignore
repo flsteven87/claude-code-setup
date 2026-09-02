@@ -106,3 +106,10 @@ skills/writing-guidelines/
 
 # Generated from the Matt marketplace clone by reconcile_matt_manifest.py.
 skills/mattpocock-skills/skills/
+
+# Shared skill links and vendored skills managed under ~/.agents (not tracked here).
+skills/humanizer
+skills/impeccable/
+skills/latest
+skills/owl-design
+skills/setup-hygiene

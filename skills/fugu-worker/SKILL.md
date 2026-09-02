@@ -7,27 +7,22 @@ disable-model-invocation: true
 
 # Fugu Worker
 
-Delegate execution while Claude retains scope, review, and integration.
+Delegate execution while Claude retains scope, review, and integration. The typed
+`/fugu-worker` invocation is the authorization for one paid, file-writing run.
 
-## 1. Bound the assignment
+## Bound the assignment
 
-A mention of this skill in ordinary prose is a request, not an authorization.
-This worker spends a paid provider call and writes files, so confirm the task
-and its owned paths with the user in one question before dispatch.
+Establish one objective, exhaustive acceptance criteria, exclusive file ownership, applicable
+instructions, existing work to preserve, validation commands, and the authority boundary. Keep
+overlapping files under one owner and leave worker-owned paths untouched while the worker runs.
 
-Establish one objective, exhaustive acceptance criteria, exclusive ownership,
-applicable instructions, existing work to preserve, validation commands, and
-the authority boundary. Keep overlapping files under one owner and do not edit
-worker-owned paths while the worker runs.
+## Preflight
 
-## 2. Preflight
+Run `codex-fugu preflight`. It makes no provider request and validates the live Codex capabilities,
+Fugu catalog, Sakana credential source, apps toggle, and MCP inventory. On failure, report the exact
+error; no retry and no substitute model.
 
-Run `codex-fugu preflight`. It makes no provider request and validates the live
-Codex capabilities, Fugu catalog, Sakana credential source, apps toggle, and
-MCP inventory. On failure, report the exact error and do not retry or substitute
-another model.
-
-## 3. Dispatch one worker
+## Dispatch one worker
 
 Create one session scratch directory and write a self-contained assignment:
 
@@ -62,7 +57,7 @@ Validation
 Risks or blockers
 ```
 
-Launch in one background Bash call:
+Launch in one background call:
 
 ```bash
 exec codex-fugu run --mode worker \
@@ -72,22 +67,19 @@ exec codex-fugu run --mode worker \
   --report "$SCRATCH/report.md"
 ```
 
-The launcher owns provider config, credential loading, MCP/apps isolation,
-approval policy, and sandbox selection. Treat it and current CLI help as the
-source of truth; do not add version gates or duplicate its flags here.
+The launcher owns provider config, credential loading, MCP and apps isolation, approval policy, and
+sandbox selection; it and current CLI help are the source of truth, so add no version gates or
+duplicate flags here.
 
-## 4. Supervise, inspect, and validate
+## Supervise, inspect, and validate
 
-Poll event-file growth roughly every minute and update the user about every
-three minutes. Ten minutes without growth is stalled; terminate the exact
-task-local process. Allow a streaming run up to one hour. Do not create a new
-worker after failure or quota exhaustion.
+Keep working while it runs. Check event-file growth every few minutes; ten minutes without growth
+is stalled, so terminate the exact task-local process. Allow a streaming run up to one hour. Do not
+create a new worker after failure or quota exhaustion.
 
-Inspect every owned change and run the stated validation. For an in-scope
-defect, read the session id from `thread.started`, write one focused correction
-assignment with unchanged ownership, and run the launcher again with
-`--resume <session-id>`.
+Inspect every owned change and run the stated validation. For an in-scope defect, read the session
+id from `thread.started`, write one focused correction assignment with unchanged ownership, and run
+the launcher again with `--resume <session-id>`.
 
-Keep accepted work and report outcome, files, validation, skipped checks,
-remaining risks, and that Fugu Ultra performed the work. Never attribute an
-incomplete or Claude-authored result to Fugu.
+Keep accepted work and report outcome, files, validation, skipped checks, remaining risks, and that
+Fugu Ultra performed the work. Never attribute an incomplete or Claude-authored result to Fugu.

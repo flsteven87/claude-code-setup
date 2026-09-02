@@ -33,8 +33,6 @@
       "mcp__Claude_in_Chrome__*",
       "mcp__061a993d-7b72-449c-882f-88987af82973",
       "mcp__061a993d-7b72-449c-882f-88987af82973__*",
-      "mcp__linear__save_comment",
-      "mcp__linear__save_issue",
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
@@ -57,6 +55,9 @@
       "Bash(cargo *)",
       "Bash(go *)",
       "Bash(gh *)",
+      "Bash(orca linear *)",
+      "Bash(orca status *)",
+      "Bash(orca skills get *)",
       "Bash(curl *)",
       "Bash(make *)",
       "Bash(python3 *)",
@@ -98,18 +99,27 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "skillOverrides": {
+    "docs-cleanup": "off",
+    "humanizer": "off",
+    "vercel-composition-patterns": "off",
+    "writing-guidelines": "off"
+  },
+  "deniedMcpServers": [
+    {
+      "serverUrl": "https://mcp.supabase.com/*"
+    },
+    {
+      "serverName": "claude.ai Supabase"
+    },
+    {
+      "serverUrl": "https://mcp.posthog.com/*"
+    },
+    {
+      "serverName": "posthog"
+    }
+  ],
   "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude notification"
-          }
-        ]
-      }
-    ],
     "PermissionRequest": [
       {
         "matcher": "*",
@@ -118,14 +128,6 @@
             "type": "command",
             "command": "uv run ~/.claude/hooks/auto_approve_safe.py",
             "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude waiting-approval"
           }
         ]
       }
@@ -138,14 +140,6 @@
             "type": "command",
             "command": "~/.claude/hooks/auto-format.sh",
             "timeout": 15
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
           }
         ]
       }
@@ -192,14 +186,6 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude active"
-          }
-        ]
       }
     ],
     "SessionEnd": [
@@ -207,26 +193,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude end"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "~/.claude/bin/awake-gate.sh release",
             "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude idle"
           }
         ]
       }
@@ -243,14 +211,6 @@
             "type": "command",
             "command": "uv run ~/.claude/hooks/verify_gate.py",
             "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude idle"
           }
         ]
       },
@@ -290,14 +250,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Applications/TempoTerm.app/Contents/MacOS/tempo-term\" --status-hook claude thinking"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "~/.claude/bin/awake-gate.sh acquire",
             "timeout": 5
           }
@@ -313,11 +265,19 @@
     "andrej-karpathy-skills@karpathy-skills": true,
     "code-review@claude-plugins-official": false,
     "codex@openai-codex": true,
+    "diagram-design@diagram-design": true,
     "pyright-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
+    "diagram-design": {
+      "source": {
+        "source": "github",
+        "repo": "cathrynlavery/diagram-design"
+      },
+      "autoUpdate": true
+    },
     "karpathy-skills": {
       "source": {
         "source": "github",
@@ -344,11 +304,13 @@
       ]
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark-daltonized",
-  "agentPushNotifEnabled": true
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "model": "claude-fable-5-1[1m]"
 }

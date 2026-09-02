@@ -7,25 +7,18 @@ disable-model-invocation: true
 
 # Fugu Advisor
 
-Buy one independent read without surrendering Claude's decision. Keep the
-consultant blind to Claude's conclusion unless a fragment is necessary to
-define the target.
+Buy one independent read without surrendering the Claude's decision. Keep the consultant blind to the
+Claude's conclusion except for fragments needed to define the target. The typed `/fugu-advisor`
+invocation is the authorization; record the tentative conclusion, strongest evidence, and important
+unknowns before dispatch.
 
-## 1. Qualify and baseline
+## Preflight
 
-A mention of this skill in ordinary prose is a request, not an authorization.
-Confirm the bounded decision or artifact with the user in one question, then
-dispatch. Record Claude's tentative conclusion, strongest evidence, and
-important unknowns before dispatch.
+Run `codex-fugu preflight`. It validates the live Codex capabilities, Fugu catalog, Sakana
+credential source, apps toggle, and MCP inventory without a provider request. On failure, report the
+exact error and continue without a Fugu opinion; no retry and no substitute model.
 
-## 2. Preflight
-
-Run `codex-fugu preflight`. It validates the live Codex capabilities, Fugu
-catalog, Sakana credential source, apps toggle, and MCP inventory without a
-provider request. On failure, report the exact error and continue without a
-Fugu opinion. Do not retry or substitute another model.
-
-## 3. Dispatch exactly once
+## Dispatch exactly once
 
 Create one session scratch directory and write a self-contained assignment:
 
@@ -41,8 +34,8 @@ Raw evidence and source paths:
 Constraints:
 <task constraints>
 
-Test assumptions, seek counterevidence, and identify failure modes. Do not
-delegate, edit files, change external state, or request broader permissions.
+Test assumptions, seek counterevidence, and identify failure modes. Do not delegate, edit files,
+change external state, or request broader permissions.
 
 Return a concise report with exactly these headings:
 Assessment
@@ -52,7 +45,7 @@ Recommendation
 Confidence and unknowns
 ```
 
-Launch in one background Bash call:
+Launch in one background call:
 
 ```bash
 exec codex-fugu run --mode advisor \
@@ -62,17 +55,16 @@ exec codex-fugu run --mode advisor \
   --report "$SCRATCH/report.md"
 ```
 
-The launcher owns provider config, credential loading, MCP/apps isolation,
-approval policy, and sandbox selection. Treat it and current CLI help as the
-source of truth; do not add version gates or duplicate its flags here.
+The launcher owns provider config, credential loading, MCP and apps isolation, approval policy, and
+sandbox selection; it and current CLI help are the source of truth, so add no version gates or
+duplicate flags here.
 
-## 4. Supervise and reconcile
+## Supervise and reconcile
 
-Poll event-file growth roughly every minute. Update the user about every three
-minutes. Ten minutes without growth is stalled; terminate the exact task-local
-process. Allow a streaming run up to one hour. Do not retry failures or quota
-limits.
+Keep working while it runs. Check event-file growth every few minutes; ten minutes without growth
+is stalled, so terminate the exact task-local process. Allow a streaming run up to one hour. Do not
+retry failures or quota limits.
 
-On success, reconcile `report.md` against Claude's baseline by evidence. Lead
-with the integrated answer and append a compact `Fugu Ultra check`. Never
-attribute a view to Fugu without a returned report.
+On success, reconcile `report.md` against the recorded baseline by evidence. Lead with the
+integrated answer and append a compact `Fugu Ultra check`. Never attribute a view to Fugu without a
+returned report.

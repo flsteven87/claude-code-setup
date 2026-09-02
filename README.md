@@ -17,15 +17,13 @@ different times:
 ```
 CLAUDE.md              always in context   — behavioral policy for every session
    │
-   ├── rules/          path-triggered      — backend.md on **/*.py, frontend.md on
-   │                                         **/*.ts|tsx|jsx, naming-conventions.md always
+   ├── rules/          path-triggered      — frontend.md on **/*.ts|tsx|jsx,
+   │                                         naming-conventions.md on **/*.ts|tsx|jsx|py
    │
    └── references/     read-on-demand      — pulled only when CLAUDE.md points at them:
-                                             codex-delegation.md   before dispatching Codex
-                                             model-routing.md      before a workflow / agent fan-out
-                                             prompt-engineering.md before writing a prompt
-                                             harness.md            hooks & permissions debugging
-                                             autonomous-loops.md   unattended runs
+                                             codex-delegation.md   before dispatching Codex or
+                                                                   routing a fan-out
+                                             harness.md            hooks, permissions, invocation
 ```
 
 The test for adding a line to `CLAUDE.md`: *would removing it cause a mistake?* If the agent would
@@ -72,16 +70,12 @@ Anything that slips one layer is still caught by the next.
 ├── statusline-command.sh        # Status bar: cwd, model, context %, rate limits
 │
 ├── rules/                       # Path-triggered standards
-│   ├── backend.md               #   **/*.py   — repository-first Python backend rules
-│   ├── frontend.md              #   **/*.ts|tsx|jsx — React Compiler, TanStack Query, effects
-│   └── naming-conventions.md    #   always
+│   ├── frontend.md              #   **/*.ts|tsx|jsx — React Compiler, TanStack Query, UI language
+│   └── naming-conventions.md    #   **/*.ts|tsx|jsx|py
 │
 ├── references/                  # Read-on-demand (see context architecture above)
 │   ├── codex-delegation.md
-│   ├── model-routing.md
-│   ├── prompt-engineering.md
-│   ├── harness.md
-│   └── autonomous-loops.md
+│   └── harness.md
 │
 ├── hooks/                       # Hook implementations; settings.json selects the active set
 ├── agents/                      # Custom subagents
@@ -134,15 +128,7 @@ claude plugin install andrej-karpathy-skills@karpathy-skills
 > **Do not `plugin install mattpocock-skills@mattpocock`** — those skills are self-hosted instead.
 > See [Self-hosted mattpocock-skills](#self-hosted-mattpocock-skills) below.
 
-### 4. Optional native dependency
-
-`settings.json` wires [TempoTerm](https://tempoterm.com) status hooks on eight lifecycle events
-(`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PermissionRequest`,
-`Notification`, `Stop`, `SessionEnd` — every event except `PreCompact`). Without
-`/Applications/TempoTerm.app` these fail harmlessly but noisily — install TempoTerm, or strip the
-`tempo-term` entries from `settings.json`.
-
-### 5. Verify
+### 4. Verify
 
 Launch `claude`, then run `/permissions` and `/hooks` in an interactive terminal session to confirm
 rules and hooks loaded.
@@ -196,7 +182,6 @@ from the marketplace clone.
 | `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps |
 | `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
-| `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
 | `humanizer` | Strip signs of AI-generated writing from text |
 
 > `humanizer` is vendored from [blader/humanizer](https://github.com/blader/humanizer) v2.9.1 —
@@ -208,7 +193,7 @@ Shared behavior uses one canonical contract or two runtime-specific adapters wit
 completion criteria:
 
 - `ship` is canonical at `~/.agents/skills/ship/SKILL.md`; Claude `/ship` and Codex `$ship` are thin
-  user-only adapters.
+  adapters that run only on the user's request to ship, typed or in prose.
 - Claude and Codex `handoff` both write the primary checkout's root `MEMORY.md` and refuse to
   overwrite a different active checkpoint.
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
@@ -243,7 +228,9 @@ performs both steps while preserving the local handoff exclusion.
 
 ## Agents
 
-Custom subagents live under `agents/`. Read `references/model-routing.md` and the current runtime
+Two custom subagents live under `agents/`: `code-reviewer` and `security-reviewer`, both read-only
+fallbacks for when Codex cannot reach the evidence. Exploration and planning use the built-in
+`Explore` and `Plan` agents. Read `references/codex-delegation.md` and the current runtime
 configuration before dispatch; the README does not cache model aliases, cost ratios, or worker counts.
 
 ## Slash commands
@@ -265,23 +252,23 @@ review flows are delivered by `mattpocock-skills:*`.
 
 ## What CLAUDE.md enforces
 
-`CLAUDE.md` is behavioral policy. Repository and stack standards belong in the nearest repository;
-user-level `rules/` stay product-neutral.
+`CLAUDE.md` is behavioral policy written for frontier models: goals, boundaries, and completion
+criteria, with the method left to the model. The harness system prompt already covers delivery
+discipline, message shape, and autonomy, so the file carries only what it does not:
 
-- **Single Elegant Version** — one current version of everything; no `_v2`, no legacy, no
-  backward-compat shims, no patchwork repairs
-- **Scope discipline** — minimal best-practice fix first; abstraction layers need an explicit go-ahead
-- **Execution defaults** — Codex end-state checks for plans, specs, or ticket batches with material
-  architecture, authorization, data, or release risk; *done = observed at the end state* (deploys
-  verified live, UI screenshot-matched); production-data dry-run SOP
-- **Response shape** — recommendation-first; principle-filter before any option menu; decisions lead
-  with the consequence and attach the mechanism one line below; hard stop on milestone complete
-- **Communication** — zh-tw reporting that survives compaction and agent relays; completed work
-  reported as a delta (淨變化 / 在哪看 / 沒包含), never as a raw diff or forwarded agent output
-- **Delegation & routing** — use Codex for substantial implementation, rescue, or independent review
-  when it can reach the required evidence; choose runtime-supported tiers from current configuration
-- **Git automation** — explicit user-only workflows own only their documented commit and delivery
-  operations; deny rules and hooks fail closed on destructive operations
+- **Authority** — a change request authorizes the whole local loop through the commit; a short list
+  of irreversible actions is confirmed at the point of action; `/ship` owns delivery on request
+- **Scope** — deliver at the intended scope, report nearby bugs as follow-ups, commit tests only
+  where the task or the repository asks
+- **Simplicity** — simplest shape first; every mechanism names the failure it prevents and leaves
+  when that failure stops recurring; single path
+- **Verification** — done means observed, including looking at rendered UI; no added verification
+  ritual
+- **Delegation** — delegate only large independent tracks; Codex as independent reviewer for
+  material-risk changes; event-driven supervision
+- **Communication** — zh-tw replies, business consequence before mechanism, one-screen final
+  message, a bounded 淨變化 / 在哪看 / 沒包含 block, no system internals in product copy
+- **Memory and Git** — `MEMORY.md` as the shared checkpoint corrected in place, append-only history
 
 ## Customization
 
@@ -289,7 +276,7 @@ user-level `rules/` stay product-neutral.
 2. **rules/** — swap for your stack
 3. **references/** — your own on-demand deep dives; point at them from `CLAUDE.md`
 4. **hooks/pre_bash_guard.py** — adjust what the Bash gate redirects or denies
-5. **settings.json** — permission rules, hooks, plugins; drop the TempoTerm entries if unused
+5. **settings.json** — permission rules, hooks, plugins
 6. **agents/** + **skills/** + **commands/** — your own workers and pipelines
 
 ### Credential management

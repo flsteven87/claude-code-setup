@@ -8,7 +8,6 @@ paths:
 
 # Naming Conventions
 
-> Extracted from CLAUDE.md. These conventions apply across all projects.
 
 ## File ↔ Export Alignment 🟡
 
