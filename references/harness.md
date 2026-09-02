@@ -1,7 +1,7 @@
 # Harness Diagnostic Reference
 
 Read this when a hook or permission blocks an operation, or before changing `settings.json`, hooks,
-or permission rules. The environment is the source of truth; this file does not cache active values.
+permission rules, or skill invocation settings. The environment is the source of truth; this file does not cache active values.
 
 ## Diagnose
 
@@ -18,6 +18,12 @@ or permission rules. The environment is the source of truth; this file does not 
   behavior but cannot override a runtime denial.
 - Repository instructions define schema and migration workflow. The user-level write guard protects
   sensitive files; it does not select one database workflow for every repository.
+- `disable-model-invocation` is enforced at the tool layer: a flagged skill is absent from the model
+  catalog and the Skill tool refuses it by name. No instruction file restores it. Only removing that
+  frontmatter line does, and only in a copy this account owns.
+- Skills installed from an external marketplace keep their author's invocation settings. Adjust
+  invocation only for skills owned under `~/.agents` or `~/.claude`; a marketplace checkout is
+  overwritten on plugin update.
 - Diagnose first. Change settings or hooks only when the user requested that configuration change.
 - Preserve fail-closed protection for secrets, force pushes, irreversible work loss, and machine
   reconfiguration. Pair a denial with a safe alternative when one exists.

@@ -87,7 +87,7 @@ Anything that slips one layer is still caught by the next.
 ├── agents/                      # Custom subagents
 ├── bin/                         # Maintenance scripts
 ├── commands/ship.md             # Thin /ship adapter to the shared canonical contract
-├── skills/                      # Local skills + shared Graph links + Matt manifest
+├── skills/                      # Local skills + shared skill links + Matt manifest
 └── workflows/deep-research.js   # Routed research workflow with per-stage models
 ```
 
@@ -197,7 +197,6 @@ from the marketplace clone.
 | `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
 | `docs-cleanup` | Remove shipped plans/specs and re-current architecture docs against code truth |
-| `graph-deliver` | Human entry for one approved asynchronous Graph launch; a resident worktree owns execution |
 | `humanizer` | Strip signs of AI-generated writing from text |
 
 > `humanizer` is vendored from [blader/humanizer](https://github.com/blader/humanizer) v2.9.1 —
@@ -210,10 +209,6 @@ completion criteria:
 
 - `ship` is canonical at `~/.agents/skills/ship/SKILL.md`; Claude `/ship` and Codex `$ship` are thin
   user-only adapters.
-- The eight `graph-*` skills are canonical under `~/.agents/skills` and linked into Claude's skill
-  directory. `/graph-deliver` and `$graph-deliver` enter the same sealed contract; dispatch fully
-  hands each approved delivery to its resident worktree, so there is no runtime-specific delivery
-  policy copy or main-agent supervision loop.
 - Claude and Codex `handoff` both write the primary checkout's root `MEMORY.md` and refuse to
   overwrite a different active checkpoint.
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
@@ -224,13 +219,13 @@ canonical `~/.agents/skills` source before running setup on a new machine.
 
 ### Self-hosted mattpocock-skills
 
-`skills/mattpocock-skills/` is **not** a plugin install. It is a local manifest that loads Matt
-Pocock's skills straight out of the marketplace clone:
+`skills/mattpocock-skills/` is **not** a plugin install. It is a self-contained runtime generated
+from Matt Pocock's marketplace clone:
 
 ```
 skills/mattpocock-skills/
 ├── .claude-plugin/plugin.json   # tracked — lists the selected skills to expose
-└── skills -> ../../plugins/marketplaces/mattpocock/skills   # symlink into the (untracked) clone
+└── skills/                      # ignored — generated copy of the selected upstream skills
 ```
 
 Why self-host rather than `plugin install`:
@@ -240,8 +235,11 @@ Why self-host rather than `plugin install`:
 - **Disabling the upstream plugin is not enough** — a same-named installed plugin makes the
   skills-directory scan skip this manifest. The upstream plugin must be *uninstalled*.
 
-Updating: `claude plugin marketplace update mattpocock`. The daily updater reconciles the local
-manifest's Matt-managed subset while preserving the local handoff exclusion.
+The marketplace clone is the sole upstream source. `scripts/reconcile_matt_manifest.py` is the sole
+writer for the manifest and generated runtime; it stages and validates a complete copy before
+replacing the previous runtime. Updating: `claude plugin marketplace update mattpocock`, then
+`uv run python ~/.claude/scripts/reconcile_matt_manifest.py --write --runtime`. The daily updater
+performs both steps while preserving the local handoff exclusion.
 
 ## Agents
 

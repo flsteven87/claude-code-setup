@@ -11,6 +11,10 @@ Delegate execution while Claude retains scope, review, and integration.
 
 ## 1. Bound the assignment
 
+A mention of this skill in ordinary prose is a request, not an authorization.
+This worker spends a paid provider call and writes files, so confirm the task
+and its owned paths with the user in one question before dispatch.
+
 Establish one objective, exhaustive acceptance criteria, exclusive ownership,
 applicable instructions, existing work to preserve, validation commands, and
 the authority boundary. Keep overlapping files under one owner and do not edit

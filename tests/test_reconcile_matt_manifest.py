@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -44,8 +43,6 @@ class ReconcileMattManifestTests(unittest.TestCase):
             "skills": ["./skills/engineering/code-review"],
         }
         self._write_json(self.local / ".claude-plugin/plugin.json", self.local_manifest)
-        os.symlink(self.upstream / "skills", self.local / "skills")
-
     def tearDown(self) -> None:
         self.tempdir.cleanup()
 
@@ -71,7 +68,7 @@ class ReconcileMattManifestTests(unittest.TestCase):
         result = self._run("--check")
 
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("manifest is stale", result.stderr)
+        self.assertIn("self-hosted runtime is stale", result.stderr)
 
     def test_write_reconciles_version_and_skills_but_preserves_local_policy(
         self,
@@ -88,6 +85,12 @@ class ReconcileMattManifestTests(unittest.TestCase):
         self.assertEqual(
             manifest["$schema"], "https://example.invalid/plugin.schema.json"
         )
+        self.assertFalse((self.local / "skills").is_symlink())
+        self.assertEqual(
+            (self.local / "skills/productivity/wait-what/SKILL.md").read_text(),
+            "---\nname: test\n---\n",
+        )
+        self.assertFalse((self.local / "skills/productivity/handoff").exists())
 
     def test_check_rejects_a_manifest_entry_without_skill_source(self) -> None:
         missing_skill = self.upstream / "skills/productivity/wait-what/SKILL.md"
@@ -97,6 +100,16 @@ class ReconcileMattManifestTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("missing SKILL.md", result.stderr)
+
+    def test_check_rejects_runtime_content_drift(self) -> None:
+        self.assertEqual(self._run("--write").returncode, 0)
+        local_skill = self.local / "skills/productivity/wait-what/SKILL.md"
+        local_skill.write_text("changed\n", encoding="utf-8")
+
+        result = self._run("--check")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("runtime file differs from marketplace", result.stderr)
 
     def test_runtime_check_rejects_inventory_drift(self) -> None:
         self.assertEqual(self._run("--write").returncode, 0)
@@ -117,6 +130,57 @@ class ReconcileMattManifestTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("runtime skill inventory differs", result.stderr)
+
+    def test_runtime_check_rejects_plugin_loading_errors(self) -> None:
+        self.assertEqual(self._run("--write").returncode, 0)
+        fake_claude = Path(self.tempdir.name) / "claude"
+        fake_claude.write_text(
+            f"#!/bin/sh\n"
+            "if [ \"$1 $2\" = 'plugin list' ]; then\n"
+            f'  printf \'[{{"id":"mattpocock-skills@skills-dir","enabled":true,'
+            f'"installPath":"{self.local}","errors":["Path escapes plugin directory"]}}]\\n\'\n'
+            "else\n"
+            "  printf 'Component inventory\\n  Skills (2)  code-review, wait-what\\n'\n"
+            "fi\n",
+            encoding="utf-8",
+        )
+        fake_claude.chmod(0o755)
+
+        result = self._run("--check", "--runtime", "--claude-bin", str(fake_claude))
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("plugin reports 1 loading errors", result.stderr)
+
+    def test_write_rolls_back_when_runtime_validation_fails(self) -> None:
+        self.assertEqual(self._run("--write").returncode, 0)
+        old_manifest = (self.local / ".claude-plugin/plugin.json").read_bytes()
+        old_skill = (
+            self.local / "skills/productivity/wait-what/SKILL.md"
+        ).read_bytes()
+        upstream_skill = self.upstream / "skills/productivity/wait-what/SKILL.md"
+        upstream_skill.write_text("updated\n", encoding="utf-8")
+
+        fake_claude = Path(self.tempdir.name) / "claude"
+        fake_claude.write_text(
+            f"#!/bin/sh\n"
+            "if [ \"$1 $2\" = 'plugin list' ]; then\n"
+            f'  printf \'[{{"id":"mattpocock-skills@skills-dir","enabled":true,'
+            f'"installPath":"{self.local}","errors":["invalid skill"]}}]\\n\'\n'
+            "fi\n",
+            encoding="utf-8",
+        )
+        fake_claude.chmod(0o755)
+
+        result = self._run("--write", "--runtime", "--claude-bin", str(fake_claude))
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(
+            (self.local / ".claude-plugin/plugin.json").read_bytes(), old_manifest
+        )
+        self.assertEqual(
+            (self.local / "skills/productivity/wait-what/SKILL.md").read_bytes(),
+            old_skill,
+        )
 
 
 if __name__ == "__main__":

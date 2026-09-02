@@ -6,7 +6,7 @@
 
 1. 記錄 marketplace clone 的 `old_head`，並從該 commit 的官方 manifest 取得 `old_managed = upstream skills - ./skills/productivity/handoff`。
 2. 對每個 `old_managed` 名稱，把 `~/.agents/skills/<name>` 與 `old_head` 中對應目錄比較。分類為 `matches_old`、`local_delta` 或 `missing`；不要用目前工作樹推測舊上游內容。
-3. 記錄自持 manifest 的 version、skills 清單與 symlink target。
+3. 記錄自持 manifest 的 version、skills 清單，以及衍生 runtime 是否為不含 symlink 的自包含目錄。
 
 完成條件：每個舊受管名稱只有一個分類；本機自訂 skill 不在受管集合內。
 
@@ -31,8 +31,8 @@
 
 ## 4. 共通驗證
 
-1. 執行 `uv run python ~/.claude/scripts/reconcile_matt_manifest.py --write --runtime`。這是自持 manifest 的唯一寫入路徑；不手動拼接 manifest，也不修改 symlink 指向的上游內容。
-2. 執行 Claude plugin validation。確認 symlink、每個 `SKILL.md`、shadowing plugin、runtime inventory 與 `Matt-managed subset == desired`。
+1. 執行 `uv run python ~/.claude/scripts/reconcile_matt_manifest.py --write --runtime`。這是自持 manifest 與衍生 runtime 的唯一寫入路徑；它先在 `~/.claude` 下建立完整 staging copy，驗證後替換舊 runtime，失敗時保留舊副本。不要手動拼接 manifest、複製 skill，或修改 marketplace checkout 的內容。
+2. 執行 Claude plugin validation。確認 runtime 位於自身 plugin root 內、沒有 symlink、每個檔案與 marketplace 的 `desired` 來源一致、沒有 shadowing plugin 或載入錯誤，且 `runtime inventory == Matt-managed subset == desired`。
 3. 若本次 delta 涉及 ship、handoff 或其 contract references，再驗證唯一 canonical ship 是 `~/.agents/skills/ship/SKILL.md`，Claude `/ship` 是薄 adapter，兩個 handoff 都只寫 primary checkout 的 root `MEMORY.md`。未涉及時沿用最近已通過的 checkpoint，不做全域語意重掃。
 
 完成條件：reconcile 與 plugin validation 都通過；任何保留的 local delta 都出現在報告與 memory retry key 中。

@@ -81,18 +81,18 @@ echo ""
 warn "Plugin installation is interactive — Claude Code manages this itself"
 echo ""
 echo -e "${BOLD}mattpocock-skills is self-hosted, not installed:${RESET}"
-echo "  skills/mattpocock-skills/ carries its own manifest and symlinks into the"
-echo "  marketplace clone. Installing the plugin makes the skills-dir scan skip it."
+echo "  skills/mattpocock-skills/ carries its own manifest and a generated,"
+echo "  self-contained copy. Installing the plugin makes the skills-dir scan skip it."
 echo ""
-echo "    claude plugin marketplace add mattpocock/skills   # populates the symlink target"
+echo "    claude plugin marketplace add mattpocock/skills   # provides the upstream source"
 echo ""
 fail_hint="run: claude plugin marketplace add mattpocock/skills"
 if [ -d ~/.claude/plugins/marketplaces/mattpocock/skills ]; then
-  pass "mattpocock marketplace clone present (symlink target resolves)"
+  pass "mattpocock marketplace clone present"
   if uv run python ~/.claude/scripts/reconcile_matt_manifest.py --check --runtime; then
-    pass "mattpocock manifest and Claude runtime inventory agree"
+    pass "mattpocock source, self-contained runtime, and Claude inventory agree"
   else
-    fail "mattpocock manifest or runtime inventory is inconsistent"
+    fail "mattpocock source or self-contained runtime is inconsistent"
     errors=$((errors + 1))
   fi
 else
@@ -119,13 +119,6 @@ shared_skill_targets=(
   "$HOME/.agents/skills/catchup/SKILL.md"
   "$HOME/.agents/skills/handoff/SKILL.md"
   "$HOME/.agents/skills/git-converge-main/SKILL.md"
-  "$HOME/.agents/skills/graph-decide/SKILL.md"
-  "$HOME/.agents/skills/graph-deliver/SKILL.md"
-  "$HOME/.agents/skills/graph-dispatch/SKILL.md"
-  "$HOME/.agents/skills/graph-portfolio/SKILL.md"
-  "$HOME/.agents/skills/graph-refresh/SKILL.md"
-  "$HOME/.agents/skills/graph-run/SKILL.md"
-  "$HOME/.agents/skills/graph-ticket/SKILL.md"
   "$HOME/.agents/skills/use-code-review-graph/SKILL.md"
 )
 for target in "${shared_skill_targets[@]}"; do

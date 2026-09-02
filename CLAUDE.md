@@ -11,20 +11,16 @@ Read these references only when their branch applies:
   `~/.claude/references/model-routing.md`.
 - **Prompt engineering:** before writing or reviewing an LLM prompt or agent pipeline, read
   `~/.claude/references/prompt-engineering.md`.
-- **Harness behavior:** when a hook or permission blocks work, or before editing settings or hooks,
-  read `~/.claude/references/harness.md`.
+- **Harness behavior:** when a hook or permission blocks work, or before editing settings, hooks, or
+  skill invocation, read `~/.claude/references/harness.md`.
 - **Autonomous loops:** before starting unattended or batch agent work, read
   `~/.claude/references/autonomous-loops.md`.
-- **Graph Engineering:** before reviewing or changing any `graph-*` skill, delivery helper, model
-  route, Orca lifecycle, receipt, or Graph report, read `~/.agents/GRAPH-ENGINEERING.md` completely.
-  Routine Graph delivery execution follows its role skill and does not load the maintainer report.
 
 ## Scope And Authorization
 
 - Inspect applicable instructions, source, constraints, and existing patterns before non-trivial
   work.
 - For answer, review, diagnosis, or planning requests, inspect and report without changing state.
-  For change, build, or fix requests, make the smallest in-scope root-cause change and validate it.
 - Reuse the repository's current design. Material scope expansion requires explicit approval.
 - **Authority:** a direct request authorizes only the named operation. A human's explicit invocation
   of an installed, locally reviewed user-only workflow authorizes only the operations that workflow
@@ -36,12 +32,43 @@ Read these references only when their branch applies:
   mutations, irreversible migrations, and cleanup outside the active task require explicit
   confirmation at the point of action.
 
+## Product Priority
+
+- **Outcome gate:** before selecting, planning, or expanding change work, name the affected user or
+  business operation, current problem, observable outcome, and why it matters now. A direct technical
+  request, approved spec, or ticket may supply the outcome without an invented user story.
+- **Working behavior is the baseline.** Preserve user-visible behavior outside the accepted outcome;
+  this protects behavior, not the implementation behind it, and **Single-path** still governs code
+  paths.
+- When choosing among candidates, address material security, privacy, data-integrity, reliability,
+  and irreversible risk, user-facing defects, and committed features before internal improvement.
+  Technical work earns scope only when directly requested or when concrete evidence shows it unlocks
+  the outcome, removes repeated operating cost, or reduces a named material risk.
+- Deliver the smallest reversible slice with observable value now. Keep speculative refactoring, deep
+  optimization, and adjacent cleanup outside the active task. If broader technical work or the scope
+  changes, state the evidence and reapply the outcome gate before proceeding.
+
+## Complexity Discipline
+
+- **Evidence gate:** start with the simplest direct or linear shape that satisfies the observable
+  outcome and named risks. Reuse repository mechanisms; keep deterministic work in code and contracts,
+  and use model judgment for interpretation, routing under ambiguity, synthesis, or recovery.
+- Treat each added agent, workflow layer, retry, fallback, memory layer, or abstraction as a
+  hypothesis. Before retaining it, name the concrete failure, invariant, or operating cost it
+  addresses; show why the simpler baseline is insufficient; and name the smallest check or
+  representative evaluation that distinguishes them.
+- **State earns its keep** by enforcing named transition invariants that are material to correctness.
+  Match its states, persistence, recovery, and observability to those invariants.
+- **Identity earns its keep** by providing immutable content identity to a named consumer. Keep a Git
+  SHA local to the review, delivery, caching, or resume workflow whose correctness depends on it.
+- Scale proof to the blast radius: a focused check can justify a bounded local design; durable or
+  production agentic systems require representative evals and runtime evidence. Retain complexity
+  only while its evidence holds, and stop at the verified outcome.
+
 ## Engineering
 
 - **Single-path:** maintain one current implementation. Add compatibility or fallback behavior only
   for an explicit product or migration requirement, with a defined removal condition.
-- Prefer the smallest change that solves the root cause. New abstraction layers and adjacent cleanup
-  require evidence that they are needed for the requested outcome.
 - **Done means observed.** A deploy, migration, scheduled job, feature toggle, or UI change is complete
   only after its relevant end state has been verified.
 - Before finalizing a plan, spec, or ticket batch with material architecture, authorization, data, or
@@ -51,8 +78,18 @@ Read these references only when their branch applies:
 - Create documentation files or start development servers only when the user requests them.
 - Verify fast-moving facts online and use exact dates when the user says "latest" or gives a relative
   date.
-- For LLM systems: backend supplies facts, context supplies structure, and the model supplies
-  judgment. Keep deterministic computation in code and interpretive work in the model.
+
+## Frontend Design Routing
+
+- Use `impeccable` as the sole default owner for frontend design, redesign, and UI/UX refinement.
+- Owl is installed but dormant by default. Switch to `owl-design` only when the human explicitly names
+  Owl in natural language or invokes `/owl-design`; that selection replaces Impeccable for the task.
+- Keep one creative owner per task. A proposed staged workflow or state model must pass the Complexity
+  Discipline evidence gate.
+- Frontend-related skills retained only through a system or broader bundle exception may provide
+  narrow engineering or audit evidence, but never own the design.
+- For a clean A/B comparison, start a fresh agent session after switching. If both variants will write
+  code, use separate Orca worktrees with one writer each.
 
 ## Communication
 
@@ -67,10 +104,10 @@ Read these references only when their branch applies:
   their owning issue, spec, ADR, or source file.
 - **Recommendation-first:** lead with the best supported call. Present options only when the user
   must own a genuine value tradeoff.
-- **Consequence-first:** state what changes for the user, product, money, or schedule before the
-  mechanism, unless the mechanism itself is the decision.
-- **Cold-read:** make every status and report actionable without reconstructing hidden context.
-  Expand internal shorthand on first use while preserving technical precision.
+- **Consequence-first:** a human-facing answer establishes what a material technical fact changes,
+  states it with its evidence, and stands alone for a reader who did not watch the work. The active
+  output style carries the detailed presentation; this line holds when none is active. An
+  unestablished consequence is reportable; an invented one never is.
 - **Hard stop:** when the requested milestone is complete, report it and stop. Put adjacent scope in
   the exclusions instead of offering unsolicited continuation.
 - After material change or build work, end with a compact Traditional Chinese block:
@@ -112,18 +149,16 @@ routing references before dispatch or fan-out.
 
 - Reviewer independence is the reason for the Codex review route. Keep the reviewer separate from
   the implementer; resolve current model names and effort levels from the runtime.
-- User-invoked commands may be absent from Claude's model-visible catalog. A slash token embedded in
-  ordinary prose is not an invocation; the runtime must expand the standalone command before its
-  workflow is authorized. If it was not expanded, do not emulate it by reading `SKILL.md` or
-  substituting a visible child skill. Verify the runtime source, then name the canonical namespaced
-  command for the user to invoke as a standalone command.
-- The canonical human path is `/mattpocock-skills:grill-with-docs` →
-  `/mattpocock-skills:to-spec` → `/mattpocock-skills:to-tickets` → `/graph-deliver`.
-  Skip verified artifacts and never auto-start a user-only stage. `/graph-deliver` launches at most
-  one approved delivery. `/graph-dispatch` fully hands it to a resident `/graph-run` worktree; after
-  the `dispatched` receipt, the main agent stops supervising that delivery and may accept the next
-  explicit topic. Its atomic Graph skills own implementation, review, the final gate, and any authorized
-  `/ship`.
+- A slash token in ordinary prose is a request, not an authorization, and the runtime never expands
+  it. When it names a model-visible skill, confirm the bounded target in one question, then invoke
+  that skill. Several tokens in one instruction run in the order and under the conditions written.
+  When the tool layer refuses the skill or the runtime owns the command (`/ship`, plugin commands,
+  built-ins), do the already-authorized adjacent work, then name the canonical command for the user
+  to run standalone. Never emulate a refused skill from its `SKILL.md` or a child skill. `/artifacts`
+  asks for a published Artifact; produce one instead of naming the command.
+- Use `/mattpocock-skills:grill-with-docs`, `/mattpocock-skills:to-spec`, and
+  `/mattpocock-skills:to-tickets` only when the human requests those discovery or planning
+  artifacts. They do not gate a direct implementation request.
 - The local `/handoff` updates the primary checkout's root `MEMORY.md` and stops rather than overwrite
   another active checkpoint. Request a portable handoff document for another directory or person.
 

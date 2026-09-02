@@ -24,7 +24,9 @@
 
 ## Briefing
 
-Brief it cold: paths, line numbers, success criteria. For read-only work say "review only, do not
+Brief it cold: paths, line numbers, success criteria, and the business intent the work serves —
+success criteria say when it is done, intent says which way to resolve the ambiguities they leave.
+For read-only work say "review only, do not
 edit" explicitly — it defaults to `--write`. Never ask a read-only job to run tests or `uv`: its
 sandbox denies all writes and the job thrashes on `Operation not permitted`.
 

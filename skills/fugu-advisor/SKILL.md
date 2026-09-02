@@ -13,9 +13,10 @@ define the target.
 
 ## 1. Qualify and baseline
 
-Require an explicit Fugu invocation and a bounded decision or artifact. Record
-Claude's tentative conclusion, strongest evidence, and important unknowns
-before dispatch.
+A mention of this skill in ordinary prose is a request, not an authorization.
+Confirm the bounded decision or artifact with the user in one question, then
+dispatch. Record Claude's tentative conclusion, strongest evidence, and
+important unknowns before dispatch.
 
 ## 2. Preflight
 

@@ -19,9 +19,10 @@ operation reversible without costing an interruption:
   rm / rmdir   -> `trash`, so a wrong deletion is recoverable from the Trash
   pip / pip3   -> `uv`, per CLAUDE.md's Python tooling rule
 
-`git rm` is exempt: it stages a removal the repo can restore. Deletions under the
-temp directories are exempt too — they are ephemeral by definition, and routing
-them to the Trash would just fill it with build noise.
+`git rm` is exempt: it stages a removal the repo can restore. `orca worktree rm`
+is exempt: it is Orca's registry-managed worktree removal, not a raw filesystem
+delete. Deletions under the temp directories are exempt too — they are ephemeral
+by definition, and routing them to the Trash would just fill it with build noise.
 
 Wire-up: register at PreToolUse with matcher "Bash".
 
@@ -45,8 +46,22 @@ HEREDOC_BODY = re.compile(r"<<-?\s*(['\"]?)(\w+)\1(.*?)^\s*\2\s*$", re.S | re.M)
 
 # git global options consumed before the subcommand. The value-taking ones eat
 # the following token when written space-separated.
-GLOBAL_OPTS_WITH_VALUE = {"-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path"}
-GLOBAL_OPTS_FLAG = {"-p", "--paginate", "--no-pager", "--bare", "--literal-pathspecs", "--no-replace-objects"}
+GLOBAL_OPTS_WITH_VALUE = {
+    "-c",
+    "-C",
+    "--git-dir",
+    "--work-tree",
+    "--namespace",
+    "--exec-path",
+}
+GLOBAL_OPTS_FLAG = {
+    "-p",
+    "--paginate",
+    "--no-pager",
+    "--bare",
+    "--literal-pathspecs",
+    "--no-replace-objects",
+}
 
 FORCE_LONG_OPTS = {"--force", "--force-with-lease", "--mirror"}
 
@@ -125,10 +140,19 @@ def _check_delete(tokens: list[str]) -> str | None:
             continue
         if idx and tokens[idx - 1] == "git":
             continue  # `git rm` stages a removal the repo can restore
+        if (
+            tok == "rm"
+            and idx >= 2
+            and tokens[idx - 1] == "worktree"
+            and tokens[idx - 2].split("/")[-1] in {"orca", "orca-dev", "orca-ide"}
+        ):
+            continue  # `orca worktree rm` deregisters a managed worktree; Orca refuses dirty ones without --force
 
         # For `find … -delete` the paths precede the flag; for rm they follow it.
         scope = tokens[:idx] if tok in DELETE_FLAGS else tokens[idx + 1 :]
-        targets = [t for t in scope if not t.startswith("-") and t not in ("find", "{}", ";")]
+        targets = [
+            t for t in scope if not t.startswith("-") and t not in ("find", "{}", ";")
+        ]
         if targets and all(t.startswith(TEMP_PREFIXES) for t in targets):
             continue  # ephemeral by definition; trashing these is just noise
 

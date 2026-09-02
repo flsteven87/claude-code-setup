@@ -13,9 +13,7 @@ Claude command mappings:
 
 - `$ship` → `/ship`
 - `$implement` → `/mattpocock-skills:implement`
-- `$code-review` → read `/Users/po-chi/.agents/skills/code-review/SKILL.md`; the
-  `/mattpocock-skills:code-review` plugin copy omits the Graph reviewer routes and the holdout input
-  set
+- `$code-review` → read `/Users/po-chi/.agents/skills/code-review/SKILL.md`
 - `$git-converge-main` → `/git-converge-main`
 - `$setup-matt-pocock-skills` → `/mattpocock-skills:setup-matt-pocock-skills`
 
