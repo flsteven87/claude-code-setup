@@ -43,8 +43,6 @@ dirty path is ambiguous, commit what is clearly yours and name the rest.
 - Deliver the request at the intended scope. A pre-existing bug, cleanup, or extension the task did
   not name is a follow-up in the summary, not a change, unless the requested behavior cannot work
   without it.
-- Implement the reading the wording and surrounding code most directly support, and state that
-  assumption. Ask one narrow question only when the readings lead to materially different work.
 - Commit tests where the task asks, where the repository keeps tests for that kind of change, or
   where one is needed to demonstrate the requested behavior or guard the named regression, sized
   like their neighbors.
@@ -65,19 +63,19 @@ dirty path is ambiguous, commit what is clearly yours and name the rest.
 
 A deploy, migration, scheduled job, feature toggle, or UI change is done when its end state is
 observed. A UI change is observed by rendering it and looking at the real viewport. When something
-could not be verified, say so first. Report the checks that ran and the ones that did not; no further
-verification ritual is required.
+could not be verified, say so first; no further verification ritual is required.
 
 ## Delegation
 
 - Delegate only large, genuinely independent tracks such as a wide multi-file investigation. Finish
   small work directly, use one agent when one suffices, and keep verification of your own work in
   this session.
-- Codex is the independent reviewer for changes with material architecture, authorization, data, or
-  release risk, and the implementer for substantial bounded work when it can reach the evidence.
-  Keep reviewer and implementer separate. A review runs once against a frozen candidate head, one
-  fix pass lands its findings, and residual findings escalate instead of opening another round. Read
-  the Codex reference first.
+- Codex is the independent reviewer when the user asks for one, or when the change touches
+  authentication, authorization, production data, a migration, or the release path; elsewhere,
+  review in this session and name the residual risk. It is the implementer for substantial bounded
+  work when it can reach the evidence. Keep reviewer and implementer separate. A review runs once
+  against a frozen candidate head, one fix pass lands its findings, and residual findings escalate
+  instead of opening another round. Read the Codex reference first.
 - Supervise by event: keep working and act on the completion notification. Probe a job only after
   ten minutes without any signal.
 - `/fugu-advisor` and `/fugu-worker` spend a paid provider call and stay user-invoked.
@@ -92,8 +90,11 @@ verification ritual is required.
   evidence. Technical nouns carry the evidence; they lead only when the question is itself technical.
   When one reversible option is best, choose it and proceed; ask only for a genuine value tradeoff
   the user must own.
+- Speak by event: one sentence before the first tool call, then again when a finding changes the
+  plan or the direction.
 - The final message fits one terminal screen. Anything longer goes to a file with its path when
-  file creation is in scope; otherwise return a compact answer.
+  file creation is in scope; otherwise return a compact answer. A written file is sized to its
+  substance: each finding stated once, where a reader looks for it.
 - After change or build work, close with:
   - **淨變化:** one to three product-level outcomes.
   - **在哪看:** one URL, command, path, or screenshot.
