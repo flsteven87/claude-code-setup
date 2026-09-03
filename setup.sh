@@ -123,6 +123,10 @@ shared_skill_targets=(
   "$HOME/.agents/skills/milestone-dispatch/SKILL.md"
   "$HOME/.agents/skills/topics/SKILL.md"
   "$HOME/.agents/skills/codebase-design/SKILL.md"
+  "$HOME/.agents/skills/orca-cli/SKILL.md"
+  "$HOME/.agents/skills/strategy-review/SKILL.md"
+  "$HOME/.agents/skills/audit-pr-topics/SKILL.md"
+  "$HOME/.agents/skills/wayfinder/SKILL.md"
 )
 for target in "${shared_skill_targets[@]}"; do
   if [ -f "$target" ]; then

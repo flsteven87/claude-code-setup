@@ -25,6 +25,15 @@ def _agents_root() -> Path:
 
 
 AGENTS = _agents_root()
+MILESTONE_WORKFLOW_SKILLS = (
+    "milestone-dispatch",
+    "topics",
+    "codebase-design",
+    "orca-cli",
+    "strategy-review",
+    "audit-pr-topics",
+    "wayfinder",
+)
 
 
 class AgentContractTests(unittest.TestCase):
@@ -88,23 +97,37 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("reconcile_matt_manifest.py --check --runtime", setup)
         self.assertNotIn("reconcile_matt_manifest.py --write --runtime", setup)
         self.assertIn("git -C ~/.claude show :settings.json", setup)
-        for name in (
-            "ship",
-            "milestone-dispatch",
-            "topics",
-            "codebase-design",
-        ):
-            self.assertIn(f".agents/skills/{name}/SKILL.md", setup)
+        self.assertIn(".agents/skills/ship/SKILL.md", setup)
         self.assertNotIn(".agents/skills/graph-", setup)
         self.assertIn("Seven-stage refresh", readme)
         self.assertIn("does not install or restore them", readme)
 
-    def test_cross_surface_skill_pointer_uses_the_canonical_agents_owner(self) -> None:
+    def test_milestone_workflow_targets_exist_and_setup_verifies_them(self) -> None:
+        setup = (CLAUDE_HOME / "setup.sh").read_text(encoding="utf-8")
+
+        for name in MILESTONE_WORKFLOW_SKILLS:
+            target = AGENTS / f"skills/{name}/SKILL.md"
+            self.assertTrue(target.is_file(), f"missing workflow skill: {target}")
+            self.assertIn(f".agents/skills/{name}/SKILL.md", setup)
+
+    def test_cross_surface_skill_pointer_resolves_source_and_authority(self) -> None:
         agents = (AGENTS / "AGENTS.md").read_text(encoding="utf-8")
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
-        self.assertIn("canonical `skills/<name>/SKILL.md`", agents)
+        for document in (agents, claude):
+            self.assertIn(
+                "from a user message, repository instruction, or skill body",
+                document,
+            )
+            self.assertIn("installed skill", document)
+            self.assertIn("Report the missing capability", document)
+
+        self.assertIn("`skills/<name>/SKILL.md`", agents)
+        self.assertIn("non-user reference", agents)
         self.assertIn("`~/.agents/skills/<name>/SKILL.md`", claude)
+        self.assertIn("requires a user request", claude)
+        self.assertIn("`allow_implicit_invocation: false`", claude)
+        self.assertIn("`disable-model-invocation: true`", claude)
 
     def test_graph_engineering_is_absent_from_active_routes(self) -> None:
         active_documents = (

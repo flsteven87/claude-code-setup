@@ -23,9 +23,13 @@ Read on demand:
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
   user asks to ship, merge, open or merge the pull request, or deploy, as a command or in prose. `/git-converge-main` owns
   the later repository-wide cleanup when the user asks for it.
-- `$name` in repository instructions means: read `~/.agents/skills/<name>/SKILL.md` completely and
-  follow it now. `/name` invokes a Claude-installed skill. When either is user-only, perform every
-  independently authorized operation first, then name the command for the user to type.
+- A `$name` token from a user message, repository instruction, or skill body resolves by source.
+  Read `~/.agents/skills/<name>/SKILL.md` completely when it exists; otherwise use Claude's installed
+  skill or command. Report the missing capability and stop that route when neither source provides
+  it. Before running a shared skill, read its `agents/openai.yaml` when present:
+  `allow_implicit_invocation: false` requires a user request that names the skill. Claude's
+  `disable-model-invocation: true` remains its native user-only gate. `/name` directly invokes a
+  Claude-installed skill.
 
 ### Main Fast Lane
 
