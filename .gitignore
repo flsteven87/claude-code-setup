@@ -86,15 +86,19 @@ automations/*/.run.lock/
 # These are symlinks: committing them stores a path that dangles on any other machine.
 # setup.sh checks that the link targets exist.
 skills/asd-ste100
+skills/audit-pr-topics
 skills/catchup
 skills/computer-use
 skills/git-converge-main
 skills/handoff
+skills/milestone-dispatch
 skills/narrate
 skills/orca-cli
 skills/orca-emulator
 skills/orca-linear
 skills/orchestration
+skills/strategy-review
+skills/topics
 skills/use-code-review-graph
 skills/web-design-guidelines
 

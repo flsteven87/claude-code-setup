@@ -137,6 +137,30 @@ for target in "${shared_skill_targets[@]}"; do
   fi
 done
 
+native_shared_skill_names=(
+  "audit-pr-topics"
+  "milestone-dispatch"
+  "strategy-review"
+  "topics"
+)
+for name in "${native_shared_skill_names[@]}"; do
+  target_dir="$HOME/.agents/skills/$name"
+  link_path="$HOME/.claude/skills/$name"
+
+  # The source check above owns the error when the canonical skill is absent.
+  [ -f "$target_dir/SKILL.md" ] || continue
+
+  if [ -L "$link_path" ] && [ "$link_path" -ef "$target_dir" ]; then
+    pass "native shared skill linked: skills/$name"
+  elif [ -e "$link_path" ] || [ -L "$link_path" ]; then
+    fail "native skill path conflicts: skills/$name — expected a link to ~/.agents/skills/$name"
+    errors=$((errors + 1))
+  else
+    ln -s "../../.agents/skills/$name" "$link_path"
+    pass "native shared skill linked: skills/$name"
+  fi
+done
+
 if [ -f ~/.claude/hooks/auto-format.sh ] && [ -x ~/.claude/hooks/auto-format.sh ]; then
   pass "Hooks are in place"
 else

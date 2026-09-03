@@ -183,6 +183,10 @@ from the marketplace clone.
 | `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
 | `humanizer` | Strip signs of AI-generated writing from text |
+| `milestone-dispatch` | Reconcile one program and choose or hand off its next coherent implementation milestone |
+| `topics` | Compare workstreams by business outcome and recommend the next unit of attention |
+| `audit-pr-topics` | Group a contributor's pull requests into topics and assess intent, risk, and remaining work |
+| `strategy-review` | Turn a topic, delivery episode, or incident into an evidence-backed product and engineering strategy |
 
 > `humanizer` is vendored from [blader/humanizer](https://github.com/blader/humanizer) v2.9.1 —
 > update by re-cloning, never by hand-editing.
@@ -198,9 +202,12 @@ completion criteria:
   overwrite a different active checkpoint.
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
   behavior and completion criteria; do not claim byte identity when runtime syntax differs.
+- `milestone-dispatch`, `topics`, `audit-pr-topics`, and `strategy-review` remain canonical under
+  `~/.agents/skills/` and appear natively in Claude through ignored directory symlinks.
 
-`setup.sh` verifies required shared targets but does not install or restore them. Restore the
-canonical `~/.agents/skills` source before running setup on a new machine.
+`setup.sh` verifies required shared targets and safely creates missing native links without replacing
+an existing path. It does not install or restore canonical skills; restore `~/.agents/skills` before
+running setup on a new machine.
 
 ### Self-hosted mattpocock-skills
 
