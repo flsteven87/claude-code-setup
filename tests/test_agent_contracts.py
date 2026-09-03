@@ -88,10 +88,23 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("reconcile_matt_manifest.py --check --runtime", setup)
         self.assertNotIn("reconcile_matt_manifest.py --write --runtime", setup)
         self.assertIn("git -C ~/.claude show :settings.json", setup)
-        self.assertIn(".agents/skills/ship/SKILL.md", setup)
+        for name in (
+            "ship",
+            "milestone-dispatch",
+            "topics",
+            "codebase-design",
+        ):
+            self.assertIn(f".agents/skills/{name}/SKILL.md", setup)
         self.assertNotIn(".agents/skills/graph-", setup)
         self.assertIn("Seven-stage refresh", readme)
         self.assertIn("does not install or restore them", readme)
+
+    def test_cross_surface_skill_pointer_uses_the_canonical_agents_owner(self) -> None:
+        agents = (AGENTS / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
+
+        self.assertIn("canonical `skills/<name>/SKILL.md`", agents)
+        self.assertIn("`~/.agents/skills/<name>/SKILL.md`", claude)
 
     def test_graph_engineering_is_absent_from_active_routes(self) -> None:
         active_documents = (

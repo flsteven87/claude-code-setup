@@ -23,9 +23,9 @@ Read on demand:
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
   user asks to ship, merge, open or merge the pull request, or deploy, as a command or in prose. `/git-converge-main` owns
   the later repository-wide cleanup when the user asks for it.
-- A slash token in prose is an instruction to invoke that skill now. When the tool layer refuses it
-  as user-only, perform every independently authorized operation first, then name the command for
-  the user to type.
+- `$name` in repository instructions means: read `~/.agents/skills/<name>/SKILL.md` completely and
+  follow it now. `/name` invokes a Claude-installed skill. When either is user-only, perform every
+  independently authorized operation first, then name the command for the user to type.
 
 ### Main Fast Lane
 
