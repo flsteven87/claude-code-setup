@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # ///
 """
-PermissionRequest hook: auto-approve everything except what a prompt can still save.
+PermissionRequest hook: approve known local tools and screened Bash commands.
 
 Where this sits (settings.json deny > ask > allow, then this hook):
   - settings.json settles 26% of Bash calls outright (measured 2026-07-27); the
@@ -11,7 +11,7 @@ Where this sits (settings.json deny > ask > allow, then this hook):
   - pre_bash_guard.py runs earlier, at PreToolUse, and denies deletions, force
     pushes, and pip with a recoverable alternative. Those never reach this hook,
     so they never cost a prompt.
-  - What is left is the narrow list below. Matching one emits no JSON, which
+  - Interactive and unknown tools, plus the Bash patterns below, emit no JSON, which
     Claude Code reads as "no decision" and turns into the normal prompt.
 
 Patterns are word-boundary regexes over the whole command, so wrapper prefixes
@@ -42,6 +42,15 @@ INTERACTIVE_TOOLS = [
     "EnterPlanMode",  # User must consent to plan mode
     "ExitPlanMode",  # User must review and approve plan
 ]
+
+# Known native tools retain the existing automation. MCP providers and newly
+# introduced tools use the runtime's permission rules until explicitly configured.
+# PreToolUse guards still protect sensitive writes and prohibited commands.
+AUTO_APPROVED_TOOLS = frozenset({
+    "Read", "Write", "Edit", "MultiEdit", "Glob", "Grep", "LS",
+    "WebSearch", "WebFetch", "NotebookEdit", "TodoWrite",
+    "Task", "Agent", "TaskOutput", "TaskStop", "Skill",
+})
 
 # Commands that REQUIRE manual confirmation (match = show prompt).
 #
@@ -128,10 +137,11 @@ def main():
                 print(json.dumps(make_allow_response()))
                 sys.exit(0)
 
-        # Everything else: auto-approve
-        # (Read, Write, Edit, MCP tools, Task, WebFetch, etc.)
-        log_decision(tool_name, "ALLOW", "Auto-approved (non-bash)")
-        print(json.dumps(make_allow_response()))
+        if tool_name in AUTO_APPROVED_TOOLS:
+            log_decision(tool_name, "ALLOW", "Auto-approved (known native tool)")
+            print(json.dumps(make_allow_response()))
+        else:
+            log_decision(tool_name, "ASK", "Unknown tool - use runtime permission flow")
         sys.exit(0)
 
     except Exception:

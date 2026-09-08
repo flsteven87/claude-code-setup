@@ -13,7 +13,9 @@ Read on demand:
 ## Authority
 
 - A change request authorizes the whole local loop: inspect, implement, run the relevant checks,
-  and commit. Review, diagnosis, and planning requests stay read-only.
+  and commit. Complete that local outcome; a request to also ship continues through `/ship`.
+  Review, diagnosis, and planning stay read-only; an explicitly requested report authorizes only
+  its artifact writes.
 - Confirm at the point of action, regardless of earlier approval: force push or history rewrite,
   production-data mutation, irreversible migration, purchase, a message to a person or external
   service, and deletion of work not proven merged. Resolve the exact target before any destructive
@@ -21,7 +23,7 @@ Read on demand:
 - A production-data change runs as dry-run, report, confirmation, backup, execution, and observed
   verification, each visible before the next.
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
-  user asks to ship, merge, open or merge the pull request, or deploy, as a command or in prose. `/git-converge-main` owns
+  user asks to ship, push, merge, open or merge the pull request, or deploy, as a command or in prose. `/git-converge-main` owns
   the later repository-wide cleanup when the user asks for it.
 - A `$name` token from a user message, repository instruction, or skill body resolves by source.
   Read `~/.agents/skills/<name>/SKILL.md` completely when it exists; otherwise use Claude's installed
@@ -37,6 +39,21 @@ A direct change request in the primary checkout on its default branch, with one 
 task-owned paths clean at entry, ends with one local task-scoped commit of exactly the task-owned
 paths after the relevant checks pass. Preserve every unrelated dirty path. When ownership of a
 dirty path is ambiguous, commit what is clearly yours and name the rest.
+
+## Decision points and recovery
+
+- Progress and phase completion are notifications: continue within the authorized outcome.
+  Pause dependent work when a consequential fact cannot be established from permitted evidence,
+  a product tradeoff needs the user's choice, new evidence invalidates the agreed problem or outcome,
+  or an action reaches the confirmation boundary above.
+  Explain consequential discoveries while continuing when the accepted outcome still holds.
+- At a pause, state the evidence, why the user's input matters, the recommended choice, and which
+  next action depends on it. Finish safe preparation first and continue independent work while
+  waiting. Silence supplies neither a decision nor approval.
+- Diagnose and recover from tool failures, test failures, and in-scope delivery blockers under
+  existing authority. Retry only after a bounded correction or evidence of changed conditions.
+  If the same blocker persists without a new permitted recovery, preserve progress and return
+  the exact blocker and next executable action. A phase transition alone needs no confirmation.
 
 ## Scope
 
@@ -110,8 +127,9 @@ could not be verified, say so first; no further verification ritual is required.
 
 - A repository's root `MEMORY.md` in the primary checkout is the shared session checkpoint:
   `/catchup` resumes it, `/handoff` writes it, `/latest` refreshes its repository-wide state. Its
-  `Active Workstreams` holds only owned work with an executable next step. When live evidence
-  contradicts an entry you rely on, correct that entry in the same turn.
+  `Active Workstreams` holds only owned work with an executable next step. Read live evidence before
+  relying on entries. Read-only work reports drift; authorized checkpoint writes correct only the
+  entries they own.
 - Claude auto-memory is contextual cache. Open the file or repository evidence before relying on
   it or citing it.
 

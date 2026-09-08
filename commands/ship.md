@@ -1,5 +1,5 @@
 ---
-description: Deliver a reviewed local commit through the shared ship contract when the user asks to ship, deliver, or merge.
+description: Deliver a completed local commit through the shared ship contract when the user asks to ship, push, open or merge a PR, or deploy.
 ---
 
 # /ship
@@ -17,7 +17,7 @@ Claude command mappings:
 - `$setup-matt-pocock-skills` → `/mattpocock-skills:setup-matt-pocock-skills`
 
 `$implement` and `$setup-matt-pocock-skills` are user-only: name the standalone command for the
-human to invoke. `/ship` runs on the user's request to ship, deliver, or merge, whether typed as a
+human to invoke. `/ship` runs on the user's request to ship, push, open or merge a PR, or deploy, whether typed as a
 command or written in prose; it never starts without that request.
 
 This adapter contains no delivery policy. When it conflicts with the canonical contract, the

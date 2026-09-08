@@ -72,7 +72,6 @@ class AgentContractTests(unittest.TestCase):
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
         for document in (codex, claude):
-            self.assertIn("### Main Fast Lane", document)
             self.assertIn("primary checkout", document)
             self.assertIn("task-owned paths clean", document)
             self.assertIn("one local task-scoped commit", document)

@@ -43,22 +43,20 @@ already do it from the repo, the filesystem, or its system prompt, it gets cut �
 │                    │   │                        │   │                        │
 │ deny → ask → allow │   │ pre_bash_guard.py      │   │ auto_approve_safe.py   │
 │ first match wins.  │   │   (Bash) force push →  │   │   (PermissionRequest)  │
-│                    │   │   user, rm → trash,    │   │   auto-OKs everything  │
-│ A deny is a hard   │   │   pip → uv             │   │   except uncommitted-  │
-│ fail — unreachable │   │ pre_write_guard.py     │   │   work destroyers      │
+│                    │   │   user, rm → trash,    │   │   known native tools  │
+│ A deny is a hard   │   │   pip → uv             │   │   + screened Bash     │
+│ fail — unreachable │   │ pre_write_guard.py     │   │   unknown → runtime   │
 │ even for hooks, so │   │   (file writes) .env,  │   │                        │
-│ nothing downstream │   │   *.pem, *.key, .ssh   │   │ verify_gate.py (Stop)  │
-│ can grant it back. │   │ workflow_route_guard   │   │   blocks "done" while  │
-│                    │   │   .py (Workflow)       │   │   end state unobserved │
+│ nothing downstream │   │   *.pem, *.key, .ssh   │   │ Completion evidence   │
+│ can grant it back. │   │ workflow_route_guard   │   │   owned by the task   │
+│                    │   │   .py (Workflow)       │   │   and delivery gates  │
 └────────────────────┘   └────────────────────────┘   └────────────────────────┘
 ```
 
-The gates prefer **redirecting to a reversible alternative over stopping to ask**: a
-deletion is denied with "use `trash`" rather than prompted, because a recoverable
-deletion needs no confirmation. What survives as a prompt is the short list that
-destroys work nothing can restore.
-
-Anything that slips one layer is still caught by the next.
+The gates suggest reversible alternatives where available. The task still needs authority for
+the action, including the profile's confirmation for deleting work not proven merged. Unknown
+tools defer to runtime permission handling. Bash screening covers common command forms; it does
+not interpret arbitrary programs or replace the task's authorization boundary.
 
 ## What's tracked
 
@@ -141,9 +139,8 @@ rules and hooks loaded.
 | `pre_write_guard.py` | PreToolUse (Write/Edit/MultiEdit) | **Hard-denies** writes to `.env*`, `*.pem`, `*.key`, SSH/AWS/GnuPG private material, `secrets.*`, and `credentials` / `credentials.<ext>` (note: not suffixed variants like `credentials_backup`) |
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
-| `auto_approve_safe.py` | PermissionRequest | Auto-approves everything except commands that destroy **uncommitted** work (`git reset --hard`, `git restore`, `git checkout --`) or reconfigure the machine (`sudo`, `csrutil`, `spctl`, `shutdown`, `reboot`, device writes). Logs to `logs/auto_approve.log` |
+| `auto_approve_safe.py` | PermissionRequest | Preserves known native-tool automation and the existing Bash checks for uncommitted-work loss or machine reconfiguration. Unknown tools and MCP requests defer to runtime permissions; configured provider grants still apply. Logs to `logs/auto_approve.log` |
 | `pre_compact.py` | PreCompact | Snapshots the transcript before context compaction (keeps last 20) |
-| `verify_gate.py` | Stop | Blocks completion while a separately armed delivery verification still has unobserved end-state checks |
 | `codex-reconcile-phantoms.sh` | UserPromptSubmit | Reconciles stale/orphaned Codex jobs before each turn |
 | *(inline)* | Stop | macOS notification, then truncates `hook-approvals.log` / `logs/auto_approve.log` to the last 2000 lines once either passes 5 MB |
 
