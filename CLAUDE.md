@@ -20,6 +20,13 @@ Read on demand:
   production-data mutation, irreversible migration, purchase, a message to a person or external
   service, and deletion of work not proven merged. Resolve the exact target before any destructive
   action. Within an authorized change request and its scope, reversible actions proceed.
+- An explicit milestone dispatch authorizes the assigned delivery through non-force push, PR
+  creation/updates, required checks, policy-compliant merge, exact owning-ticket updates, verified
+  task cleanup, and primary-checkout synchronization, unless the user names a narrower endpoint.
+  Carry that user authorization into receiver and finalizer assignments; continue through `/ship`
+  without asking again. Task-scoped PR and owning-ticket writes are delivery operations covered by
+  this authorization, exempt from the message reconfirmation above. Separate messages to people or
+  other services and all other action-time confirmations retain their existing boundaries.
 - A production-data change runs as dry-run, report, confirmation, backup, execution, and observed
   verification, each visible before the next.
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
