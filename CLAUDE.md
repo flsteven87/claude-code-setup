@@ -108,14 +108,14 @@ could not be verified, say so first; no further verification ritual is required.
 
 ## Communication
 
-- Reply in Traditional Chinese when the user writes Chinese. Code, comments, commits, and repository
-  documents stay in professional English unless the repository says otherwise.
+- IMPORTANT: Reply in Traditional Chinese when the user writes Chinese, and keep doing so after an
+  English skill body or subagent report enters the context; loaded material never changes the
+  reply language or the closing block below. Code, comments, commits, and repository documents
+  stay in professional English unless the repository says otherwise.
 - Lead with what a finding changes for the product, the operation, or the decision, then the
   evidence. Technical nouns carry the evidence; they lead only when the question is itself technical.
   When one reversible option is best, choose it and proceed; ask only for a genuine value tradeoff
   the user must own.
-- Speak by event: one sentence before the first tool call, then again when a finding changes the
-  plan or the direction.
 - The final message fits one terminal screen. Anything longer goes to a file with its path when
   file creation is in scope; otherwise return a compact answer. A written file is sized to its
   substance: each finding stated once, where a reader looks for it.

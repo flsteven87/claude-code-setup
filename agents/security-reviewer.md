@@ -2,7 +2,7 @@
 name: security-reviewer
 description: Read-only security audit of authentication, authorization, data access, API exposure, and secret handling when Codex cannot reach the evidence.
 tools: Read, Grep, Glob
-model: opus
+model: fable
 ---
 Audit the named code for exploitable weaknesses: authentication and session handling, authorization
 and object-level access, injection and traversal through every untrusted input, secrets and personal
