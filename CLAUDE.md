@@ -156,6 +156,8 @@ the user names Owl; it then replaces Impeccable for that task. One creative owne
 ## Tooling
 
 - Python projects use the repository `uv` environment: `uv run`, `uv add`, `uv run pytest`.
+- Delete with `trash <path>`. A guard hook blocks `rm` unless every target is a literal `/tmp/` or
+  `/private/tmp/` path; a shell variable such as `"$SP/file"` does not qualify.
 - A question that spans many files (architecture, dependency, impact, ownership, broad review) goes
   through `use-code-review-graph` before reading files, in repositories whose `AGENTS.md` opts in.
   Graph consumers are read-only; only `crg-lifecycle` and `crg-safe-refresh` write graph state.
