@@ -98,8 +98,9 @@ could not be verified, say so first; no further verification ritual is required.
   authentication, authorization, production data, a migration, or the release path; elsewhere,
   review in this session and name the residual risk. It is the implementer for substantial bounded
   work when it can reach the evidence. Keep reviewer and implementer separate. A review runs once
-  against a frozen candidate head, one fix pass lands its findings, and residual findings escalate
-  instead of opening another round. Read the Codex reference first.
+  against a frozen candidate head and one fix pass lands its findings; a later cosmetic or copy
+  correction lands as an ordinary commit, and a later material finding escalates instead of
+  opening another round. Read the Codex reference first.
 - Supervise by event: keep working and act on the completion notification. Probe a job only after
   ten minutes without any signal.
 - `/fugu-advisor` and `/fugu-worker` spend a paid provider call and stay user-invoked.
