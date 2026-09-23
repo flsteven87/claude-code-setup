@@ -140,7 +140,6 @@ rules and hooks loaded.
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
 | `auto_approve_safe.py` | PermissionRequest | Preserves known native-tool automation and the existing Bash checks for uncommitted-work loss or machine reconfiguration. Unknown tools and MCP requests defer to runtime permissions; configured provider grants still apply. Logs to `logs/auto_approve.log` |
-| `pre_compact.py` | PreCompact | Snapshots the transcript before context compaction (keeps last 20) |
 | `codex-reconcile-phantoms.sh` | UserPromptSubmit | Reconciles stale/orphaned Codex jobs before each turn |
 | *(inline)* | Stop | macOS notification, then truncates `hook-approvals.log` / `logs/auto_approve.log` to the last 2000 lines once either passes 5 MB |
 
