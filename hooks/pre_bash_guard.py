@@ -22,9 +22,10 @@ operation reversible without costing an interruption:
   rm / rmdir   -> `trash`, so a wrong deletion is recoverable from the Trash
   pip / pip3   -> `uv`, per CLAUDE.md's Python tooling rule
 
-`git rm` is exempt: it stages a removal the repo can restore. `orca worktree rm`
-is exempt: it is Orca's registry-managed worktree removal, not a raw filesystem
-delete. Deletions under the temp directories are exempt too — they are ephemeral
+A rule fires only where the guarded word runs as a command, so an argument
+never trips it: `git rm` stages a removal the repo can restore, `orca worktree rm`
+and `docker rm` remove managed objects, and `grep rm file` only mentions it.
+Deletions under the temp directories are exempt too — they are ephemeral
 by definition, and routing them to the Trash would just fill it with build noise.
 
 Wire-up: register at PreToolUse with matcher "Bash".
@@ -40,8 +41,18 @@ import shlex
 import sys
 
 # Shell operators that start a fresh command; a guarded call hidden after any of
-# them must still be caught (`npm test && git push --force`).
-SEGMENT_SPLIT = re.compile(r"&&|\|\||[;\n|]")
+# them must still be caught (`npm test && git push --force`). They are split out
+# by the tokenizer, not a regex, so an operator character inside quotes
+# (`grep -E "a|rm|b"`) stays part of its argument.
+OPERATOR_CHARS = ";&|\n"
+
+# Words that run the next word as a command: `sudo rm x`, `xargs -0 rm`.
+COMMAND_PREFIXES = {"sudo", "command", "exec", "env", "nice", "time", "nohup", "xargs"}
+# `find … -exec rm {} \;` runs rm too.
+EXEC_FLAGS = {"-exec", "-execdir", "-ok", "-okdir"}
+
+ASSIGNMENT = re.compile(r"^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
+VAR_REF = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))")
 
 # A heredoc body is data being written, not commands being run — a script that
 # merely mentions `rm` in a string must not be mistaken for one that deletes.
@@ -101,7 +112,7 @@ def _force_reason(args: list[str]) -> str | None:
     return None
 
 
-def _check_force_push(tokens: list[str]) -> str | None:
+def _check_force_push(tokens: list[str], _env: dict[str, str]) -> str | None:
     """Return a deny reason if this segment force-pushes without a lease."""
     i = 0
     while i < len(tokens) and "=" in tokens[i] and not tokens[i].startswith("-"):
@@ -136,32 +147,49 @@ def _check_force_push(tokens: list[str]) -> str | None:
     )
 
 
-def _check_delete(tokens: list[str]) -> str | None:
+def _runs_as_command(tokens: list[str], idx: int) -> bool:
+    """True when tokens[idx] is executed rather than passed as an argument.
+
+    `rm x`, `FOO=1 rm x`, `sudo rm x`, `xargs -0 rm`, and `find … -exec rm` run rm;
+    `docker rm c`, `git rm f`, and `grep rm file` pass it as an argument.
+    """
+    j = idx - 1
+    while j >= 0 and tokens[j].startswith("-") and tokens[j] not in EXEC_FLAGS:
+        j -= 1  # skip a prefix command's own flags: `xargs -0 -r rm`
+    if j < 0:
+        return True
+    prev = tokens[j]
+    if prev in COMMAND_PREFIXES or prev in EXEC_FLAGS:
+        return True
+    if j == idx - 1 and all(ASSIGNMENT.match(t) for t in tokens[:idx]):
+        return True  # only VAR=value assignments precede it
+    return False
+
+
+def _check_delete(tokens: list[str], env: dict[str, str]) -> str | None:
     """Return a deny reason if this segment deletes outside the temp directories.
 
-    Matches on token equality rather than a substring search, so `find … -exec rm`
-    and `xargs rm` are caught while `echo 'run rm manually'` is not — shlex keeps
-    a quoted phrase as one token, which never equals "rm".
+    Matches on token equality rather than a substring search, and only where the
+    token runs as a command, so `find … -exec rm` and `xargs rm` are caught while
+    `docker rm`, `grep rm`, and `echo 'run rm manually'` are not. Targets written
+    through a variable assigned earlier in the same command (`SP=/tmp/x; rm "$SP/a"`)
+    are resolved before the temp-directory check.
     """
     for idx, tok in enumerate(tokens):
-        if tok not in DELETE_COMMANDS and tok not in DELETE_FLAGS:
+        if tok in DELETE_COMMANDS:
+            if not _runs_as_command(tokens, idx):
+                continue
+        elif tok not in DELETE_FLAGS:
             continue
-        if idx and tokens[idx - 1] == "git":
-            continue  # `git rm` stages a removal the repo can restore
-        if (
-            tok == "rm"
-            and idx >= 2
-            and tokens[idx - 1] == "worktree"
-            and tokens[idx - 2].split("/")[-1] in {"orca", "orca-dev", "orca-ide"}
-        ):
-            continue  # `orca worktree rm` deregisters a managed worktree; Orca refuses dirty ones without --force
 
         # For `find … -delete` the paths precede the flag; for rm they follow it.
         scope = tokens[:idx] if tok in DELETE_FLAGS else tokens[idx + 1 :]
         targets = [
-            t for t in scope if not t.startswith("-") and t not in ("find", "{}", ";")
+            _expand(t, env)
+            for t in scope
+            if not t.startswith("-") and t not in ("find", "{}", ";", "+")
         ]
-        if targets and all(t.startswith(TEMP_PREFIXES) for t in targets):
+        if targets and all(t and t.startswith(TEMP_PREFIXES) for t in targets):
             continue  # ephemeral by definition; trashing these is just noise
 
         return (
@@ -174,13 +202,15 @@ def _check_delete(tokens: list[str]) -> str | None:
     return None
 
 
-def _check_pip(tokens: list[str]) -> str | None:
+def _check_pip(tokens: list[str], _env: dict[str, str]) -> str | None:
     """Return a deny reason if this segment invokes pip directly."""
     for idx, tok in enumerate(tokens):
         if tok.split("/")[-1] not in PIP_COMMANDS:
             continue
         if idx and tokens[idx - 1] in {"uv", "uvx"}:
             continue  # `uv pip …` is the sanctioned escape hatch
+        if not _runs_as_command(tokens, idx):
+            continue  # `grep pip requirements.txt` only mentions it
         return (
             f"`{tok}` is not this project's Python tooling. Use `uv add <pkg>` to add a "
             "dependency, `uv run <cmd>` to run one, or `uv pip …` if you genuinely need the "
@@ -190,6 +220,36 @@ def _check_pip(tokens: list[str]) -> str | None:
 
 
 CHECKS = (_check_force_push, _check_delete, _check_pip)
+
+
+def _expand(token: str, env: dict[str, str]) -> str | None:
+    """Substitute variables assigned earlier in the command; None if any is unknown."""
+    unknown = False
+
+    def repl(match: re.Match[str]) -> str:
+        nonlocal unknown
+        name = match.group(1) or match.group(2)
+        if name not in env:
+            unknown = True
+            return ""
+        return env[name]
+
+    expanded = VAR_REF.sub(repl, token)
+    return None if unknown else expanded
+
+
+def _segments(command: str) -> list[list[str]]:
+    """Split a command line into simple commands, respecting quotes."""
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=OPERATOR_CHARS)
+    lexer.whitespace = " \t\r"
+    lexer.whitespace_split = True
+    segments: list[list[str]] = [[]]
+    for token in lexer:
+        if token and set(token) <= set(OPERATOR_CHARS):
+            segments.append([])
+        else:
+            segments[-1].append(token)
+    return [s for s in segments if s]
 
 
 def main() -> int:
@@ -207,19 +267,26 @@ def main() -> int:
 
     command = HEREDOC_BODY.sub("<<HEREDOC", command)
 
-    for segment in SEGMENT_SPLIT.split(command):
-        try:
-            tokens = shlex.split(segment)
-        except ValueError:
-            # Unbalanced quote, or a dangling escape left behind by the split —
-            # `find … -exec rm {} \;` becomes a segment ending in a lone backslash.
-            # Skipping on a tokenizer error fails open, so fall back to a coarse
-            # split and let the checks run against that instead.
-            tokens = segment.replace("\\", " ").split()
+    try:
+        segments = _segments(command)
+    except ValueError:
+        # Unbalanced quote. Skipping on a tokenizer error fails open, so fall back
+        # to a coarse split and let the checks run against that instead.
+        segments = [
+            part.replace("\\", " ").split() for part in re.split(r"[;&|\n]+", command)
+        ]
+
+    env: dict[str, str] = {}
+    for tokens in segments:
         if not tokens:
             continue
+        for tok in tokens[1:] if tokens[0] == "export" else tokens:
+            match = ASSIGNMENT.match(tok)
+            if not match:
+                break  # assignments only count before the command word
+            env[match.group(1)] = _expand(match.group(2), env) or ""
         for check in CHECKS:
-            reason = check(tokens)
+            reason = check(tokens, env)
             if reason:
                 print(
                     json.dumps(

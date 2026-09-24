@@ -17,8 +17,9 @@ Read on demand:
   Review, diagnosis, and planning stay read-only; an explicitly requested report authorizes only
   its artifact writes.
 - Confirm at the point of action, regardless of earlier approval: production-data mutation,
-  irreversible migration, purchase, a message to a person or external service, and deletion of
-  work not proven merged. Resolve the exact target before any destructive action. Within an
+  irreversible migration, purchase, a message to a person or external service (a CI or staging
+  run whose workflow posts its own notification is not one), and deletion of work not proven
+  merged. Resolve the exact target before any destructive action. Within an
   authorized change request and its scope, reversible actions proceed.
 - An explicit milestone dispatch authorizes the assigned delivery through push, PR
   creation/updates, required checks, policy-compliant merge, exact owning-ticket updates, verified
@@ -54,6 +55,10 @@ dirty path is ambiguous, commit what is clearly yours and name the rest.
   a product tradeoff needs the user's choice, new evidence invalidates the agreed problem or outcome,
   or an action reaches the confirmation boundary above.
   Explain consequential discoveries while continuing when the accepted outcome still holds.
+- Decide instead of asking. When you would mark one option as recommended and it is reversible,
+  take it and report the choice in one line. Ask only when the options are irreversible or turn on
+  a product value only the user owns and the evidence cannot settle it. After a catchup that
+  surfaces several workstreams, continue the most recently active one and say which.
 - At a pause, state the evidence, why the user's input matters, the recommended choice, and which
   next action depends on it. Finish safe preparation first and continue independent work while
   waiting. Silence supplies neither a decision nor approval.
@@ -87,7 +92,9 @@ dirty path is ambiguous, commit what is clearly yours and name the rest.
 
 A deploy, migration, scheduled job, feature toggle, or UI change is done when its end state is
 observed. A UI change is observed by rendering it and looking at the real viewport. When something
-could not be verified, say so first; no further verification ritual is required.
+could not be verified, say so first; no further verification ritual is required. Optional rigor
+(extra backups, heavy or E2E lanes, new tickets, extra review rounds) runs when the repository's
+instructions or the user ask for it; otherwise use the lightest check that proves the outcome.
 
 ## Delegation
 
@@ -115,8 +122,6 @@ could not be verified, say so first; no further verification ritual is required.
   stay in professional English unless the repository says otherwise.
 - Lead with what a finding changes for the product, the operation, or the decision, then the
   evidence. Technical nouns carry the evidence; they lead only when the question is itself technical.
-  When one reversible option is best, choose it and proceed; ask only for a genuine value tradeoff
-  the user must own.
 - The final message fits one terminal screen. Anything longer goes to a file with its path when
   file creation is in scope; otherwise return a compact answer. A written file is sized to its
   substance: each finding stated once, where a reader looks for it.
@@ -158,6 +163,8 @@ the user names Owl; it then replaces Impeccable for that task. One creative owne
 ## Tooling
 
 - Python projects use the repository `uv` environment: `uv run`, `uv add`, `uv run pytest`.
+- Wait on CI, deploys, and logs with `run_in_background` or Monitor; the harness blocks foreground
+  `sleep`, so `gh pr checks --watch` also runs in the background.
 - Delete with `trash <path>`. A guard hook blocks `rm` unless every target is a literal `/tmp/` or
   `/private/tmp/` path; a shell variable such as `"$SP/file"` does not qualify.
 - A question that spans many files (architecture, dependency, impact, ownership, broad review) goes
