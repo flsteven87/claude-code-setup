@@ -76,18 +76,6 @@ class AgentContractTests(unittest.TestCase):
             self.assertIn("task-owned paths clean", document)
             self.assertIn("one local task-scoped commit", document)
 
-    def test_explicit_fugu_invocation_policy_matches_each_runtime(self) -> None:
-        for name in ("fugu-advisor", "fugu-worker"):
-            canonical_policy = (
-                AGENTS / f"skills/{name}/agents/openai.yaml"
-            ).read_text(encoding="utf-8")
-            self.assertIn("allow_implicit_invocation: false", canonical_policy)
-
-            skill = (CLAUDE_HOME / f"skills/{name}/SKILL.md").read_text(
-                encoding="utf-8"
-            )
-            self.assertIn("disable-model-invocation: true", skill)
-
     def test_claude_mirrors_the_crg_change_batch_contract(self) -> None:
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 

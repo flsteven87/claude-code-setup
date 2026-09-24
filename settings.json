@@ -93,7 +93,11 @@
     "docs-cleanup": "off",
     "humanizer": "off",
     "vercel-composition-patterns": "off",
-    "writing-guidelines": "off"
+    "writing-guidelines": "off",
+    "asd-ste100": "off",
+    "stop-slop": "off",
+    "vercel-react-best-practices": "off",
+    "web-design-guidelines": "off"
   },
   "deniedMcpServers": [
     {
@@ -290,6 +294,7 @@
     }
   },
   "effortLevel": "high",
+  "autoCompactWindow": 400000,
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoDreamEnabled": true,

@@ -113,7 +113,6 @@ instructions or the user ask for it; otherwise use the lightest check that prove
   opening another round. Read the Codex reference first.
 - Supervise by event: keep working and act on the completion notification. Probe a job only after
   ten minutes without any signal.
-- `/fugu-advisor` and `/fugu-worker` spend a paid provider call and stay user-invoked.
 - The `research` skill's background agent is for reading that forms an independent, sizeable
   track; otherwise research directly in this session.
 
