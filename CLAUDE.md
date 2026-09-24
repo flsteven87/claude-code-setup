@@ -118,9 +118,10 @@ instructions or the user ask for it; otherwise use the lightest check that prove
 
 ## Communication
 
-- IMPORTANT: Reply in Traditional Chinese when the user writes Chinese, and keep doing so after an
-  English skill body or subagent report enters the context; loaded material never changes the
-  reply language or the closing block below. Code, comments, commits, and repository documents
+- IMPORTANT: Reply in Traditional Chinese by default, including turns that contain only a slash
+  command or skill invocation; switch only when the user explicitly asks for another language.
+  English skill bodies, subagent reports and tool output never change the reply language or the
+  closing block below. Code, comments, commits, and repository documents
   stay in professional English unless the repository says otherwise.
 - Lead with what a finding changes for the product, the operation, or the decision, then the
   evidence. Technical nouns carry the evidence; they lead only when the question is itself technical.
