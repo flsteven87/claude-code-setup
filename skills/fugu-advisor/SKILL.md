@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Fugu Advisor
 
-Buy one independent read without surrendering the Claude's decision. Keep the consultant blind to the
+Buy one independent read without surrendering Claude's decision. Keep the consultant blind to
 Claude's conclusion except for fragments needed to define the target. The typed `/fugu-advisor`
 invocation is the authorization; record the tentative conclusion, strongest evidence, and important
 unknowns before dispatch.

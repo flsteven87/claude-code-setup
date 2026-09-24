@@ -29,6 +29,6 @@ as the user's decision, and wait only for that answer.
 
 ## Done
 
-A confirmation of at most five zh-tw sentences: the plan document, the queued step, the single most
+A short confirmation in the user's language: the plan document, the queued step, the single most
 load-bearing invariant it preserves, any tension the user accepted, and the standalone command that
 runs the step. Every claim in it was read from a file this turn.
