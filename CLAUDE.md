@@ -48,6 +48,9 @@ task-owned paths clean at entry, ends with one local task-scoped commit of exact
 paths after the relevant checks pass. Preserve every unrelated dirty path. When ownership of a
 dirty path is ambiguous, commit what is clearly yours and name the rest.
 
+A change request on a task branch ends with the branch pushed and its pull request opened or
+updated; merge and deployment still run through `/ship`.
+
 ## Decision points and recovery
 
 - Progress and phase completion are notifications: continue within the authorized outcome.
