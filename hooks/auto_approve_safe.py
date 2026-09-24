@@ -8,7 +8,7 @@ PermissionRequest hook: approve known local tools and screened Bash commands.
 Where this sits (settings.json deny > ask > allow, then this hook):
   - settings.json settles 26% of Bash calls outright (measured 2026-07-27); the
     rest arrive here.
-  - pre_bash_guard.py runs earlier, at PreToolUse, and denies deletions, force
+  - pre_bash_guard.py runs earlier, at PreToolUse, and denies deletions, blind force
     pushes, and pip with a recoverable alternative. Those never reach this hook,
     so they never cost a prompt.
   - Interactive and unknown tools, plus the Bash patterns below, emit no JSON, which
@@ -59,7 +59,7 @@ AUTO_APPROVED_TOOLS = frozenset({
 # `git rebase` (reflog), `kill -9` / `killall` / `pkill` (restart it), `chmod 777`,
 # `launchctl` / `defaults write` / `networksetup` (change it back). Deletions and
 # force pushes moved to pre_bash_guard.py, which denies them with a recoverable
-# alternative (`trash`, hand-to-user) instead of costing a prompt.
+# alternative (`trash`, `--force-with-lease`) instead of costing a prompt.
 #
 # What is left destroys UNCOMMITTED work — the one thing the reflog cannot
 # restore — or reconfigures the machine itself.

@@ -38,8 +38,8 @@ class.
 
 ## RISK verdict
 
-Codex adversarial review and `/ship` read this block, so its shape is fixed: one line
-`RISK: LOW|MEDIUM|HIGH`, one line of rationale, and at most one gap that would escalate it.
+End with a risk verdict the user can act on: one line `RISK: LOW|MEDIUM|HIGH`, one line of
+rationale, and at most one gap that would escalate it.
 `LOW` needs no load-bearing contradiction, no absent dimension, at most five files, and no schema,
 auth, dependency, or public API change. `MEDIUM` has a scope-shifting contradiction or one
 recoverable absent dimension. `HIGH` has a load-bearing contradiction, an architecture assumption

@@ -28,7 +28,7 @@ DENY_REASON = (
     "Named workflows are un-routed — every agent() inherits the session model "
     "and bills at top tier. Use the routed copy via scriptPath (for example, "
     "~/.claude/workflows/deep-research.js), or resolve the built-in script, "
-    "pin per-stage models per the routing table in CLAUDE.md Part 3 (haiku "
+    "pin per-stage models (haiku "
     "scan/fetch, sonnet review/verify, session model for synthesis only), then "
     "launch via scriptPath."
 )

@@ -25,7 +25,7 @@ permission rules, or skill invocation settings. The environment is the source of
   invocation only for skills owned under `~/.agents` or `~/.claude`; a marketplace checkout is
   overwritten on plugin update.
 - Diagnose first. Change settings or hooks only when the user requested that configuration change.
-- Preserve fail-closed protection for secrets, force pushes, irreversible work loss, and machine
+- Preserve fail-closed protection for secrets, blind force pushes, irreversible work loss, and machine
   reconfiguration. Pair a denial with a safe alternative when one exists.
 
 Diagnosis is complete when the observed decision is tied to the current setting or source line and

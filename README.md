@@ -42,8 +42,8 @@ already do it from the repo, the filesystem, or its system prompt, it gets cut �
 │ settings.json      │   │ PreToolUse gates       │   │ Exit gates             │
 │                    │   │                        │   │                        │
 │ deny → ask → allow │   │ pre_bash_guard.py      │   │ auto_approve_safe.py   │
-│ first match wins.  │   │   (Bash) force push →  │   │   (PermissionRequest)  │
-│                    │   │   user, rm → trash,    │   │   known native tools  │
+│ first match wins.  │   │   (Bash) blind force → │   │   (PermissionRequest)  │
+│                    │   │   lease, rm → trash,   │   │   known native tools  │
 │ A deny is a hard   │   │   pip → uv             │   │   + screened Bash     │
 │ fail — unreachable │   │ pre_write_guard.py     │   │   unknown → runtime   │
 │ even for hooks, so │   │   (file writes) .env,  │   │                        │
@@ -135,7 +135,7 @@ rules and hooks loaded.
 
 | Hook | Event | Purpose |
 |---|---|---|
-| `pre_bash_guard.py` | PreToolUse (Bash) | The single Bash gate; tokenizes argv rather than glob-matching. **Denies with an alternative** so none of these costs a prompt: force pushes → hand to the user (`--force`, `--force-with-lease`, `--mirror`, `-uf` bundles, `+refspec`, `git -c … push --force`); `rm` / `rmdir` / `find -delete` / `xargs rm` → `trash`; `pip` → `uv`. Exempt: `git rm`, paths under `/tmp`, and heredoc bodies (a script that merely *mentions* `rm` is data, not a deletion) |
+| `pre_bash_guard.py` | PreToolUse (Bash) | The single Bash gate; tokenizes argv rather than glob-matching. **Denies with an alternative** so none of these costs a prompt: blind force pushes → `--force-with-lease` (`--force`, `--mirror`, `-uf` bundles, `+refspec`, `git -c … push --force`; the lease forms pass, and each repository's branch protection decides which branches accept them); `rm` / `rmdir` / `find -delete` / `xargs rm` → `trash`; `pip` → `uv`. Exempt: `git rm`, paths under `/tmp`, and heredoc bodies (a script that merely *mentions* `rm` is data, not a deletion) |
 | `pre_write_guard.py` | PreToolUse (Write/Edit/MultiEdit) | **Hard-denies** writes to `.env*`, `*.pem`, `*.key`, SSH/AWS/GnuPG private material, `secrets.*`, and `credentials` / `credentials.<ext>` (note: not suffixed variants like `credentials_backup`) |
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
@@ -147,15 +147,12 @@ rules and hooks loaded.
 
 `settings.json` is the source of truth for the current default mode and permission lists. The stable layering is:
 
-- **deny** — `rm -rf /`, `mkfs`, `dd if=`, `git reset --hard`, `git commit --amend`, and
-  every force-push spelling a glob can express: `--force` / `-f` in any position, bare `git push -f`,
-  `--force-with-lease`, `--mirror`, short-option bundles, and `+refspec`.
+- **deny** — `rm -rf /`, `mkfs`, `dd if=`, `git reset --hard`, and `git commit --amend`.
 
-  > Permission rules are globs with no awareness of Git's argument grammar, so they cannot express
-  > "a force flag anywhere in this push" on their own — `git -c … push --force` slips past any
-  > pattern short enough to be safe. That is what `pre_bash_guard.py` is for: the deny list is the
-  > strongest layer (a hard fail no hook can grant back), and the hook parses argv to close what
-  > globs structurally cannot reach. Neither layer is load-bearing alone.
+  > Force pushes have no deny rules. Globs cannot tell `--force` from `--force-with-lease`, so any
+  > pattern that blocks the blind form also blocks the safe one. `pre_bash_guard.py` parses argv
+  > instead: it lets the lease forms through and redirects blind forms to them. Which branches
+  > accept a force push at all is each repository's branch protection.
 - **ask** — `git checkout -- *`, `git checkout .`, `git restore *`. Deliberately short: these three
   discard **uncommitted** changes, the one thing the reflog cannot bring back. Everything reversible
   was removed from the prompt path in 2026-07 (`git rebase`, `kill -9`, `chmod`, `launchctl`, …), and

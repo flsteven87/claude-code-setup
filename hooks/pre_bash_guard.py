@@ -9,13 +9,16 @@ Replaces dippy (retired 2026-07-27). dippy matched command prefixes, so its rule
 drifted out of sync with settings.json, it asked on harmless things it had no rule
 for (`git clone`, `git log`, scratchpad redirects), and it returned `allow` for
 every force-push spelling. Everything it enforced lives here now, in one rule
-language the repo owns.
+language the repo owns, and settings.json carries no parallel push rules.
 
 Three rules, each denying with an alternative rather than stopping to ask. The
 user trusts the agent, so a guardrail earns its place only when it can keep an
 operation reversible without costing an interruption:
 
-  force push   -> hand to the user (CLAUDE.md: Claude never runs one)
+  force push   -> `--force-with-lease`, which refuses to overwrite commits the
+                  pusher has not seen; the lease form itself runs unprompted, and
+                  each repository's branch protection decides which branches
+                  accept any force push at all
   rm / rmdir   -> `trash`, so a wrong deletion is recoverable from the Trash
   pip / pip3   -> `uv`, per CLAUDE.md's Python tooling rule
 
@@ -63,7 +66,9 @@ GLOBAL_OPTS_FLAG = {
     "--no-replace-objects",
 }
 
-FORCE_LONG_OPTS = {"--force", "--force-with-lease", "--mirror"}
+# Force spellings that overwrite the remote without checking what is there.
+# `--force-with-lease` and `--force-if-includes` are the safe forms and pass.
+FORCE_LONG_OPTS = {"--force", "--mirror"}
 
 DELETE_COMMANDS = {"rm", "rmdir"}
 # `find -delete` deletes without ever naming rm, so it needs its own token.
@@ -74,11 +79,13 @@ PIP_COMMANDS = {"pip", "pip3"}
 
 
 def _force_reason(args: list[str]) -> str | None:
-    """Return why these `git push` arguments force, or None if they don't."""
+    """Return why these `git push` arguments force blindly, or None if they don't."""
     for arg in args:
         if arg == "--":
             break
 
+        if arg == "--mirror":
+            return "`--mirror` (overwrites every remote ref; push explicit refspecs instead)"
         if arg.split("=", 1)[0] in FORCE_LONG_OPTS:
             return f"`{arg}`"
 
@@ -95,7 +102,7 @@ def _force_reason(args: list[str]) -> str | None:
 
 
 def _check_force_push(tokens: list[str]) -> str | None:
-    """Return a deny reason if this segment is a forced git push."""
+    """Return a deny reason if this segment force-pushes without a lease."""
     i = 0
     while i < len(tokens) and "=" in tokens[i] and not tokens[i].startswith("-"):
         i += 1  # drop leading VAR=value environment assignments
@@ -122,9 +129,10 @@ def _check_force_push(tokens: list[str]) -> str | None:
     if not reason:
         return None
     return (
-        f"Force push blocked: {reason}. Per CLAUDE.md, a push needing any force flag is "
-        "handed to the user — Claude does not run it, and --force-with-lease is not an "
-        "exception. Ask the user to run it."
+        f"Blind force push blocked: {reason}. Re-run it with `--force-with-lease` "
+        "(and no `+` refspec), which proceeds without asking but refuses to overwrite "
+        "remote commits you have not fetched. The repository's branch protection decides "
+        "whether the target branch accepts it."
     )
 
 

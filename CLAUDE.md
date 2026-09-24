@@ -16,11 +16,11 @@ Read on demand:
   and commit. Complete that local outcome; a request to also ship continues through `/ship`.
   Review, diagnosis, and planning stay read-only; an explicitly requested report authorizes only
   its artifact writes.
-- Confirm at the point of action, regardless of earlier approval: force push or history rewrite,
-  production-data mutation, irreversible migration, purchase, a message to a person or external
-  service, and deletion of work not proven merged. Resolve the exact target before any destructive
-  action. Within an authorized change request and its scope, reversible actions proceed.
-- An explicit milestone dispatch authorizes the assigned delivery through non-force push, PR
+- Confirm at the point of action, regardless of earlier approval: production-data mutation,
+  irreversible migration, purchase, a message to a person or external service, and deletion of
+  work not proven merged. Resolve the exact target before any destructive action. Within an
+  authorized change request and its scope, reversible actions proceed.
+- An explicit milestone dispatch authorizes the assigned delivery through push, PR
   creation/updates, required checks, policy-compliant merge, exact owning-ticket updates, verified
   task cleanup, and primary-checkout synchronization, unless the user names a narrower endpoint.
   Carry that user authorization into receiver and finalizer assignments; continue through `/ship`
@@ -143,7 +143,9 @@ could not be verified, say so first; no further verification ritual is required.
 
 ## Git
 
-- Shared history is append-only. Hand branch-protection bypasses and admin merges to the user.
+- The default branch is append-only; each repository's branch protection enforces it and may add
+  stricter rules. On a task branch, rebase and `git push --force-with-lease` proceed without asking.
+  Hand branch-protection bypasses and admin merges to the user.
 - Use `/Users/po-chi/.local/bin/gh` for GitHub so the account follows the repository origin.
 - Add `Co-Authored-By: Claude <session model> <noreply@anthropic.com>` only when Claude materially
   co-authored the commit.
