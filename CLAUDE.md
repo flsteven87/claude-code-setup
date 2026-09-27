@@ -160,8 +160,13 @@ instructions or the user ask for it; otherwise use the lightest check that prove
 
 ## Frontend
 
-`impeccable` owns frontend design and UI/UX refinement by default. Switch to `owl-design` only when
-the user names Owl; it then replaces Impeccable for that task. One creative owner per task.
+`impeccable` owns every change to what a user sees or how they move through a flow, not only
+requests phrased as design: feature work, fixes, and milestone receivers load it before their first
+UI edit. Process skills such as `tdd`, `implement`, `prototype`, and `design-benchmark` keep their
+workflow while Impeccable supplies the design decisions, craft floor, and finish; its shipped finish
+reviewer and documenter are part of that contract, not extra delegation. Audit and guideline skills
+supply evidence only. Switch to `owl-design` only when the user names Owl; it then replaces
+Impeccable for that task. One creative owner per task.
 
 ## Tooling
 

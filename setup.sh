@@ -161,6 +161,34 @@ for name in "${native_shared_skill_names[@]}"; do
   fi
 done
 
+# Impeccable owns frontend design for every agent. Its Claude copy, subagents, and detector hook
+# come from the upstream release bundle, so setup verifies them but does not restore them.
+impeccable_dir="$HOME/.claude/skills/impeccable"
+impeccable_version() { sed -n 's/^ *version: //p' "$1/SKILL.md" 2>/dev/null | head -1; }
+if [ -x "$impeccable_dir/scripts/impeccable" ] \
+  && [ -n "$(impeccable_version "$impeccable_dir")" ] \
+  && [ "$(impeccable_version "$impeccable_dir")" = "$(impeccable_version "$HOME/.agents/skills/impeccable")" ]; then
+  pass "Impeccable Claude copy matches ~/.agents ($(impeccable_version "$impeccable_dir"))"
+else
+  fail "Impeccable Claude copy is missing or differs from ~/.agents/skills/impeccable — reinstall the same release for Claude"
+  errors=$((errors + 1))
+fi
+for name in asset-producer documenter finish-reviewer manual-edit-applier; do
+  if [ -f "$HOME/.claude/agents/impeccable-$name.md" ]; then
+    pass "Impeccable subagent present: agents/impeccable-$name.md"
+  else
+    fail "Impeccable subagent missing: agents/impeccable-$name.md — copy .claude/agents/ from the installed release"
+    errors=$((errors + 1))
+  fi
+done
+# A hook in ~/.claude/settings.local.json only applies when $HOME is the project.
+if grep -q 'skills/impeccable/scripts/impeccable' ~/.claude/settings.json; then
+  pass "Impeccable detector hook registered at user scope"
+else
+  fail "Impeccable detector hook absent from ~/.claude/settings.json — UI edits in other projects go unchecked"
+  errors=$((errors + 1))
+fi
+
 if [ -f ~/.claude/hooks/auto-format.sh ] && [ -x ~/.claude/hooks/auto-format.sh ]; then
   pass "Hooks are in place"
 else

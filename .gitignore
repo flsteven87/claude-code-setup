@@ -114,6 +114,7 @@ skills/mattpocock-skills/skills/
 # Shared skill links and vendored skills managed under ~/.agents (not tracked here).
 skills/humanizer
 skills/impeccable/
+agents/impeccable-*.md
 skills/latest
 skills/owl-design
 skills/setup-hygiene
