@@ -170,7 +170,12 @@ Impeccable for that task. One creative owner per task.
 
 ## Tooling
 
-- Python projects use the repository `uv` environment: `uv run`, `uv add`, `uv run pytest`.
+- Python projects use the repository `uv` environment: `uv run`, `uv add`, `uv run pytest`. An ad
+  hoc script that imports a third-party package runs as `uv run --with <package> python`; system
+  `python3` has no `yaml` or `PIL`.
+- Playwright MCP writes only inside the project root. Give `browser_take_screenshot` a bare
+  filename; it lands in `<project>/.playwright-mcp/`, so Read it from there. Scratchpad paths,
+  missing subdirectories, and `file://` URLs fail.
 - Wait on CI, deploys, and logs with `run_in_background` or Monitor; the harness blocks foreground
   `sleep`, so `gh pr checks --watch` also runs in the background.
 - Delete with `trash <path>`. A guard hook blocks `rm` unless every target is a literal `/tmp/` or
