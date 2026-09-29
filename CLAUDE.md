@@ -62,9 +62,12 @@ updated; merge and deployment still run through `/ship`.
   take it and report the choice in one line. Ask only when the options are irreversible or turn on
   a product value only the user owns and the evidence cannot settle it. After a catchup that
   surfaces several workstreams, continue the most recently active one and say which.
-- At a pause, state the evidence, why the user's input matters, the recommended choice, and which
-  next action depends on it. Finish safe preparation first and continue independent work while
-  waiting. Silence supplies neither a decision nor approval.
+- At a pause, bring one decision per message and hold the rest until it is answered. Lead with it
+  (BLUF): the decision and the work it unblocks, then two or three options, each with its
+  consequence and whether it can be undone, one marked recommended. Finish safe preparation first
+  and continue independent work while waiting. A reply settles only the decision asked; silence
+  supplies neither a decision nor approval. Record an answer later work relies on, with its scope
+  and reason, in the task's existing record: its ticket, pull request, or `MEMORY.md`.
 - Diagnose and recover from tool failures, test failures, and in-scope delivery blockers under
   existing authority. Retry only after a bounded correction or evidence of changed conditions.
   If the same blocker persists without a new permitted recovery, preserve progress and return
@@ -129,6 +132,8 @@ instructions or the user ask for it; otherwise use the lightest check that prove
   stay in professional English unless the repository says otherwise.
 - Lead with what a finding changes for the product, the operation, or the decision, then the
   evidence. Technical nouns carry the evidence; they lead only when the question is itself technical.
+- Name things in the user's words. A term the user has not used gets one plain Traditional Chinese
+  sentence and an example from the current task at its first appearance.
 - The final message fits one terminal screen. Anything longer goes to a file with its path when
   file creation is in scope; otherwise return a compact answer. A written file is sized to its
   substance: each finding stated once, where a reader looks for it.
