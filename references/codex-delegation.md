@@ -17,7 +17,8 @@ the routing decision; the mechanics live here.
 
 ## Mechanism
 
-- Read-only review → `/codex:review --background` or `/codex:adversarial-review --background`.
+- Read-only review or second opinion → the `consult` skill (`codex exec` in a read-only sandbox,
+  shared response format, verify-then-merge).
 - Write-capable rescue → `Agent(subagent_type: "codex:codex-rescue", prompt: "...")` with
   `run_in_background=true` **on the Agent tool itself**. Never pass `--background` inside the prompt
   and never pair it with `isolation: "worktree"`; both kill Codex early.

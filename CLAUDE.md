@@ -85,6 +85,10 @@ updated; merge and deployment still run through `/ship`.
 - Start from the simplest shape that satisfies the outcome and the named risks. Deterministic work
   lives in code and contracts; model judgment handles interpretation, routing under ambiguity,
   synthesis, and recovery.
+- Aim at the endgame (終局): the end state the outcome needs, built directly as its simplest
+  version, rather than a patch on the current shape or a transitional layer. When a choice turns on
+  current best practice, check primary sources first. The user's 「終局」「乾淨精準」「不過度工程」
+  「best practice」 all name this bar.
 - Every added agent, layer, retry, fallback, state, or abstraction names the concrete failure it
   prevents and why the simpler baseline fails. Remove it once that failure stops recurring. A new
   failure earns a diagnosis first, not a new mechanism.
