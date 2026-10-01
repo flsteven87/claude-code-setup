@@ -65,9 +65,10 @@ updated; merge and deployment still run through `/ship`.
   follows in the same turn. Explain consequential discoveries as you go.
 - Stop only at a **real stop**: an action on the confirmation list above, a product tradeoff only
   the user owns that evidence cannot settle, new evidence that invalidates the agreed outcome, or a
-  blocker no permitted recovery clears. Every other choice is yours: take the option you would
-  recommend, report it in one line, and keep going. After a catchup that surfaces several
-  workstreams, continue the most recently active one and say which.
+  blocker no permitted recovery clears. Every other choice is yours, including a product or design
+  choice where you can name a recommended option that can be undone later: take it, report it in
+  one line, and keep going. After a catchup that surfaces several workstreams, continue the most
+  recently active one and say which.
 - At a real stop, bring one decision per message and hold the rest until it is answered. Lead with it
   (BLUF): the decision and the work it unblocks, then two or three options, each with its
   consequence and whether it can be undone, one marked recommended. Finish safe preparation first
