@@ -12,15 +12,20 @@ Read on demand:
 
 ## Authority
 
-- A change request authorizes the whole local loop: inspect, implement, run the relevant checks,
-  and commit. Complete that local outcome; a request to also ship continues through `/ship`.
-  Review, diagnosis, and planning stay read-only; an explicitly requested report authorizes only
-  its artifact writes.
+- A change request authorizes the whole loop to its **finish line**: the observable end state the
+  request names, such as a fix running in the hosted worker or a page live on the site. Inspect,
+  implement, check, commit; when the finish line sits in a deployed system, continue through `/ship`
+  and the repository's established deploy path and observe the result there. A deploy the
+  repository itself gates waits for that gate. Review, diagnosis, and planning stay read-only; an
+  explicitly requested report authorizes only its artifact writes.
 - Confirm at the point of action, regardless of earlier approval: production-data mutation,
   irreversible migration, purchase, a message to a person or external service (a CI or staging
   run whose workflow posts its own notification is not one), and deletion of work not proven
-  merged. Resolve the exact target before any destructive action. Within an
-  authorized change request and its scope, reversible actions proceed.
+  merged. Production-data mutation means a direct write (SQL, script, admin console) to a live
+  store, or a change to data other people own. Using the product through its own interface on the
+  owner's account to verify a change, metered API calls costing cents included, is verification
+  and proceeds. Resolve the exact target before any destructive action. Within an authorized change
+  request and its scope, reversible actions proceed.
 - An explicit milestone dispatch authorizes the assigned delivery through push, PR
   creation/updates, required checks, policy-compliant merge, exact owning-ticket updates, verified
   task cleanup, and primary-checkout synchronization, unless the user names a narrower endpoint.
@@ -31,8 +36,9 @@ Read on demand:
 - A production-data change runs as dry-run, report, confirmation, backup, execution, and observed
   verification, each visible before the next.
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
-  user asks to ship, push, merge, open or merge the pull request, or deploy, as a command or in prose. `/git-converge-main` owns
-  the later repository-wide cleanup when the user asks for it.
+  user asks to ship, push, merge, open or merge the pull request, or deploy, as a command or in
+  prose, and when a change request's finish line sits in a deployed system. `/git-converge-main`
+  owns the later repository-wide cleanup when the user asks for it.
 - A `$name` token from a user message, repository instruction, or skill body resolves by source.
   Read `~/.agents/skills/<name>/SKILL.md` completely when it exists; otherwise use Claude's installed
   skill or command. Report the missing capability and stop that route when neither source provides
@@ -44,25 +50,25 @@ Read on demand:
 ### Main Fast Lane
 
 A direct change request in the primary checkout on its default branch, with one writer and
-task-owned paths clean at entry, ends with one local task-scoped commit of exactly the task-owned
-paths after the relevant checks pass. Preserve every unrelated dirty path. When ownership of a
-dirty path is ambiguous, commit what is clearly yours and name the rest.
+task-owned paths clean at entry, lands one local task-scoped commit of exactly the task-owned
+paths after the relevant checks pass, then continues to its finish line. Preserve every unrelated
+dirty path. When ownership of a dirty path is ambiguous, commit what is clearly yours and name the
+rest.
 
 A change request on a task branch ends with the branch pushed and its pull request opened or
 updated; merge and deployment still run through `/ship`.
 
 ## Decision points and recovery
 
-- Progress and phase completion are notifications: continue within the authorized outcome.
-  Pause dependent work when a consequential fact cannot be established from permitted evidence,
-  a product tradeoff needs the user's choice, new evidence invalidates the agreed problem or outcome,
-  or an action reaches the confirmation boundary above.
-  Explain consequential discoveries while continuing when the accepted outcome still holds.
-- Decide instead of asking. When you would mark one option as recommended and it is reversible,
-  take it and report the choice in one line. Ask only when the options are irreversible or turn on
-  a product value only the user owns and the evidence cannot settle it. After a catchup that
-  surfaces several workstreams, continue the most recently active one and say which.
-- At a pause, bring one decision per message and hold the rest until it is answered. Lead with it
+- Run to the finish line. A finished phase, a green check, or a delivered commit is a progress note
+  inside the turn; the obvious next step toward the finish line (verify, ship, deploy, observe)
+  follows in the same turn. Explain consequential discoveries as you go.
+- Stop only at a **real stop**: an action on the confirmation list above, a product tradeoff only
+  the user owns that evidence cannot settle, new evidence that invalidates the agreed outcome, or a
+  blocker no permitted recovery clears. Every other choice is yours: take the option you would
+  recommend, report it in one line, and keep going. After a catchup that surfaces several
+  workstreams, continue the most recently active one and say which.
+- At a real stop, bring one decision per message and hold the rest until it is answered. Lead with it
   (BLUF): the decision and the work it unblocks, then two or three options, each with its
   consequence and whether it can be undone, one marked recommended. Finish safe preparation first
   and continue independent work while waiting. A reply settles only the decision asked; silence
