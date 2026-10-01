@@ -12,11 +12,12 @@ Read on demand:
 
 ## Authority
 
-- A change request authorizes the whole loop to its **finish line**: the observable end state the
-  request names, such as a fix running in the hosted worker or a page live on the site. Inspect,
-  implement, check, commit; when the finish line sits in a deployed system, continue through `/ship`
-  and the repository's established deploy path and observe the result there. A deploy the
-  repository itself gates waits for that gate. Review, diagnosis, and planning stay read-only; an
+- A change request authorizes the whole loop to its **finish line**, which by default is the change
+  live: inspect, implement, check, commit, deliver through `/ship` and the repository's established
+  path (push, merge, and deployment where the repository deploys), observe the result there, and
+  checkpoint the workstream through `/handoff`. A narrower endpoint the user names, such as commit
+  only or 「先不要上」, replaces the default; a repository without a delivery remote finishes at the
+  commit. A deploy the repository itself gates waits for that gate. Review, diagnosis, and planning stay read-only; an
   explicitly requested report authorizes only its artifact writes.
 - Confirm at the point of action, regardless of earlier approval: production-data mutation,
   irreversible migration, purchase, a message to a person or external service (a CI or staging
@@ -37,7 +38,7 @@ Read on demand:
   verification, each visible before the next.
 - `/ship` owns push, pull request, merge, deployment, and exact task-branch cleanup. Run it when the
   user asks to ship, push, merge, open or merge the pull request, or deploy, as a command or in
-  prose, and when a change request's finish line sits in a deployed system. `/git-converge-main`
+  prose, and at every change request's finish line. `/git-converge-main`
   owns the later repository-wide cleanup when the user asks for it.
 - A `$name` token from a user message, repository instruction, or skill body resolves by source.
   Read `~/.agents/skills/<name>/SKILL.md` completely when it exists; otherwise use Claude's installed
@@ -55,8 +56,8 @@ paths after the relevant checks pass, then continues to its finish line. Preserv
 dirty path. When ownership of a dirty path is ambiguous, commit what is clearly yours and name the
 rest.
 
-A change request on a task branch ends with the branch pushed and its pull request opened or
-updated; merge and deployment still run through `/ship`.
+A change request on a task branch reaches the same finish line through `/ship`: pull request,
+merge, and deployment.
 
 ## Decision points and recovery
 
