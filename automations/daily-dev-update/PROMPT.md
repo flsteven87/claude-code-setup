@@ -4,13 +4,23 @@
 
 ## 完成契約
 
-- **Projectless**：從 `$HOME` 執行，只讀寫本文件允許的使用者層級工具、設定與兩份 maintenance memory。產品 repo、目前 Orca workspace、專案依賴、lockfile、`.mcp.json`、graph 與未提交工作保持不變。
+- **Projectless**：從 `$HOME` 執行，只修改本文件允許的使用者層級工具、設定與兩份 maintenance memory；允許唯讀檢查專案的 runtime 設定與引用。產品 repo、目前 Orca workspace、專案依賴、lockfile、`.mcp.json`、graph 與未提交工作保持不變。
 - **無人值守**：執行、驗證、寫回 memory、輸出報告。需要互動、sudo、OAuth、破壞性移除、來源信任或重大遷移時記為跳過；不等待輸入。
 - **單次嘗試**：確定性錯誤不重試；暫時性網路錯誤最多重試一次。單項失敗後繼續獨立項目。
 - **保密**：只報 credential 是否存在及來源類型，不輸出 token、cookie、authorization header、秘密環境變數或個資。
 - **排程邊界**：Orca 已管理本工作。保持所有 Codex、ChatGPT 與 Orca 排程不變，不輸出 automation directive。
 
 ## 每日流程
+
+### Project runtime ownership and retirement
+
+Before updating or retiring a runtime, read the registered Orca repository paths and their Git worktree paths through the public CLI. Inspect runtime version files, package engine/package-manager constraints, CI pins, launch scripts and virtual-environment interpreter links read-only. Include mise tracked configs, user launch agents, wrappers and uv tool environments. Record unavailable paths or failed queries as unknown coverage; an incomplete reference scan prevents removal.
+
+Treat each project version file and its package-manager constraints as the owner of that project's runtime. Keep project files unchanged. Report a project-owned version gap with the exact owning path and required project validation; it is a separate repository change, not permission to rewrite pins in this job. Resolve executable symlinks before counting installations: aliases and wrappers are entry points, while independently managed copies may both be required. An older pin still needed by another project is held with that project's path as evidence.
+
+After successful updates, retire only exact obsolete user-runtime installations with a verified retained replacement under the same manager. Require a manager dry-run where supported, a complete reference scan, no active process/open executable using the old installation, no unique global packages, and no unresolved rollback or reproduction requirement. Inspect Python virtual-environment base-interpreter links as well as version selectors. Use the manager's exact-version uninstall route; a broad prune suggestion alone is insufficient because explicit command-line selectors and other projects' CI pins may be outside its index. If any condition is uncertain, retain the installation and record the missing evidence. Preserve project environments, system runtimes and App-managed releases.
+
+Verify removed paths are absent, retained project-selected executables still resolve and run, and project configuration hashes are unchanged. Report retired installations and measured reclaimed bytes separately from update outcomes, reconciling inventory removals with the prior checkpoint. Each retained duplicate needs its owner/reference or one concrete condition for reassessment.
 
 ### 1. 建立基線
 
