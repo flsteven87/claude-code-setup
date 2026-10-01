@@ -76,16 +76,9 @@
       "Bash(sudo rm -rf *)",
       "Bash(mkfs *)",
       "Bash(dd if=*)",
-      "Bash(git reset --hard *)",
       "Bash(git commit --amend)",
       "Bash(git commit --amend *)",
-      "Bash(git rebase -i *)",
-      "Bash(git clean -f*)"
-    ],
-    "ask": [
-      "Bash(git checkout -- *)",
-      "Bash(git checkout .)",
-      "Bash(git restore *)"
+      "Bash(git rebase -i *)"
     ],
     "defaultMode": "auto"
   },

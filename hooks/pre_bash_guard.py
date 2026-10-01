@@ -11,7 +11,7 @@ for (`git clone`, `git log`, scratchpad redirects), and it returned `allow` for
 every force-push spelling. Everything it enforced lives here now, in one rule
 language the repo owns, and settings.json carries no parallel push rules.
 
-Three rules, each denying with an alternative rather than stopping to ask. The
+Four rules, each denying with an alternative rather than stopping to ask. The
 user trusts the agent, so a guardrail earns its place only when it can keep an
 operation reversible without costing an interruption:
 
@@ -19,6 +19,11 @@ operation reversible without costing an interruption:
                   pusher has not seen; the lease form itself runs unprompted, and
                   each repository's branch protection decides which branches
                   accept any force push at all
+  git discard  -> `git stash push` / `git reset --keep` / `trash`, which clear the
+                  same changes but keep them recoverable. Covers `git checkout --`,
+                  `git restore` of the worktree, `git reset --hard`, `git clean -f`.
+                  These were settings.json `ask` rules until 2026-10-01; an ask rule
+                  prompts even under bypass mode, and was the main Bash interruption
   rm / rmdir   -> `trash`, so a wrong deletion is recoverable from the Trash
   pip / pip3   -> `uv`, per CLAUDE.md's Python tooling rule
 
@@ -112,8 +117,8 @@ def _force_reason(args: list[str]) -> str | None:
     return None
 
 
-def _check_force_push(tokens: list[str], _env: dict[str, str]) -> str | None:
-    """Return a deny reason if this segment force-pushes without a lease."""
+def _git_subcommand(tokens: list[str]) -> tuple[str, list[str]] | None:
+    """Return (subcommand, its arguments) if this segment runs git, else None."""
     i = 0
     while i < len(tokens) and "=" in tokens[i] and not tokens[i].startswith("-"):
         i += 1  # drop leading VAR=value environment assignments
@@ -133,10 +138,26 @@ def _check_force_push(tokens: list[str], _env: dict[str, str]) -> str | None:
         else:
             break
 
-    if i >= len(tokens) or tokens[i] != "push":
+    if i >= len(tokens):
+        return None
+    return tokens[i], tokens[i + 1 :]
+
+
+def _has_flag(args: list[str], long: str, short: str) -> bool:
+    """True if `long` or `short` appears, including inside a bundle like `-fd`."""
+    return any(
+        a == long or (len(a) > 1 and a[0] == "-" and a[1] != "-" and short in a[1:])
+        for a in args
+    )
+
+
+def _check_force_push(tokens: list[str], _env: dict[str, str]) -> str | None:
+    """Return a deny reason if this segment force-pushes without a lease."""
+    git = _git_subcommand(tokens)
+    if not git or git[0] != "push":
         return None
 
-    reason = _force_reason(tokens[i + 1 :])
+    reason = _force_reason(git[1])
     if not reason:
         return None
     return (
@@ -144,6 +165,44 @@ def _check_force_push(tokens: list[str], _env: dict[str, str]) -> str | None:
         "(and no `+` refspec), which proceeds without asking but refuses to overwrite "
         "remote commits you have not fetched. The repository's branch protection decides "
         "whether the target branch accepts it."
+    )
+
+
+def _discard_reason(sub: str, args: list[str]) -> str | None:
+    """Return which git spelling discards uncommitted work, or None."""
+    if sub == "checkout" and ("--" in args or "." in args):
+        return "`git checkout` onto paths overwrites their uncommitted changes"
+    if sub == "restore":
+        unstage_only = _has_flag(args, "--staged", "S") and not _has_flag(
+            args, "--worktree", "W"
+        )
+        if not unstage_only:  # `git restore --staged` only unstages; that is safe
+            return "`git restore` of the worktree overwrites uncommitted changes"
+    if sub == "reset" and "--hard" in args:
+        return "`git reset --hard` drops every uncommitted change"
+    if (
+        sub == "clean"
+        and _has_flag(args, "--force", "f")
+        and not _has_flag(args, "--dry-run", "n")
+    ):
+        return "`git clean -f` deletes untracked files outright"
+    return None
+
+
+def _check_discard(tokens: list[str], _env: dict[str, str]) -> str | None:
+    """Return a deny reason if this segment discards uncommitted work."""
+    git = _git_subcommand(tokens)
+    if not git:
+        return None
+    reason = _discard_reason(*git)
+    if not reason:
+        return None
+    return (
+        f"{reason}, which no layer can give back. Clear the changes recoverably instead, "
+        "then continue without asking: `git stash push -u -m '<why>' -- <paths>` for "
+        "tracked or untracked paths (kept in `git stash list`); `git reset --keep <ref>` "
+        "to move a branch, which refuses only when it would overwrite local changes; "
+        "`trash <path>` for untracked files. `git restore --staged` (unstage only) is fine."
     )
 
 
@@ -219,7 +278,7 @@ def _check_pip(tokens: list[str], _env: dict[str, str]) -> str | None:
     return None
 
 
-CHECKS = (_check_force_push, _check_delete, _check_pip)
+CHECKS = (_check_force_push, _check_discard, _check_delete, _check_pip)
 
 
 def _expand(token: str, env: dict[str, str]) -> str | None:

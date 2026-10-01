@@ -57,16 +57,13 @@ AUTO_APPROVED_TOOLS = frozenset({
 # The bar (2026-07-27): a prompt is worth an interruption only when the command
 # destroys something no layer can give back. Everything reversible was dropped —
 # `git rebase` (reflog), `kill -9` / `killall` / `pkill` (restart it), `chmod 777`,
-# `launchctl` / `defaults write` / `networksetup` (change it back). Deletions and
-# force pushes moved to pre_bash_guard.py, which denies them with a recoverable
-# alternative (`trash`, `--force-with-lease`) instead of costing a prompt.
+# `launchctl` / `defaults write` / `networksetup` (change it back). Deletions,
+# force pushes, and git discards of uncommitted work moved to pre_bash_guard.py,
+# which denies them with a recoverable alternative (`trash`, `--force-with-lease`,
+# `git stash push`) instead of costing a prompt.
 #
-# What is left destroys UNCOMMITTED work — the one thing the reflog cannot
-# restore — or reconfigures the machine itself.
+# What is left reconfigures the machine itself.
 DANGEROUS_BASH_PATTERNS = [
-    r"\bgit\s+reset\s+--hard\b",
-    r"\bgit\s+checkout\s+(--\s|\.(\s|$))",  # discard-changes forms (Scope Discipline)
-    r"\bgit\s+restore\b",
     r"\bsudo\b",  # NOPASSWD sudoers entries would otherwise run unprompted
     # Writing to a device node can destroy a disk; writing to the pseudo-devices
     # cannot. Without this exclusion `2>/dev/null` — the most common idiom in the
