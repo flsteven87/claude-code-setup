@@ -177,13 +177,11 @@ instructions or the user ask for it; otherwise use the lightest check that prove
 
 ## Frontend
 
-`impeccable` owns every change to what a user sees or how they move through a flow, not only
-requests phrased as design: feature work, fixes, and milestone receivers load it before their first
-UI edit. Process skills such as `tdd`, `implement`, `prototype`, and `design-benchmark` keep their
-workflow while Impeccable supplies the design decisions, craft floor, and finish; its shipped finish
-reviewer and documenter are part of that contract, not extra delegation. Audit and guideline skills
-supply evidence only. Switch to `owl-design` only when the user names Owl; it then replaces
-Impeccable for that task. One creative owner per task.
+UI work starts from a Refero competitor baseline and our theme/logo; Impeccable refines and
+verifies that baseline. This profile governs installed skill roles. Before UI design, research,
+or the first UI edit (including milestone receivers), read
+`/Users/po-chi/.agents/AGENTS.md` → `Frontend Skill Routing`. Explicit Owl selection replaces this
+route; preserve process workflows and the applicable finish-review/documentation requirements.
 
 ## Tooling
 

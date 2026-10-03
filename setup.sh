@@ -161,8 +161,9 @@ for name in "${native_shared_skill_names[@]}"; do
   fi
 done
 
-# Impeccable owns frontend design for every agent. Its Claude copy, subagents, and detector hook
-# come from the upstream release bundle, so setup verifies them but does not restore them.
+# Refero establishes the frontend baseline; Impeccable supplies refinement and quality checks.
+# Its Claude copy, subagents, and detector hook come from the upstream release bundle,
+# so setup verifies them but does not restore them.
 impeccable_dir="$HOME/.claude/skills/impeccable"
 impeccable_version() { sed -n 's/^ *version: //p' "$1/SKILL.md" 2>/dev/null | head -1; }
 if [ -x "$impeccable_dir/scripts/impeccable" ] \
