@@ -17,8 +17,9 @@ Read on demand:
   `openai/gpt-5.6-luna`, fallbacks included. When neither is available, stop that call and report
   the blocker.
 - **Subscription CLIs** (Claude Code on the Claude subscription, Codex on ChatGPT login) are the
-  normal route for implementation, consultation, and review, on the runtime-selected model. Their
-  launchers verify the route and record it in the receipt.
+  normal route for implementation, consultation, and review, on the runtime-selected model. Route
+  evidence comes from the `consult` receipt and from every Codex home pinning
+  `forced_login_method = "chatgpt"`.
 - This standing policy stays out of contracts and dispatch briefs, which carry task-specific
   invariants. Only an explicit owner revision changes this list.
 
