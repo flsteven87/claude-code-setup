@@ -10,6 +10,18 @@ Read on demand:
 - `~/.claude/references/harness.md` when a hook or permission blocks work, or before editing
   settings, hooks, or skill invocation.
 
+## API model allowlist
+
+- **Direct API** inference (billed per request through an API key, SDK, proxy, or API-key CLI, in
+  product runs, tests, evaluations, probes, and scripts) uses only `openai/gpt-6-luna` or
+  `openai/gpt-5.6-luna`, fallbacks included. When neither is available, stop that call and report
+  the blocker.
+- **Subscription CLIs** (Claude Code on the Claude subscription, Codex on ChatGPT login) are the
+  normal route for implementation, consultation, and review, on the runtime-selected model. Their
+  launchers verify the route and record it in the receipt.
+- This standing policy stays out of contracts and dispatch briefs, which carry task-specific
+  invariants. Only an explicit owner revision changes this list.
+
 ## Authority
 
 - A change request authorizes the whole loop to its **finish line**, which by default is the change
