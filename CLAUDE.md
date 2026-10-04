@@ -205,6 +205,7 @@ route; preserve process workflows and the applicable finish-review/documentation
   Pass an absolute scratchpad path to keep screenshots out of the repository, then Read that path.
 - Wait on CI, deploys, and logs with `run_in_background` or Monitor; the harness blocks foreground
   `sleep`, so `gh pr checks --watch` also runs in the background.
+- `git rev-parse --short` takes exactly one revision; resolve several with plain `git rev-parse`.
 - Delete with `trash <path>`. A guard hook blocks `rm` unless every target is a literal `/tmp/` or
   `/private/tmp/` path; a shell variable such as `"$SP/file"` does not qualify.
 - A question that spans many files (architecture, dependency, impact, ownership, broad review) goes
