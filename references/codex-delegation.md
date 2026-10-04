@@ -36,10 +36,11 @@ read-only job to run tests or `uv`: its sandbox denies all writes and the job th
 
 ## Observability
 
-Dispatch in the background and act on the completion notification. `status: running` is not
-evidence of progress; more than ten consecutive minutes without new output or another progress
-signal means the job is dead: cancel it, run `codex-hygiene` if needed, and report the failure
-without retrying automatically.
+Dispatch in the background and act on the completion notification. After ten minutes without a
+signal, inspect process liveness and one bounded progress read, at most once per ten minutes.
+Silence alone does not establish failure: buffered reviews and long checks can be alive without
+output. Cancel only after evidence of a dead process or a confirmed stall, then run `codex-hygiene`
+if needed and report the evidence. Retry only after a bounded correction or changed conditions.
 
 `codex-hygiene` exits 1 and changes nothing while any job is still alive, so cancel first. If a job
 is only stuck (status pinned to "running" after its process died, blocking new launches),
