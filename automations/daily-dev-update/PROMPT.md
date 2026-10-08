@@ -24,7 +24,7 @@ Verify removed paths are absent, retained project-selected executables still res
 
 ### 1. 建立基線
 
-1. 切換到 `$HOME`，以 `~/.claude/automations/daily-dev-update/memory.md` 為讀取來源；缺少時才 fallback 至 Codex mirror。只讀最近一次 daily checkpoint 與其後仍有效的 follow-up，已解決事項視為已關閉。
+1. 切換到 `$HOME`，執行 `python3 ~/.claude/scripts/read_maintenance_checkpoint.py`，只讀最近一次 daily checkpoint 與其後的 follow-up；已解決事項視為已關閉。Reader 只在 Claude memory 不存在時使用 Codex mirror；格式錯誤或讀取失敗必須回報，不能視為空盤點。歷史保留在原檔，舊 header 的排程與版本描述不代表現況。
 2. 對 Claude Code、Codex、Homebrew、Node/npm/Corepack/pnpm、Bun、gh、Mole、mise、uv tools、rustup/rustc/cargo 記錄實際 `command -v` 與版本。Node 工具鏈以解析到的 binary 為準，不只相信版本字串。
 3. 用有界的 DNS／HTTPS probe 檢查本次需要的官方 registry。probe 失敗時仍做本機 health/version 檢查，但跳過依賴該網路的更新，不進入反覆 reconnect。
 
@@ -61,6 +61,10 @@ Verify removed paths are absent, retained project-selected executables still res
 完成條件：每個 target 都只有一個終態；所有已更新工具通過最小 runtime check，且沒有專案依賴操作。
 
 ### 5. 驗證與寫回
+
+For Codex diagnostics, scope `CODEX_HOME` to the exact home being measured and use an empty temporary working directory outside `$HOME` and product repositories. A doctor launched from `$HOME` can load `~/.codex/config.toml` as project configuration when the active home is Orca-managed, producing an ignored `notify` warning. Distinguish this invocation collision from invalid user configuration; preserve notification and hook trust settings. Report each home separately and remove the disposable directory after diagnostics.
+
+For an npm update blocked by `EALLOWREMOTE` despite a registry-name/version request, inspect the exact stack and registry metadata first. The npm bundled-dependency path can misclassify the registry tarball. A permitted recovery is the official npm local-tarball installation route: download only the exact official registry artifact, verify its registry-provided integrity and Node engine constraints, dry-run the same global install, then install under the existing manager. Keep remote/script policy unchanged, verify global package names and the invoked npm version, and remove the downloaded artifact after success. Failed integrity or an unpermitted local-file policy remains blocked.
 
 1. 重跑所有已更新工具的版本／官方 health check。Homebrew 更新後檢查 `brew missing`；formula 更新執行相應 linkage 或直接 runtime check。避免任何會啟動 MCP server 的 health/list 指令。
 2. 對照基線，確認實際版本、binary path、global package 名稱集合與重要 enabled state；不以安裝命令 exit 0 取代驗證。
