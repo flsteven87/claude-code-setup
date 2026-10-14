@@ -30,7 +30,11 @@ Read on demand:
   path (push, merge, and deployment where the repository deploys), observe the result there, and
   checkpoint the workstream through `/handoff`. A narrower endpoint the user names, such as commit
   only or 「先不要上」, replaces the default; a repository without a delivery remote finishes at the
-  commit. A deploy the repository itself gates waits for that gate. Review, diagnosis, and planning stay read-only; an
+  commit. When a repository explicitly binds asynchronous staging to a durable automation owner,
+  ordinary development may finish after reviewed required CI, merge, verified custody through
+  `/ship`, ticket reconciliation, cleanup, synchronization, and checkpoint. Record staging as pending
+  until observed; explicit deploy or ship-live requests retain observed delivery. A deploy the
+  repository itself gates waits for that gate. Review, diagnosis, and planning stay read-only; an
   explicitly requested report authorizes only its artifact writes.
 - Confirm at the point of action, regardless of earlier approval: production-data mutation,
   irreversible migration, purchase, a message to a person or external service (a CI or staging
@@ -70,7 +74,7 @@ dirty path. When ownership of a dirty path is ambiguous, commit what is clearly 
 rest.
 
 A change request on a task branch reaches the same finish line through `/ship`: pull request,
-merge, and deployment.
+merge, and observed deployment or verified asynchronous staging custody as defined above.
 
 ## Decision points and recovery
 
