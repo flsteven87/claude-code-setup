@@ -23,8 +23,17 @@ claude plugin list 2>/dev/null | awk '/^  ❯ /{print $2}' | while read -r p; do
 done
 
 echo
-echo "▶ 5/7  Codex CLI"
-npm install -g @openai/codex@latest 2>&1 | tail -3
+echo "▶ 5/7  Codex CLI and marketplaces"
+# Codex is a standalone install owned by an Orca account home; its updater must
+# run under that home, and an npm install would add a second, shadowing copy.
+codex_link=$(readlink "$HOME/.local/bin/codex" 2>/dev/null || true)
+case "$codex_link" in
+  */packages/standalone/current/bin/codex)
+    CODEX_HOME="${codex_link%/packages/standalone/current/bin/codex}" "$HOME/.local/bin/codex" update 2>&1 | tail -3 ;;
+  *)
+    echo "  codex is not the standalone install; update it through its owner" ;;
+esac
+codex plugin marketplace upgrade 2>&1 | tail -1
 
 echo
 echo "▶ 6/7  Python tools (uv)"

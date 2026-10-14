@@ -246,7 +246,7 @@ review flows are delivered by `mattpocock-skills:*`.
 
 | Script | What it does |
 |---|---|
-| `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → Matt manifest → plugins → Codex CLI → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills |
+| `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → Matt manifest → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills: `skills update` overwrites local invocation gates such as `disable-model-invocation`, so run it by hand and re-check those gates |
 | `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
 | `bin/codex-reconcile-phantoms.sh` | The selective version, and the one wired as the `UserPromptSubmit` hook: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 
