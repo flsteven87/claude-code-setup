@@ -111,9 +111,39 @@ skills/writing-guidelines/
 # Generated from the Matt marketplace clone by reconcile_matt_manifest.py.
 skills/mattpocock-skills/skills/
 
+# Third-party skills copied in by the skills CLI (marketingskills, aso-skills,
+# slavingia/skills, stop-slop). Same redistribution reason as above.
+skills/app-launch/
+skills/app-marketing-context/
+skills/aso-audit/
+skills/community-marketing/
+skills/copy-editing/
+skills/creator-ugc-marketing/
+skills/customer-research/
+skills/find-community/
+skills/first-customers/
+skills/minimalist-review/
+skills/monetization-strategy/
+skills/mvp/
+skills/onboarding-optimization/
+skills/paywall-optimization/
+skills/retention-optimization/
+skills/stop-slop/
+skills/subscription-lifecycle/
+skills/validate-idea/
+
+# Account-synced skills, the skills CLI trash, and local feedback drafts.
+skills/synced/
+skills/.trash/
+feedback/
+
 # Shared skill links and vendored skills managed under ~/.agents (not tracked here).
+skills/ai-seo
+skills/design-benchmark
 skills/humanizer
-skills/impeccable/
+skills/impeccable
+skills/pricing
+skills/seo-audit
 agents/impeccable-*.md
 skills/latest
 skills/owl-design
