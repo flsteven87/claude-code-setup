@@ -5,6 +5,9 @@ and memory mechanics.
 
 Read on demand:
 
+- Before launching runtime resources or cleaning development artifacts, read
+  `/Users/po-chi/.agents/AGENTS.md` → `Resource Lifecycle`. It owns reuse, scoped teardown,
+  shared-resource retention, and verified cleanup before task completion.
 - `~/.claude/references/codex-delegation.md` before dispatching or supervising Codex, or before
   choosing worker models for a fan-out.
 - `~/.claude/references/harness.md` when a hook or permission blocks work, or before editing
