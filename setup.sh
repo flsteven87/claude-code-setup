@@ -126,6 +126,7 @@ shared_skill_targets=(
   "$HOME/.agents/skills/orca-cli/SKILL.md"
   "$HOME/.agents/skills/strategy-review/SKILL.md"
   "$HOME/.agents/skills/audit-pr-topics/SKILL.md"
+  "$HOME/.agents/skills/reverse-thinking/SKILL.md"
   "$HOME/.agents/skills/wayfinder/SKILL.md"
 )
 for target in "${shared_skill_targets[@]}"; do
@@ -140,6 +141,7 @@ done
 native_shared_skill_names=(
   "audit-pr-topics"
   "milestone-dispatch"
+  "reverse-thinking"
   "strategy-review"
   "topics"
 )

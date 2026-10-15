@@ -173,7 +173,7 @@ from the marketplace clone.
 | `handoff` | End-of-session continuity capture into `MEMORY.md` |
 | `rehydrate` | Forced deep re-read after `/compact` or a long pause, with an endgame best-practice check |
 | `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps |
-| `reverse-thinking` | Pre-build review of a plan / spec — distill the end state, back-derive preconditions, check the plan against them rather than against its own framing |
+| `reverse-thinking` | Work backwards from the end state: audit an existing plan against it with ranked kill-assumptions, or forge it with a press release and hard FAQs when no plan exists yet |
 | `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
 | `humanizer` | Strip signs of AI-generated writing from text |
 | `milestone-dispatch` | Reconcile one program and choose or hand off its next coherent implementation milestone |
@@ -195,7 +195,7 @@ completion criteria:
   overwrite a different active checkpoint.
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
   behavior and completion criteria; do not claim byte identity when runtime syntax differs.
-- `milestone-dispatch`, `topics`, `audit-pr-topics`, and `strategy-review` remain canonical under
+- `milestone-dispatch`, `topics`, `audit-pr-topics`, `reverse-thinking`, and `strategy-review` remain canonical under
   `~/.agents/skills/` and appear natively in Claude through ignored directory symlinks.
 
 `setup.sh` verifies required shared targets and safely creates missing native links without replacing
