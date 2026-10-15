@@ -1,52 +1,54 @@
 ---
 name: reverse-thinking
-description: "Audit a plan, spec, or roadmap against what the endgame requires rather than against its own framing. Use before building non-trivial pre-planned work or when the user asks whether a plan is best practice, 「逆向思考」, 「戰略檢視」; `--distill` sets the end-state north star for a topic with no plan yet."
-argument-hint: "[plan/spec path] [--distill]"
+description: "Work backwards from the endgame. Audits an existing plan, spec, or roadmap against what the end state requires; when no plan exists yet, forges the end state with a press release and hard FAQs before anything is built. Use for 逆向思考, 戰略檢視, working backwards or a PRFAQ, before building non-trivial planned work, when choosing what to build, or when the user asks whether a plan is best practice."
 ---
 
-# Reverse Thinking — 從終局倒推檢視計畫
+# Reverse Thinking — 從終局倒推
 
-A plan is anchored on tasks and milestones, so a clean plan can drift from the 終局 while its own
-narrative hides what the endgame needs. Reverse the order: distill the endgame, derive what must be
-true for it, check that against the codebase, and judge the plan by its distance from there.
+A plan is anchored on its tasks and an idea on its solution, so either can look sound while its
+own narrative hides what the endgame needs. Reverse the order: fix the endgame first, then judge
+everything by its distance from there.
 
-Reserve this for work whose shape is still negotiable: multi-milestone plans, hard-to-revert
-architecture decisions, milestone orders driven by ease rather than value, or a 現狀 nobody has
-re-checked in a while. A single-PR feature or a scoped linear task is past the point where this pays.
+## Find the target
 
-## Distill the endgame
+The user invokes this with no arguments. Take the target from context, in this order: the plan,
+spec, roadmap, or idea discussed most recently in this conversation; a file the user named; the
+project's record of current work (its `MEMORY.md` active workstream, plan or spec documents, the
+owning topic or ticket). Open with one line naming the target and the branch it puts you on, then
+continue; the user redirects if you picked wrong. Ask only when context names no target at all.
 
-Compress the whole vision into one sentence of real user experience, one diagram of the loop that
-must exist in production, and three to five invariants that must always hold. Failing to fit the
-sentence means the vision is not distilled yet. `--distill` stops here and hands the north star to
-`/mattpocock-skills:grill-me`.
+- **Audit** when a plan exists: ordered work toward a stated outcome, such as milestones, a spec,
+  a roadmap, or a queue of next actions. Read [references/audit.md](references/audit.md).
+- **Forge** when there is a problem, topic, or idea but no plan, or when an audited plan's vision
+  will not fit the endgame sentence. Read [references/forge.md](references/forge.md).
 
-## Check the plan against it
+## The endgame record
 
-Derive the preconditions the endgame needs and find each one's current state in the codebase, read
-from files this turn; the plan's description of the 現狀 is a claim, not evidence. A precondition
-the plan does not cover is a gap. A plan assumption the code contradicts is ranked by what it
-breaks: load-bearing (silent failure, dead tests, wasted work), scope-shifting, or cosmetic. Absent
-dimensions count as gaps too: vision clarity, architectural direction, validation signal in the
-first milestone, measurement, risk, rollback per milestone, and declarative rather than scattered
-scope gating.
+Both branches converge on the same record:
 
-Recommend by moving the plan, not rewriting it: keep what delivers the endgame, reorder to bring
-validation signal forward, insert a missing precondition as an explicit first milestone, reduce work
-that strengthens components the endgame deletes, and defer or delete work that repeats a known bug
-class.
+- **Sentence:** one sentence of real user experience: who, and what changes for them.
+- **Loop:** one diagram of the loop that must exist in production or in daily use.
+- **Invariants:** three to five, each observable, binary or thresholded, and true whichever path
+  reaches the end state.
 
-## RISK verdict
+A vision that will not fit the sentence is not distilled yet; that is a finding in itself.
 
-End with a risk verdict the user can act on: one line `RISK: LOW|MEDIUM|HIGH`, one line of
-rationale, and at most one gap that would escalate it.
-`LOW` needs no load-bearing contradiction, no absent dimension, at most five files, and no schema,
-auth, dependency, or public API change. `MEDIUM` has a scope-shifting contradiction or one
-recoverable absent dimension. `HIGH` has a load-bearing contradiction, an architecture assumption
-the code contradicts, or several absent dimensions.
+## Evidence
+
+A statement about the current state is evidence only when read this turn from its source: code,
+data, the project's documents, or a primary external source. A plan's or idea's description of
+the 現狀 is a claim to check. Every load-bearing finding cites the `file:line` or URL it was read
+from. Label the rest as inference or unknown, and give each unknown the cheapest way to find out.
+
+## Delivery
+
+This skill reviews and plans; it changes nothing in the project. The reply carries the endgame
+record, the verdict, and the directions. A full PRFAQ is long: write it to the session scratchpad
+(or `/tmp` when none exists) and give its absolute path. Adding the result to the project's own
+record (a topic document, spec, ADR, or ticket) is a follow-up direction the user chooses.
 
 ## Done
 
-The verdict block is present, every load-bearing contradiction cites a file and line read this
-turn, and the response ends with two or three concrete next-step directions for the user to choose;
-the direction is theirs.
+The branch's verdict is present, the endgame record is present, every load-bearing finding cites
+evidence read this turn, and the reply ends with two or three concrete next-step directions. The
+direction is the user's.
