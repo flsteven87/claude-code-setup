@@ -116,6 +116,8 @@ merge, and observed deployment or verified asynchronous staging custody as defin
 - Start from the simplest shape that satisfies the outcome and the named risks. Deterministic work
   lives in code and contracts; model judgment handles interpretation, routing under ambiguity,
   synthesis, and recovery.
+- `$agents-best-practices` owns the detailed agent-design method; read
+  `/Users/po-chi/.agents/AGENTS.md` → `Agent Design` before applying it.
 - Aim at the endgame (終局): the end state the outcome needs, built directly as its simplest
   version, rather than a patch on the current shape or a transitional layer. When a choice turns on
   current best practice, check primary sources first. The user's 「終局」「乾淨精準」「不過度工程」
