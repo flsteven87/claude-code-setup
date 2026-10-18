@@ -71,33 +71,11 @@ errors=0
 echo "  Run these inside Claude Code or via CLI:"
 echo ""
 echo "    claude plugin install codex@openai-codex"
-echo "    claude plugin install code-review@claude-plugins-official"
 echo "    claude plugin install typescript-lsp@claude-plugins-official"
 echo "    claude plugin install pyright-lsp@claude-plugins-official"
-echo "    claude plugin install ralph-loop@claude-plugins-official"
-echo "    claude plugin install andrej-karpathy-skills@karpathy-skills"
 echo ""
 warn "Plugin installation is interactive — Claude Code manages this itself"
 echo ""
-echo -e "${BOLD}mattpocock-skills is self-hosted, not installed:${RESET}"
-echo "  skills/mattpocock-skills/ carries its own manifest and a generated,"
-echo "  self-contained copy. Installing the plugin makes the skills-dir scan skip it."
-echo ""
-echo "    claude plugin marketplace add mattpocock/skills   # provides the upstream source"
-echo ""
-fail_hint="run: claude plugin marketplace add mattpocock/skills"
-if [ -d ~/.claude/plugins/marketplaces/mattpocock/skills ]; then
-  pass "mattpocock marketplace clone present"
-  if uv run python ~/.claude/scripts/reconcile_matt_manifest.py --check --runtime; then
-    pass "mattpocock source, self-contained runtime, and Claude inventory agree"
-  else
-    fail "mattpocock source or self-contained runtime is inconsistent"
-    errors=$((errors + 1))
-  fi
-else
-  fail "mattpocock marketplace clone missing — $fail_hint"
-  errors=$((errors + 1))
-fi
 
 # --- Verify ---
 echo ""
@@ -137,28 +115,35 @@ for target in "${shared_skill_targets[@]}"; do
   fi
 done
 
-native_shared_skill_names=(
-  "audit-pr-topics"
-  "milestone-dispatch"
-  "reverse-thinking"
-  "strategy-review"
-  "topics"
-)
-for name in "${native_shared_skill_names[@]}"; do
-  target_dir="$HOME/.agents/skills/$name"
-  link_path="$HOME/.claude/skills/$name"
-
-  # The source check above owns the error when the canonical skill is absent.
+# Every shared skill in ~/.agents/skills is linked for Claude, except the names listed (with
+# reasons) in ~/.agents/skills/.claude-skip.
+skip_file="$HOME/.agents/skills/.claude-skip"
+if [ -f "$skip_file" ]; then
+  claude_excluded_skills=" $(grep -v '^#' "$skip_file" | tr '\n' ' ') "
+else
+  fail "missing ${skip_file#"$HOME/"} — restore ~/.agents before linking skills"
+  errors=$((errors + 1))
+  claude_excluded_skills=" "
+fi
+for target_dir in "$HOME"/.agents/skills/*/; do
+  name=$(basename "$target_dir")
   [ -f "$target_dir/SKILL.md" ] || continue
-
+  case "$claude_excluded_skills" in *" $name "*) continue ;; esac
+  link_path="$HOME/.claude/skills/$name"
   if [ -L "$link_path" ] && [ "$link_path" -ef "$target_dir" ]; then
-    pass "native shared skill linked: skills/$name"
+    pass "shared skill linked: skills/$name"
   elif [ -e "$link_path" ] || [ -L "$link_path" ]; then
-    fail "native skill path conflicts: skills/$name — expected a link to ~/.agents/skills/$name"
+    fail "skill path conflicts: skills/$name — expected a link to ~/.agents/skills/$name"
     errors=$((errors + 1))
   else
     ln -s "../../.agents/skills/$name" "$link_path"
-    pass "native shared skill linked: skills/$name"
+    pass "shared skill linked: skills/$name"
+  fi
+done
+for link_path in "$HOME"/.claude/skills/*; do
+  if [ -L "$link_path" ] && [ ! -e "$link_path" ]; then
+    fail "dangling skill link: skills/$(basename "$link_path")"
+    errors=$((errors + 1))
   fi
 done
 

@@ -80,18 +80,10 @@
   },
   "model": "opus",
   "skillOverrides": {
-    "humanizer": "off",
-    "vercel-composition-patterns": "off",
-    "writing-guidelines": "off",
     "orchestration": "off",
-    "community-marketing": "off",
-    "copy-editing": "off",
     "audit-pr-topics": "off",
     "strategy-review": "off",
-    "asd-ste100": "off",
-    "stop-slop": "off",
-    "vercel-react-best-practices": "off",
-    "web-design-guidelines": "off"
+    "vercel-react-best-practices": "off"
   },
   "deniedMcpServers": [
     {
@@ -260,35 +252,12 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": false,
-    "code-review@claude-plugins-official": false,
     "codex@openai-codex": true,
-    "diagram-design@diagram-design": false,
     "pyright-lsp@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "cowork-plugin-management@synced": false
   },
   "extraKnownMarketplaces": {
-    "diagram-design": {
-      "source": {
-        "source": "github",
-        "repo": "cathrynlavery/diagram-design"
-      },
-      "autoUpdate": true
-    },
-    "karpathy-skills": {
-      "source": {
-        "source": "github",
-        "repo": "forrestchang/andrej-karpathy-skills"
-      }
-    },
-    "mattpocock": {
-      "source": {
-        "source": "github",
-        "repo": "mattpocock/skills"
-      }
-    },
     "openai-codex": {
       "source": {
         "source": "github",

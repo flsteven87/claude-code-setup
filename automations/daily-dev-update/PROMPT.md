@@ -37,7 +37,7 @@ Read the current `~/.local/state/setup-hygiene/state.md` and accept every open f
 1. 先判斷 Claude Code 安裝型態。native install 且自動更新健康時記錄狀態；只有官方更新路徑支援且需要時才執行，最後跑 `claude doctor`。
 2. 從 Claude 設定／官方 list 指令取得目前 marketplaces 與 user-scope plugins，不在本文快取名稱或版本。逐一用官方 marketplace update 指令刷新；project-scope、bundled、primary-runtime、curated 與 App-managed 項目保持原狀，除非它們提供明確的 user-level 更新介面。
 3. 刷新 Codex 官方支援的 Git marketplaces。保留 runtime／App 管理的 cache，不直接修改 `~/.claude/plugins/cache/` 或 `~/.codex/plugins/cache/`。
-4. **Matt 分支**：刷新 mattpocock 前，完整讀取同目錄的 `MATT-SYNC.md`，依其中 fast path 或 delta path 執行。
+4. **Matt 分支**：完整讀取同目錄的 `MATT-SYNC.md`，依其中 fast path 或 delta path 同步 `~/.agents/skills` 的 Matt 副本。
 
 完成條件：每個已設定 marketplace 都有刷新結果；plugin scope 與 enabled state 未被意外改變；Matt 完成其分支的驗證門檻。
 

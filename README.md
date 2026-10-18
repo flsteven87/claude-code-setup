@@ -116,15 +116,9 @@ enabled-state source:
 
 ```bash
 claude plugin install codex@openai-codex
-claude plugin install code-review@claude-plugins-official
 claude plugin install typescript-lsp@claude-plugins-official
 claude plugin install pyright-lsp@claude-plugins-official
-claude plugin install ralph-loop@claude-plugins-official
-claude plugin install andrej-karpathy-skills@karpathy-skills
 ```
-
-> **Do not `plugin install mattpocock-skills@mattpocock`** — those skills are self-hosted instead.
-> See [Self-hosted mattpocock-skills](#self-hosted-mattpocock-skills) below.
 
 ### 4. Verify
 
@@ -161,29 +155,12 @@ rules and hooks loaded.
 
 ## Skills
 
-Local skills live under `skills/`; the self-hosted Matt manifest loads its selected upstream skills
-from the marketplace clone.
-
-| Skill | Use when |
-|---|---|
-| `next-move` | Pick the single next engineering move from code + Linear + git + the `MEMORY.md` checkpoint |
-| `latest` | Rebuild `MEMORY.md` from current truth (git + Linear + CHANGELOG) and refocus it on the session |
-| `catchup` | Fast evidence-based context rebuild after a reset |
-| `handoff` | End-of-session continuity capture into `MEMORY.md` |
-| `rehydrate` | Forced deep re-read after `/compact` or a long pause, with an endgame best-practice check |
-| `narrate` | One-page visual brief of one topic — BLUF → one diagram → key-nodes table → gaps |
-| `reverse-thinking` | Work backwards from the end state: audit an existing plan against it with ranked kill-assumptions, or forge it with a press release and hard FAQs when no plan exists yet |
-| `git-converge-main` | Converge owned branches / worktrees / stashes / PRs into a clean main — script-backed audit → plan → apply |
-| `humanizer` | Strip signs of AI-generated writing from text |
-| `milestone-dispatch` | Reconcile one program and choose or hand off its next coherent implementation milestone |
-| `topics` | Compare workstreams by business outcome and recommend the next unit of attention |
-| `audit-pr-topics` | Group a contributor's pull requests into topics and assess intent, risk, and remaining work |
-| `strategy-review` | Turn a topic, delivery episode, or incident into an evidence-backed product and engineering strategy |
-
-> `humanizer` is vendored from [blader/humanizer](https://github.com/blader/humanizer) v2.9.1 —
-> update by re-cloning, never by hand-editing.
-
-### Shared with Codex
+Every skill lives in the shared workspace `~/.agents/skills`, which Codex reads directly. `setup.sh`
+links each one into `skills/` (ignored machine state) and skips the names listed with reasons in
+`~/.agents/skills/.claude-skip`, such as `code-review` and `ship`, which Claude reaches through
+`~/.agents` and the `/ship` adapter. It verifies required shared targets, safely creates missing native links without replacing
+an existing path, and fails on a dangling link. It does not install or restore canonical skills;
+restore `~/.agents/skills` before running setup on a new machine.
 
 Shared behavior uses one canonical contract or two runtime-specific adapters with the same explicit
 completion criteria:
@@ -194,36 +171,10 @@ completion criteria:
   overwrite a different active checkpoint.
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
   behavior and completion criteria; do not claim byte identity when runtime syntax differs.
-- `milestone-dispatch`, `topics`, `audit-pr-topics`, `reverse-thinking`, and `strategy-review` remain canonical under
-  `~/.agents/skills/` and appear natively in Claude through ignored directory symlinks.
 
-`setup.sh` verifies required shared targets and safely creates missing native links without replacing
-an existing path. It does not install or restore canonical skills; restore `~/.agents/skills` before
-running setup on a new machine.
-
-### Self-hosted mattpocock-skills
-
-`skills/mattpocock-skills/` is **not** a plugin install. It is a self-contained runtime generated
-from Matt Pocock's marketplace clone:
-
-```
-skills/mattpocock-skills/
-├── .claude-plugin/plugin.json   # tracked — lists the selected skills to expose
-└── skills/                      # ignored — generated copy of the selected upstream skills
-```
-
-Why self-host rather than `plugin install`:
-
-- **`handoff` is excluded.** `/handoff` belongs to the local `MEMORY.md` skill, and a same-named
-  plugin skill would shadow it.
-- **Disabling the upstream plugin is not enough** — a same-named installed plugin makes the
-  skills-directory scan skip this manifest. The upstream plugin must be *uninstalled*.
-
-The marketplace clone is the sole upstream source. `scripts/reconcile_matt_manifest.py` is the sole
-writer for the manifest and generated runtime; it stages and validates a complete copy before
-replacing the previous runtime. Updating: `claude plugin marketplace update mattpocock`, then
-`uv run python ~/.claude/scripts/reconcile_matt_manifest.py --write --runtime`. The daily updater
-performs both steps while preserving the local handoff exclusion.
+Matt Pocock's skills are tracked copies in `~/.agents/skills` (local `handoff` replaces upstream's).
+The daily updater syncs them from `github.com/mattpocock/skills` while keeping local deltas; see
+`automations/daily-dev-update/MATT-SYNC.md`.
 
 ## Agents
 
@@ -238,14 +189,14 @@ configuration before dispatch; the README does not cache model aliases, cost rat
 |---|---|
 | `/ship` | Thin adapter to the shared reviewed-commit delivery contract: push/PR gates, merge, established deployment, observation, and exact task-local cleanup. |
 
-Everything else comes from the skills layer or a plugin — spec / ticket / implement / debug / TDD /
-review flows are delivered by `mattpocock-skills:*`.
+Everything else comes from the skills layer: spec, ticket, implement, debug, TDD and review flows
+are Matt Pocock's skills under `~/.agents/skills`.
 
 ## Maintenance scripts
 
 | Script | What it does |
 |---|---|
-| `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → Matt manifest → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills: `skills update` overwrites local invocation gates such as `disable-model-invocation`, so run it by hand and re-check those gates |
+| `bin/update-all.sh` | Six-stage refresh: Claude CLI → plugin marketplaces → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills: `skills update` overwrites local invocation gates such as `disable-model-invocation`, so run it by hand and re-check those gates |
 | `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
 | `bin/codex-reconcile-phantoms.sh` | The selective version, run by hand: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 

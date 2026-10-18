@@ -37,8 +37,11 @@ MILESTONE_WORKFLOW_SKILLS = (
 NATIVE_SHARED_SKILLS = (
     "audit-pr-topics",
     "milestone-dispatch",
+    "rehydrate",
     "strategy-review",
+    "tdd",
     "topics",
+    "writing-for-agents",
 )
 
 
@@ -90,18 +93,18 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("`$use-code-review-graph` owns", profile)
         self.assertIn("Claude auto-memory is contextual cache", claude)
 
-    def test_setup_reconciles_native_links_and_documents_the_seven_stage_updater(
+    def test_setup_reconciles_native_links_and_documents_the_six_stage_updater(
         self,
     ) -> None:
         setup = (CLAUDE_HOME / "setup.sh").read_text(encoding="utf-8")
         readme = (CLAUDE_HOME / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("reconcile_matt_manifest.py --check --runtime", setup)
-        self.assertNotIn("reconcile_matt_manifest.py --write --runtime", setup)
+        self.assertIn('for target_dir in "$HOME"/.agents/skills/*/; do', setup)
+        self.assertNotIn("mattpocock", setup)
         self.assertIn("git -C ~/.claude show :settings.json", setup)
         self.assertIn(".agents/skills/ship/SKILL.md", setup)
         self.assertNotIn(".agents/skills/graph-", setup)
-        self.assertIn("Seven-stage refresh", readme)
+        self.assertIn("Six-stage refresh", readme)
         self.assertIn("safely creates missing native links", readme)
         self.assertIn("does not install or restore canonical skills", readme)
 
@@ -116,13 +119,21 @@ class AgentContractTests(unittest.TestCase):
     def test_native_shared_skills_are_discoverable_by_claude(self) -> None:
         setup = (CLAUDE_HOME / "setup.sh").read_text(encoding="utf-8")
 
+        skip_file = AGENTS / "skills/.claude-skip"
+        skipped = {
+            line.strip()
+            for line in skip_file.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.startswith("#")
+        }
+        self.assertIn(".agents/skills/.claude-skip", setup)
+
         for name in NATIVE_SHARED_SKILLS:
             link = CLAUDE_HOME / "skills" / name
             target = AGENTS / "skills" / name
             self.assertTrue(link.is_symlink(), f"native skill is not linked: {link}")
             self.assertEqual(link.resolve(), target.resolve())
             self.assertTrue((link / "SKILL.md").is_file())
-            self.assertIn(f'  "{name}"', setup)
+            self.assertNotIn(name, skipped)
 
     def test_cross_surface_skill_pointer_resolves_source_and_authority(self) -> None:
         profile = (AGENTS / "PROFILE.md").read_text(encoding="utf-8")
