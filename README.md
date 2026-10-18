@@ -172,9 +172,9 @@ completion criteria:
 - Script-backed shared skills resolve helpers from their declared canonical directory. Compare
   behavior and completion criteria; do not claim byte identity when runtime syntax differs.
 
-Matt Pocock's skills are tracked copies in `~/.agents/skills` (local `handoff` replaces upstream's).
-The daily updater syncs them from `github.com/mattpocock/skills` while keeping local deltas; see
-`automations/daily-dev-update/MATT-SYNC.md`.
+External skills, Matt Pocock's included, are refreshed by
+`~/.agents/scripts/update_external_skills.py`, which keeps local changes and commits the result in
+`~/.agents`. Their invocation gates for Claude live in `settings.json` `skillOverrides`.
 
 ## Agents
 
@@ -196,7 +196,7 @@ are Matt Pocock's skills under `~/.agents/skills`.
 
 | Script | What it does |
 |---|---|
-| `bin/update-all.sh` | Six-stage refresh: Claude CLI → plugin marketplaces → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills: `skills update` overwrites local invocation gates such as `disable-model-invocation`, so run it by hand and re-check those gates |
+| `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → external skills through `~/.agents/scripts/update_external_skills.py --commit` plus new Claude links → symlinks `bin/*` into `~/.local/bin` |
 | `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
 | `bin/codex-reconcile-phantoms.sh` | The selective version, run by hand: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 

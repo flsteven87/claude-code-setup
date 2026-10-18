@@ -37,9 +37,9 @@ Read the current `~/.local/state/setup-hygiene/state.md` and accept every open f
 1. 先判斷 Claude Code 安裝型態。native install 且自動更新健康時記錄狀態；只有官方更新路徑支援且需要時才執行，最後跑 `claude doctor`。
 2. 從 Claude 設定／官方 list 指令取得目前 marketplaces 與 user-scope plugins，不在本文快取名稱或版本。逐一用官方 marketplace update 指令刷新；project-scope、bundled、primary-runtime、curated 與 App-managed 項目保持原狀，除非它們提供明確的 user-level 更新介面。
 3. 刷新 Codex 官方支援的 Git marketplaces。保留 runtime／App 管理的 cache，不直接修改 `~/.claude/plugins/cache/` 或 `~/.codex/plugins/cache/`。
-4. **Matt 分支**：完整讀取同目錄的 `MATT-SYNC.md`，依其中 fast path 或 delta path 同步 `~/.agents/skills` 的 Matt 副本。
+4. **外部 skills**：執行 `uv run --no-project --with pyyaml python ~/.agents/scripts/update_external_skills.py --commit`，再跑 `bash ~/.claude/setup.sh` 為新增的 skill 建立連結。讀 JSON 報告：`needs_human` 每項列入需要人工；只對報告中有變更的 skill 做上游語意差異稽核，聚焦 `disable-model-invocation`、commit、publish、external-write 與 completion contract，語意改變只回報。若變更涉及 ship、handoff 或其 contract，確認 canonical ship 仍是 `~/.agents/skills/ship/SKILL.md`，兩個 handoff 都只寫 primary checkout 的 root `MEMORY.md`。
 
-完成條件：每個已設定 marketplace 都有刷新結果；plugin scope 與 enabled state 未被意外改變；Matt 完成其分支的驗證門檻。
+完成條件：每個已設定 marketplace 都有刷新結果；plugin scope 與 enabled state 未被意外改變；外部 skills 報告的 exit code 為 0，或每個 `needs_human` 項目都已列入需要人工。
 
 ### 3. 更新 MCP 與專用工具
 
