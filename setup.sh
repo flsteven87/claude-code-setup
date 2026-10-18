@@ -125,6 +125,7 @@ else
   errors=$((errors + 1))
   claude_excluded_skills=" "
 fi
+mkdir -p "$HOME/.claude/skills"
 for target_dir in "$HOME"/.agents/skills/*/; do
   name=$(basename "$target_dir")
   [ -f "$target_dir/SKILL.md" ] || continue
