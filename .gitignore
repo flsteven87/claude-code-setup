@@ -87,5 +87,5 @@ automations/*/.run.lock/
 skills/
 feedback/
 
-# Impeccable agent copies managed under ~/.agents (not tracked here).
+# Subagent links that setup.sh creates from ~/.agents/claude/agents.
 agents/impeccable-*.md

@@ -149,8 +149,8 @@ for link_path in "$HOME"/.claude/skills/*; do
 done
 
 # Refero establishes the frontend baseline; Impeccable supplies refinement and quality checks.
-# Its Claude copy, subagents, and detector hook come from the upstream release bundle,
-# so setup verifies them but does not restore them.
+# Its Claude copy and detector hook come from the upstream release bundle, so setup verifies them
+# but does not restore them. Its subagents are tracked in ~/.agents/claude/agents and linked here.
 impeccable_dir="$HOME/.claude/skills/impeccable"
 impeccable_version() { sed -n 's/^ *version: //p' "$1/SKILL.md" 2>/dev/null | head -1; }
 if [ -x "$impeccable_dir/scripts/impeccable" ] \
@@ -161,12 +161,27 @@ else
   fail "Impeccable Claude copy is missing or differs from ~/.agents/skills/impeccable — reinstall the same release for Claude"
   errors=$((errors + 1))
 fi
-for name in asset-producer documenter finish-reviewer manual-edit-applier; do
-  if [ -f "$HOME/.claude/agents/impeccable-$name.md" ]; then
-    pass "Impeccable subagent present: agents/impeccable-$name.md"
-  else
-    fail "Impeccable subagent missing: agents/impeccable-$name.md — copy .claude/agents/ from the installed release"
+mkdir -p "$HOME/.claude/agents"
+shared_agents=("$HOME"/.agents/claude/agents/*.md)
+if [ ! -e "${shared_agents[0]}" ]; then
+  fail "no shared subagents in ~/.agents/claude/agents — restore ~/.agents before linking them"
+  errors=$((errors + 1))
+  shared_agents=()
+fi
+for source in "${shared_agents[@]}"; do
+  name=$(basename "$source")
+  link_path="$HOME/.claude/agents/$name"
+  if [ -L "$link_path" ] && [ "$link_path" -ef "$source" ]; then
+    pass "shared subagent linked: agents/$name"
+  elif [ -f "$link_path" ] && [ ! -L "$link_path" ] && ! cmp -s "$link_path" "$source"; then
+    fail "subagent path conflicts: agents/$name — differs from ~/.agents/claude/agents/$name"
     errors=$((errors + 1))
+  elif [ -L "$link_path" ] || { [ -e "$link_path" ] && [ ! -f "$link_path" ]; }; then
+    fail "subagent path conflicts: agents/$name — expected a link to ~/.agents/claude/agents/$name"
+    errors=$((errors + 1))
+  else
+    ln -sf "../../.agents/claude/agents/$name" "$link_path"
+    pass "shared subagent linked: agents/$name"
   fi
 done
 # A hook in ~/.claude/settings.local.json only applies when $HOME is the project.
