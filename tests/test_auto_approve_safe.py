@@ -59,8 +59,8 @@ class PermissionHookTests(unittest.TestCase):
         self.assertEqual(result["hookSpecificOutput"]["decision"]["behavior"], "allow")
 
     def test_destructive_and_machine_commands_still_defer(self):
-        for command in ("cd repo && git reset --hard", "git restore file",
-                        "git checkout -- file", "command sudo ls", "echo x > /dev/disk2",
+        # Git discards are denied earlier by pre_bash_guard.py (a97f0d8).
+        for command in ("command sudo ls", "echo x > /dev/disk2",
                         "shutdown now", "reboot", "csrutil disable", "spctl --master-disable"):
             with self.subTest(command=command):
                 self.assertEqual(self.decision("Bash", command), "")

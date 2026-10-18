@@ -4,15 +4,15 @@ description: Deliver a completed local commit through the shared ship contract w
 
 # /ship
 
-Read `/Users/po-chi/.agents/skills/ship/SKILL.md` completely before any delivery action and execute
+Read `~/.agents/skills/ship/SKILL.md` completely before any delivery action and execute
 it as the canonical ship contract. Resolve `skill_dir` and bundled scripts from
-`/Users/po-chi/.agents/skills/ship`, not from this adapter.
+`~/.agents/skills/ship`, not from this adapter.
 
 Claude command mappings:
 
 - `$ship` → `/ship`
 - `$implement` → `/mattpocock-skills:implement`
-- `$code-review` → read `/Users/po-chi/.agents/skills/code-review/SKILL.md`
+- `$code-review` → read `~/.agents/skills/code-review/SKILL.md`
 - `$git-converge-main` → `/git-converge-main`
 - `$setup-matt-pocock-skills` → `/mattpocock-skills:setup-matt-pocock-skills`
 

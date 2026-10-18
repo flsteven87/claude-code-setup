@@ -67,20 +67,27 @@ class AgentContractTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertEqual(_agents_root(), HOME / ".agents")
 
-    def test_main_fast_lane_contract_matches_both_runtimes(self) -> None:
-        codex = (HOME / ".codex/AGENTS.md").read_text(encoding="utf-8")
+    def test_both_runtimes_load_the_one_shared_profile(self) -> None:
+        profile = AGENTS / "PROFILE.md"
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
-        for document in (codex, claude):
-            self.assertIn("primary checkout", document)
-            self.assertIn("task-owned paths clean", document)
-            self.assertIn("one local task-scoped commit", document)
+        self.assertIn("@~/.agents/PROFILE.md", claude)
+        self.assertEqual((HOME / ".codex/AGENTS.md").resolve(), profile.resolve())
+        self.assertNotIn("/Users/", profile.read_text(encoding="utf-8"))
+        self.assertNotIn("/Users/", claude)
 
-    def test_claude_mirrors_the_crg_change_batch_contract(self) -> None:
+    def test_main_fast_lane_contract_lives_in_the_shared_profile(self) -> None:
+        profile = (AGENTS / "PROFILE.md").read_text(encoding="utf-8")
+
+        self.assertIn("primary checkout", profile)
+        self.assertIn("task-owned paths clean", profile)
+        self.assertIn("one local task-scoped commit", profile)
+
+    def test_crg_pointer_and_claude_memory_rule(self) -> None:
+        profile = (AGENTS / "PROFILE.md").read_text(encoding="utf-8")
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
-        self.assertIn("enqueue one `agent:change-batch`", claude)
-        self.assertIn("Subagents do not enqueue or write graph state", claude)
+        self.assertIn("`$use-code-review-graph` owns", profile)
         self.assertIn("Claude auto-memory is contextual cache", claude)
 
     def test_setup_reconciles_native_links_and_documents_the_seven_stage_updater(
@@ -118,22 +125,16 @@ class AgentContractTests(unittest.TestCase):
             self.assertIn(f'  "{name}"', setup)
 
     def test_cross_surface_skill_pointer_resolves_source_and_authority(self) -> None:
-        agents = (AGENTS / "AGENTS.md").read_text(encoding="utf-8")
+        profile = (AGENTS / "PROFILE.md").read_text(encoding="utf-8")
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
-        for document in (agents, claude):
-            self.assertIn(
-                "from a user message, repository instruction, or skill body",
-                document,
-            )
-            self.assertIn("installed skill", document)
-            self.assertIn("Report the missing capability", document)
-
-        self.assertIn("`skills/<name>/SKILL.md`", agents)
-        self.assertIn("non-user reference", agents)
-        self.assertIn("`~/.agents/skills/<name>/SKILL.md`", claude)
-        self.assertIn("requires a user request", claude)
-        self.assertIn("`allow_implicit_invocation: false`", claude)
+        self.assertIn(
+            "from a user message, repository instruction, or skill body", profile
+        )
+        self.assertIn("`~/.agents/skills/<name>/SKILL.md`", profile)
+        self.assertIn("installed skill", profile)
+        self.assertIn("Report the missing capability", profile)
+        self.assertIn("`allow_implicit_invocation: false`", profile)
         self.assertIn("`disable-model-invocation: true`", claude)
 
     def test_graph_engineering_is_absent_from_active_routes(self) -> None:
