@@ -1,5 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "2",
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "8"
+  },
   "permissions": {
     "allow": [
       "Read",
@@ -9,12 +13,9 @@
       "Grep",
       "WebSearch",
       "WebFetch",
-      "Task",
       "NotebookEdit",
       "mcp__context7",
       "mcp__context7__*",
-      "mcp__codex",
-      "mcp__codex__*",
       "mcp__playwright",
       "mcp__playwright__*",
       "mcp__scheduled-tasks",
@@ -49,9 +50,7 @@
       "Bash(git remote *)",
       "Bash(pnpm *)",
       "Bash(npm *)",
-      "Bash(npx *)",
       "Bash(uv *)",
-      "Bash(node *)",
       "Bash(cargo *)",
       "Bash(go *)",
       "Bash(gh *)",
@@ -60,7 +59,6 @@
       "Bash(orca skills get *)",
       "Bash(curl *)",
       "Bash(make *)",
-      "Bash(python3 *)",
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(wc *)",
@@ -70,9 +68,7 @@
     ],
     "deny": [
       "Bash(rm -rf /)",
-      "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
-      "Bash(rm -rf ~/*)",
       "Bash(sudo rm -rf *)",
       "Bash(mkfs *)",
       "Bash(dd if=*)",
@@ -82,11 +78,16 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "skillOverrides": {
-    "docs-cleanup": "off",
     "humanizer": "off",
     "vercel-composition-patterns": "off",
     "writing-guidelines": "off",
+    "orchestration": "off",
+    "community-marketing": "off",
+    "copy-editing": "off",
+    "audit-pr-topics": "off",
+    "strategy-review": "off",
     "asd-ste100": "off",
     "stop-slop": "off",
     "vercel-react-best-practices": "off",
@@ -129,16 +130,15 @@
             "timeout": 15
           }
         ]
-      }
-    ],
-    "PreCompact": [
+      },
       {
-        "matcher": "",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_compact.py",
-            "timeout": 10
+            "command": "[ ! -f \"$HOME/.claude/skills/impeccable/scripts/impeccable\" ] || \"$HOME/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
           }
         ]
       }
@@ -184,6 +184,14 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "(python3 \"$HOME/.agents/skills/session-insights/scripts/insights.py\" ingest >/dev/null 2>&1 &)"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -202,6 +210,24 @@
             "type": "command",
             "command": "~/.claude/bin/awake-gate.sh release",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$HOME/.claude/skills/impeccable/scripts/impeccable\" ] || \"$HOME/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.agents/skills/endgame/scripts/stop_gate.py\""
           }
         ]
       }
@@ -244,13 +270,14 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": true,
+    "andrej-karpathy-skills@karpathy-skills": false,
     "code-review@claude-plugins-official": false,
     "codex@openai-codex": true,
-    "diagram-design@diagram-design": true,
+    "diagram-design@diagram-design": false,
     "pyright-lsp@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": false,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "cowork-plugin-management@synced": false
   },
   "extraKnownMarketplaces": {
     "diagram-design": {
@@ -287,6 +314,11 @@
     }
   },
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "autoCompactWindow": 400000,
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
@@ -295,5 +327,5 @@
   "theme": "dark-daltonized",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "model": "claude-fable-5-1[1m]"
+  "switchModelsOnFlag": false
 }
