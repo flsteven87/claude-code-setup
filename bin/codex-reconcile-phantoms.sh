@@ -27,7 +27,7 @@
 #   --warn-live-cwd DIR  warn if a genuinely-alive job has workspaceRoot==DIR
 set -u
 
-STATE_ROOT="${CODEX_INLINE_STATE_ROOT:-$HOME/.claude/plugins/data/codex-inline/state}"
+STATE_ROOT="${CODEX_INLINE_STATE_ROOT:-$HOME/.claude/plugins/data/codex-openai-codex/state}"
 DRY=0
 QUIET=0
 WARN_CWD=""

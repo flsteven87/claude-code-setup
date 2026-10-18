@@ -248,16 +248,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/bin/codex-reconcile-phantoms.sh --hook",
-            "timeout": 8,
-            "statusMessage": "Reconciling stale Codex jobs"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "~/.claude/bin/awake-gate.sh acquire",
             "timeout": 5
           }

@@ -29,7 +29,7 @@ mkdir -p "$TOKEN_DIR"
 # so it is never swept.
 sweep() {
   # Claude Code gone entirely (app quit, crash, force-quit) -> nothing can hold.
-  if ! pgrep -f 'claude-code/.*/MacOS/claude' >/dev/null 2>&1; then
+  if ! pgrep -x claude >/dev/null 2>&1; then
     find "$TOKEN_DIR" -type f ! -name manual -delete 2>/dev/null
     return
   fi

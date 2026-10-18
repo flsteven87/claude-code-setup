@@ -140,7 +140,6 @@ rules and hooks loaded.
 | `workflow_route_guard.py` | PreToolUse (Workflow) | Blocks `Workflow({name: …})` so worker agents can't silently inherit the top-tier session model. Use `scriptPath` into `workflows/` instead |
 | `auto-format.sh` | PostToolUse (Edit/Write/MultiEdit) | `ruff format` + `ruff check --fix` on `.py`; `prettier --write` on TS/JS/CSS |
 | `auto_approve_safe.py` | PermissionRequest | Preserves known native-tool automation and the existing Bash checks for uncommitted-work loss or machine reconfiguration. Unknown tools and MCP requests defer to runtime permissions; configured provider grants still apply. Logs to `logs/auto_approve.log` |
-| `codex-reconcile-phantoms.sh` | UserPromptSubmit | Reconciles stale/orphaned Codex jobs before each turn |
 | *(inline)* | Stop | macOS notification, then truncates `hook-approvals.log` / `logs/auto_approve.log` to the last 2000 lines once either passes 5 MB |
 
 ## Permissions
@@ -248,7 +247,7 @@ review flows are delivered by `mattpocock-skills:*`.
 |---|---|
 | `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → Matt manifest → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → symlinks `bin/*` into `~/.local/bin`. Does **not** refresh vendored or shared skills: `skills update` overwrites local invocation gates such as `disable-model-invocation`, so run it by hand and re-check those gates |
 | `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
-| `bin/codex-reconcile-phantoms.sh` | The selective version, and the one wired as the `UserPromptSubmit` hook: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
+| `bin/codex-reconcile-phantoms.sh` | The selective version, run by hand: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 
 ## What CLAUDE.md enforces
 

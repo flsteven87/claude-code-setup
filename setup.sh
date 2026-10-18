@@ -50,8 +50,7 @@ fi
 echo ""
 echo -e "${BOLD}Verifying hooks and scripts are executable...${RESET}"
 
-# bin/codex-reconcile-phantoms.sh is wired as a UserPromptSubmit hook and is invoked
-# directly, so bin/ needs the same treatment as hooks/.
+# bin/ scripts are invoked directly, so they need the same treatment as hooks/.
 for script in ~/.claude/hooks/*.sh ~/.claude/bin/*; do
   # Skip symlinks: update-all.sh links bin/* out to ~/.local/bin, and chmod would
   # follow a link to a target this script has no business touching.
