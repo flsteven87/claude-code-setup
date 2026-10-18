@@ -94,8 +94,6 @@ skills/handoff
 skills/milestone-dispatch
 skills/narrate
 skills/orca-cli
-skills/orca-emulator
-skills/orca-linear
 skills/orchestration
 skills/reverse-thinking
 skills/strategy-review
@@ -140,6 +138,9 @@ feedback/
 
 # Shared skill links and vendored skills managed under ~/.agents (not tracked here).
 skills/ai-seo
+skills/design-taste-frontend
+skills/mac-space
+skills/redesign-existing-projects
 skills/design-benchmark
 skills/humanizer
 skills/impeccable
