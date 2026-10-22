@@ -34,9 +34,13 @@ the routing decision; the mechanics live here.
 
 Brief it cold: paths, line numbers, success criteria, and the business intent the work serves.
 Success criteria say when it is done; intent says which way to resolve the ambiguities they leave.
-For read-only work say "review only, do not edit" explicitly; it defaults to `--write`. Never ask a
-read-only job to run tests or `uv`: its sandbox denies all writes and the job thrashes on
-`Operation not permitted`.
+For read-only work say "review only, do not edit" explicitly; it defaults to `--write`.
+
+The rescue runtime picks the sandbox itself, overriding `~/.codex/config.toml`: a write job runs in
+`workspace-write`, which has no network, and a read-only job runs in `read-only`, which also denies
+writes. So before dispatching a write job, install the worktree's locked dependencies yourself and
+name the offline checks it should run; checks that need the network, Docker or a database stay with
+you. Give a read-only job reading only: tests or `uv` thrash on `Operation not permitted`.
 
 ## Observability
 
