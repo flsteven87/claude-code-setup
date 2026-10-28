@@ -201,7 +201,7 @@ fi
 
 # The Bash gate is the only thing standing between the agent and an unrecoverable
 # deletion, so a syntax error in it must fail setup rather than fail open.
-if uv run ~/.claude/hooks/pre_bash_guard.py <<<'{"tool_name":"Bash","tool_input":{"command":"rm -rf /Users/x/work"}}' | grep -q '"deny"'; then
+if python3 ~/.claude/hooks/pre_bash_guard.py <<<'{"tool_name":"Bash","tool_input":{"command":"rm -rf /Users/x/work"}}' | grep -q '"deny"'; then
   pass "pre_bash_guard.py is denying deletions"
 else
   fail "pre_bash_guard.py did not deny a test rm — the Bash gate is open"

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = ">=3.11"
-# ///
 """
 PreToolUse hook: Block un-routed named/built-in Workflow launches.
 

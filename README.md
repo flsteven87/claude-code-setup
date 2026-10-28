@@ -104,7 +104,8 @@ cd ~/.claude && ./setup.sh
 ```
 
 Verifies prerequisites (Claude Code CLI, `uv`, `trash`), makes `hooks/*.sh` + `bin/*` executable
-(Python hooks run through `uv run`, so they need no exec bit), and fails the run if
+(Python hooks run through `python3` on the standard library alone, so they need no exec bit and
+no uv cache), and fails the run if
 `pre_bash_guard.py` does not deny a test deletion — an open Bash gate must not pass setup silently.
 It then **prints** the plugin and marketplace commands for steps 3–4; plugin installation is
 interactive, so `setup.sh` never runs it for you.

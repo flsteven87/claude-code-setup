@@ -2,7 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "2",
-    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "8"
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "8",
+    "CLAUDE_CODE_RETRY_WATCHDOG": "1"
   },
   "permissions": {
     "allow": [
@@ -79,6 +80,7 @@
     "defaultMode": "auto"
   },
   "model": "opus",
+  "language": "Traditional Chinese (繁體中文, Taiwan) for conversation with the user; code, code comments, commit messages and repository files stay in English",
   "skillOverrides": {
     "orchestration": "off",
     "audit-pr-topics": "off",
@@ -108,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/auto_approve_safe.py",
+            "command": "python3 ~/.claude/hooks/auto_approve_safe.py",
             "timeout": 5
           }
         ]
@@ -143,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_bash_guard.py",
+            "command": "python3 ~/.claude/hooks/pre_bash_guard.py",
             "timeout": 5
           }
         ]
@@ -153,7 +155,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/pre_write_guard.py",
+            "command": "python3 ~/.claude/hooks/pre_write_guard.py",
             "timeout": 5
           }
         ]
@@ -163,7 +165,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/workflow_route_guard.py",
+            "command": "python3 ~/.claude/hooks/workflow_route_guard.py",
             "timeout": 5
           }
         ]

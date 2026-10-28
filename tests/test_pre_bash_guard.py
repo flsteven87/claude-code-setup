@@ -80,6 +80,22 @@ class GuardTests(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertEqual(self.decision(command), "deny")
 
+    def test_rev_parse_short_takes_one_revision(self) -> None:
+        for command in (
+            "git rev-parse --short HEAD",
+            "git rev-parse --short=8 origin/main",
+            "git rev-parse HEAD origin/main",
+            "git rev-parse --short HEAD; git rev-parse --short origin/main",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(self.decision(command))
+        for command in (
+            "git rev-parse --short HEAD origin/main",
+            "git fetch -q && git -C repo rev-parse --short=8 HEAD origin/main",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(self.decision(command), "deny")
+
 
 if __name__ == "__main__":
     unittest.main()

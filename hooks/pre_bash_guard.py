@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = ">=3.11"
-# ///
 """
 PreToolUse hook: the single Bash gate. Tokenizes argv instead of glob-matching.
 
@@ -11,9 +8,9 @@ for (`git clone`, `git log`, scratchpad redirects), and it returned `allow` for
 every force-push spelling. Everything it enforced lives here now, in one rule
 language the repo owns, and settings.json carries no parallel push rules.
 
-Four rules, each denying with an alternative rather than stopping to ask. The
-user trusts the agent, so a guardrail earns its place only when it can keep an
-operation reversible without costing an interruption:
+Five rules, each denying with an alternative rather than stopping to ask. The
+user trusts the agent, so a guardrail earns its place only when it keeps an
+operation reversible, or correct, without costing an interruption:
 
   force push   -> `--force-with-lease`, which refuses to overwrite commits the
                   pusher has not seen; the lease form itself runs unprompted, and
@@ -26,6 +23,8 @@ operation reversible without costing an interruption:
                   prompts even under bypass mode, and was the main Bash interruption
   rm / rmdir   -> `trash`, so a wrong deletion is recoverable from the Trash
   pip / pip3   -> `uv`, per CLAUDE.md's Python tooling rule
+  rev-parse    -> one `git rev-parse --short` per revision; several revisions make it
+                  fail, and a prose rule did not stop the habit (51 sessions after it)
 
 A rule fires only where the guarded word runs as a command, so an argument
 never trips it: `git rm` stages a removal the repo can restore, `orca worktree rm`
@@ -278,7 +277,24 @@ def _check_pip(tokens: list[str], _env: dict[str, str]) -> str | None:
     return None
 
 
-CHECKS = (_check_force_push, _check_discard, _check_delete, _check_pip)
+def _check_rev_parse_short(tokens: list[str], _env: dict[str, str]) -> str | None:
+    """Return a deny reason if `git rev-parse --short` gets more than one revision."""
+    git = _git_subcommand(tokens)
+    if not git or git[0] != "rev-parse":
+        return None
+    args = git[1]
+    if not any(a == "--short" or a.startswith("--short=") for a in args):
+        return None
+    if sum(not a.startswith("-") for a in args) < 2:
+        return None
+    return (
+        "`git rev-parse --short` takes exactly one revision; with several it fails with "
+        "`fatal: Needed a single revision`. Run one `git rev-parse --short <rev>` per "
+        "revision, or plain `git rev-parse <rev> <rev>` for full hashes."
+    )
+
+
+CHECKS = (_check_force_push, _check_discard, _check_delete, _check_pip, _check_rev_parse_short)
 
 
 def _expand(token: str, env: dict[str, str]) -> str | None:
