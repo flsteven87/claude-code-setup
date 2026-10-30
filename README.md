@@ -197,7 +197,7 @@ are Matt Pocock's skills under `~/.agents/skills`.
 
 | Script | What it does |
 |---|---|
-| `bin/update-all.sh` | Seven-stage refresh: Claude CLI → plugin marketplaces → plugins → Codex CLI (standalone `codex update` under its owner home) and Codex marketplaces → `uv` tools → external skills through `~/.agents/scripts/update_external_skills.py --commit` plus new Claude links → symlinks `bin/*` into `~/.local/bin` |
+| `bin/update-all.sh` | Skills/plugin refresh through `~/.agents/scripts/update_external_skills.py --plugins --commit`; `--check` is read-only and failures propagate. General CLI/runtime maintenance follows the existing daily maintenance contract; `setup.sh` owns command and skill links. |
 | `bin/codex-hygiene` | Recovery for a wedged Codex plugin: kills matching companion/app-server processes and clears job state. Probes every job's pid first and **refuses (exit 1) while any job is genuinely alive**, because killing the shared app-server would take live jobs with it. `--dry-run` to preview, `--force` to sweep anyway |
 | `bin/codex-reconcile-phantoms.sh` | The selective version, run by hand: probes each job's pid, marks only the dead ones failed (never deletes), touches no processes. Safe to run while other windows are live |
 

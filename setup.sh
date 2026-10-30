@@ -68,6 +68,22 @@ done
 echo ""
 echo -e "${BOLD}Plugins to install:${RESET}"
 errors=0
+# User command links belong to setup, not the skills updater. Preserve an existing other owner.
+mkdir -p "$HOME/.local/bin"
+for source in "$HOME/.claude/bin/"*; do
+  [ -f "$source" ] || continue
+  [ "$(basename "$source")" = "update-all.sh" ] && continue
+  destination="$HOME/.local/bin/$(basename "$source")"
+  if [ -L "$destination" ] && [ "$destination" -ef "$source" ]; then
+    pass "user command linked: $(basename "$source")"
+  elif [ -e "$destination" ] || [ -L "$destination" ]; then
+    fail "user command conflicts: $destination — preserve its existing owner"
+    errors=$((errors + 1))
+  else
+    ln -s "$source" "$destination"
+    pass "user command linked: $(basename "$source")"
+  fi
+done
 echo "  Run these inside Claude Code or via CLI:"
 echo ""
 echo "    claude plugin install codex@openai-codex"

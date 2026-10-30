@@ -93,7 +93,7 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("`$use-code-review-graph` owns", profile)
         self.assertIn("Claude auto-memory is contextual cache", claude)
 
-    def test_setup_reconciles_native_links_and_documents_the_seven_stage_updater(
+    def test_setup_reconciles_native_links_and_documents_the_scoped_updater(
         self,
     ) -> None:
         setup = (CLAUDE_HOME / "setup.sh").read_text(encoding="utf-8")
@@ -104,7 +104,8 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("git -C ~/.claude show :settings.json", setup)
         self.assertIn(".agents/skills/ship/SKILL.md", setup)
         self.assertNotIn(".agents/skills/graph-", setup)
-        self.assertIn("Seven-stage refresh", readme)
+        self.assertIn("Skills/plugin refresh", readme)
+        self.assertIn("failures propagate", readme)
         self.assertIn("safely creates missing native links", readme)
         self.assertIn("does not install or restore canonical skills", readme)
 
