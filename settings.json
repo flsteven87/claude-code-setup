@@ -87,7 +87,12 @@
     "strategy-review": "off",
     "vercel-react-best-practices": "off",
     "ai-seo": "user-invocable-only",
-    "seo-audit": "user-invocable-only"
+    "seo-audit": "user-invocable-only",
+    "anthropic-skills:built-in-browser": "user-invocable-only",
+    "anthropic-skills:deep-research": "user-invocable-only",
+    "anthropic-skills:import-memory": "user-invocable-only",
+    "anthropic-skills:google-workspace": "name-only",
+    "claude-in-chrome": "user-invocable-only"
   },
   "deniedMcpServers": [
     {
