@@ -14,7 +14,8 @@ This is legwork, not phrasing. A report cannot carry meaning the work never went
 
 ## Calibration
 
-The same worktree inventory, twice.
+One illustrative pair: the same worktree inventory, twice. Take its reasoning, not its length or
+vocabulary.
 
 Mechanism only: "Four preserved worktrees. Dirty counts 19/48/0/17. `nex-1672` sits 110 behind with
 zero unique commits."

@@ -13,7 +13,7 @@ specifics.
 ## Code
 
 - Type critical paths explicitly (query hooks, error handling, API responses). Components are
-  function declarations with a typed props interface, written in JSX with ES module imports.
+  function declarations with a typed props interface.
 - Import icons and components by deep path rather than from a library barrel.
 - Run independent awaits together with `Promise.all`.
 - TanStack Query: key factories (project `hooks/factories/` when present), granular invalidation
