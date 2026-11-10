@@ -86,11 +86,9 @@ class AgentContractTests(unittest.TestCase):
         self.assertIn("task-owned paths clean", profile)
         self.assertIn("one local task-scoped commit", profile)
 
-    def test_crg_pointer_and_claude_memory_rule(self) -> None:
-        profile = (AGENTS / "PROFILE.md").read_text(encoding="utf-8")
+    def test_claude_memory_rule(self) -> None:
         claude = (CLAUDE_HOME / "CLAUDE.md").read_text(encoding="utf-8")
 
-        self.assertIn("`$use-code-review-graph` owns", profile)
         self.assertIn("Claude auto-memory is contextual cache", claude)
 
     def test_setup_reconciles_native_links_and_documents_the_scoped_updater(

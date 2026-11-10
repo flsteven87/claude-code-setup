@@ -45,7 +45,7 @@ Read the current `~/.local/state/setup-hygiene/state.md` and accept every open f
 
 1. MCP 採 **config-only** 稽核：讀既有 user-level 設定與套件 registry metadata。浮動版本只確認可解析；固定版本缺乏 migration 證據時保持不變。
 2. MCP 稽核不建立連線，不執行 `claude mcp list`、`codex mcp list` 或任何會做 health probe／啟動 stdio server 的命令。OAuth 狀態只沿用可信的既有狀態；Notion 與 Slack 已有使用者 standing approval，但 config-only daily run 不發起互動式 OAuth。缺少可信 session 時標為 `auth-skipped` 技術阻塞，不列為等待批准。
-3. Code Review Graph 只用 `uv tool upgrade code-review-graph` 與 `code-review-graph --version`。Graphify／`graphifyy` 保持未安裝；CRG install、build、update、postprocess、watch、daemon、embed、server、schema、graph DB 與 repo hooks 保持不變。release notes 要求 installer 或 schema migration 時列入需要人工。
+3. Graphify／`graphifyy` 與 Code Review Graph 保持未安裝。
 
 完成條件：每個 MCP／專用工具都標為 current、updated、fixed-and-held、auth-skipped 或 failed；MCP 稽核本身沒有啟動 server，且沒有專案 graph 寫入。
 
