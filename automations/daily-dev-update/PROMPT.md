@@ -28,18 +28,18 @@ Verify removed paths are absent, retained project-selected executables still res
 2. 對 Claude Code、Codex、Homebrew、Node/npm/Corepack/pnpm、Bun、gh、Mole、mise、uv tools、rustup/rustc/cargo 記錄實際 `command -v` 與版本。Node 工具鏈以解析到的 binary 為準，不只相信版本字串。
 3. 用有界的 DNS／HTTPS probe 檢查本次需要的官方 registry。probe 失敗時仍做本機 health/version 檢查，但跳過依賴該網路的更新，不進入反覆 reconnect。
 
-Completion gate: build one in-memory inventory from the named tool families and the installed user-scope package/marketplace lists. Each item has a stable name, resolved executable or package location, installation owner, installed version, official stable target, update route, eligibility, and verification result. Reconcile the inventory with the prior checkpoint; account for additions, removals, fixed pins and independently managed copies. A successful empty query means no items; a failed query means unknown coverage, never current. Cache freshness and probe failures must remain visible.
+Completion gate: build one in-memory inventory from the named tool families and the installed package/marketplace lists, including user, project and local plugin installations. Each item has a stable name, resolved executable or package location, installation owner, installed version, official stable target, update route, eligibility, and verification result. Plugin identity includes its exact project path. Reconcile the inventory with the prior checkpoint; account for additions, removals, necessary pins and independently managed copies. A successful empty query means no items; a failed query means unknown coverage, never current. Cache freshness and probe failures must remain visible.
 
 Read the current `~/.local/state/setup-hygiene/state.md` and accept every open finding owned by this updater. Revalidate its evidence before acting; record a disposition and discharge condition for each accepted key in the maintenance checkpoint. Leave structural repairs and scheduler ownership with Setup Hygiene. The two jobs can run concurrently: consume the latest completed checkpoint with its timestamp, and pick up newer findings on the next run.
 
 ### 2. 更新 Claude 與 marketplaces
 
 1. 先判斷 Claude Code 安裝型態。native install 且自動更新健康時記錄狀態；只有官方更新路徑支援且需要時才執行，最後跑 `claude doctor`。
-2. 從 Claude 設定／官方 list 指令取得目前 marketplaces 與 user-scope plugins，不在本文快取名稱或版本。逐一用官方 marketplace update 指令刷新；project-scope、bundled、primary-runtime、curated 與 App-managed 項目保持原狀，除非它們提供明確的 user-level 更新介面。
+2. 第三方 skills／plugins 預設追蹤上游最新版本，依 `~/.agents/PROFILE.md` → Tooling 的版本政策執行。從官方 list 指令取得 marketplaces 與 user／project／local plugins；一般 Git marketplace 先 refresh，再以官方 `claude plugin update <id> --scope <scope>` 更新每筆已安裝項目，project／local 從該項目的精確 `projectPath` 執行，包括未啟用項目。相同 plugin 在不同專案分別核對，保留 scope、啟用狀態及設定。專案路徑不可用列為 coverage unknown，不可算 current；僅 project-scope 不是跳過理由。固定來源需查明具體必要性與解除條件，不能只因已有 pin 就無限保留；沒有必要性的既有專案 pin 列為待移除的設定落差，交 owning repository 修改，daily job 不直接改產品設定。bundled、primary-runtime、curated、synced 與 App-managed 項目透過原管理者更新；本機目錄來源交其來源更新流程，不直接改 cache。可使用 `update_external_skills.py --commit --plugins` 執行這條原生更新路徑，使用時與第 4 步合併成一次 invocation。
 3. 刷新 Codex 官方支援的 Git marketplaces。保留 runtime／App 管理的 cache，不直接修改 `~/.claude/plugins/cache/` 或 `~/.codex/plugins/cache/`。
 4. **外部 skills**：執行 `uv run --no-project --with pyyaml python ~/.agents/scripts/update_external_skills.py --commit`，再跑 `bash ~/.claude/setup.sh` 為新增的 skill 建立連結。讀 JSON 報告：`needs_human` 每項列入需要人工；只對報告中有變更的 skill 做上游語意差異稽核，聚焦 `disable-model-invocation`、commit、publish、external-write 與 completion contract，語意改變只回報。若變更涉及 ship、handoff 或其 contract，確認 canonical ship 仍是 `~/.agents/skills/ship/SKILL.md`，兩個 handoff 都只寫 primary checkout 的 root `MEMORY.md`。
 
-完成條件：每個已設定 marketplace 都有刷新結果；plugin scope 與 enabled state 未被意外改變；外部 skills 報告的 exit code 為 0，或每個 `needs_human` 項目都已列入需要人工。
+完成條件：每個已設定 marketplace 與每筆 user／project／local plugin 都有刷新、版本核對或具體阻塞結果；所有保留版本列出必要性、版本落差與解除條件；plugin scope 與 enabled state 未被意外改變；外部 skills 報告的 exit code 為 0，或每個 `needs_human` 項目都已列入需要人工。
 
 ### 3. 更新 MCP 與專用工具
 
