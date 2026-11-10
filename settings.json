@@ -92,7 +92,13 @@
     "anthropic-skills:deep-research": "user-invocable-only",
     "anthropic-skills:import-memory": "user-invocable-only",
     "anthropic-skills:google-workspace": "name-only",
-    "claude-in-chrome": "user-invocable-only"
+    "claude-in-chrome": "user-invocable-only",
+    "owl-design": "user-invocable-only",
+    "setup-hygiene": "user-invocable-only",
+    "rehydrate": "name-only",
+    "use-code-review-graph": "name-only",
+    "topics": "name-only",
+    "design-benchmark": "name-only"
   },
   "deniedMcpServers": [
     {
