@@ -98,7 +98,17 @@
     "rehydrate": "name-only",
     "use-code-review-graph": "name-only",
     "topics": "name-only",
-    "design-benchmark": "name-only"
+    "design-benchmark": "name-only",
+    "tdd": "name-only",
+    "wizard": "name-only",
+    "prototype": "name-only",
+    "chatgpt-app-submission": "name-only",
+    "app-store-screenshots": "name-only",
+    "build-mcp-server": "name-only",
+    "agents-best-practices": "name-only",
+    "refero-design": "name-only",
+    "anthropic-skills:computer-use": "name-only",
+    "anthropic-skills:morning": "name-only"
   },
   "deniedMcpServers": [
     {
